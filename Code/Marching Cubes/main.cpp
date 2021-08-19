@@ -9,15 +9,18 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "Geometry/MarchingChunk.h"
+#include "Engine/Window.h"
+
 GLuint gVAO = 0;
 GLuint gVBO = 0;
 GLuint programId;
-GLFWwindow* window = NULL;
 GLFWmonitor* monitor = NULL;
 
 const glm::vec2 SCREEN_SIZE(800, 600);
 
-static void LoadTriangle() {
+static void LoadTriangle()
+{
 
     // make and bind the VAO
    glGenVertexArrays(1, &gVAO);
@@ -56,7 +59,7 @@ static void LoadTriangle() {
 static void Render() {
 
     // clear everything
-    glClearColor(0, 0, 1, 1); // blue
+//    glClearColor(0, 0, 1, 1); // blue
 
     glClear(GL_COLOR_BUFFER_BIT);
   // bind the VAO (the triangle)
@@ -67,7 +70,7 @@ static void Render() {
    // unbind the VAO
     glBindVertexArray(0);
     // swap the display buffers (displays what was just drawn)
-   glfwSwapBuffers(window);
+   glfwSwapBuffers(Window::window);
 
 }
 
@@ -76,27 +79,10 @@ static void Render() {
 // the program starts here
 
 void AppMain() {
-
-    if(!glfwInit())
-    throw std::runtime_error("glfwInit failed");
-    // open a window with GLFW
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-    window = glfwCreateWindow((int)SCREEN_SIZE.x, (int)SCREEN_SIZE.y, "test window",NULL, NULL);
-    if(!window)
-        throw std::runtime_error("glfwOpenWindow failed. Can your hardware handle OpenGL 4.2?");
-
-
-   // GLFW settings
-    glfwMakeContextCurrent(window);
-    // initialise GLEW
-   glewExperimental = GL_TRUE; //stops glew crashing on OSX :-/
-   if(glewInit() != GLEW_OK)
-        throw std::runtime_error("glewInit failed");
-   // print out some info about the graphics drivers
+    if (!Window::initGL()) {
+        printf("Something went wrong, exiting");
+        return;
+    }
 
     std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
@@ -116,7 +102,7 @@ void AppMain() {
     LoadTriangle();
     // run while the window is open
 
-    while(glfwGetWindowAttrib(window,GLFW_FOCUSED)){
+    while(glfwGetWindowAttrib(Window::window,GLFW_FOCUSED)){
     // process pending events
         glfwPollEvents();
        // draw one frame
@@ -129,7 +115,6 @@ void AppMain() {
 int main(int argc, char *argv[]) {
 
     try {
-
         AppMain();
 
     } catch (const std::exception& e){

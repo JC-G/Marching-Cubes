@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1629202193 source:d:\marching cubes\code\marching cubes\main.cpp
+1629383439 source:d:\marching cubes\code\marching cubes\main.cpp
 	<windows.h>
 	<GL/glew.h>
 	<GLFW/glfw3.h>
@@ -7,6 +7,8 @@
 	<cassert>
 	<iostream>
 	<stdexcept>
+	"Geometry/MarchingChunk.h"
+	"Engine/Window.h"
 
 1584280861 d:\marching cubes\libraries\include\gl\glew.h
 	<cstddef>
@@ -698,4 +700,43 @@
 	"../simd/integer.h"
 
 1525695782 d:\marching cubes\libraries\include\glm\simd\integer.h
+
+1629376996 source:d:\marching cubes\code\marching cubes\src\marchingchunk.cpp
+	"MarchingChunk.h"
+	<iostream>
+
+1629378784 d:\marching cubes\code\marching cubes\include\marchingchunk.h
+	"GeometryGenerator.h"
+
+1629378925 d:\marching cubes\code\marching cubes\include\geometrygenerator.h
+	<GL/glew.h>
+	<GLFW/glfw3.h>
+	<glm/glm.hpp>
+
+1629377878 source:d:\marching cubes\code\marching cubes\src\geometrygenerator.cpp
+	"GeometryGenerator.h"
+
+1629377878 source:d:\marching cubes\code\marching cubes\src\geometry\geometrygenerator.cpp
+	"GeometryGenerator.h"
+
+1629378925 d:\marching cubes\code\marching cubes\src\geometry\geometrygenerator.h
+	<GL/glew.h>
+	<GLFW/glfw3.h>
+	<glm/glm.hpp>
+
+1629379479 source:d:\marching cubes\code\marching cubes\src\geometry\marchingchunk.cpp
+	"MarchingChunk.h"
+	<iostream>
+
+1629379339 d:\marching cubes\code\marching cubes\src\geometry\marchingchunk.h
+	"GeometryGenerator.h"
+
+1629383090 d:\marching cubes\code\marching cubes\src\engine\window.h
+	<GL/glew.h>
+	<GLFW/glfw3.h>
+	<glm/glm.hpp>
+	<iostream>
+
+1629383501 source:d:\marching cubes\code\marching cubes\src\engine\window.cpp
+	"Window.h"
 

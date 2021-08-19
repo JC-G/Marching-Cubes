@@ -1,15 +1,12 @@
 #ifndef WINDOW_H
 #define WINDOW_H
-#define GLEW_STATIC
 /**
 Handles creating window, receiving input, ...
 Static class - there is only one window
 */
 
+#include "GL_headers.h"
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 #include <iostream>
 
 class Window

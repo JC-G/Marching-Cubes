@@ -1,0 +1,12 @@
+//basic, do-nothing vertex shader
+#version 330
+precision highp float;
+
+layout(location = 0) in vec4 vertexPosition_modelSpace;
+
+out vec4 vertexPosition_worldSpace;
+
+void main() {
+	vertexPosition_worldSpace = vertexPosition_modelSpace;
+	gl_Position = vertexPosition_worldSpace;
+}

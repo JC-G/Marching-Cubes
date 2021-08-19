@@ -6,9 +6,7 @@ GeometryGenerator is an abstract class handling generation of geometry for March
 it fills the given vertex and normal buffers
 */
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
+#include "GL_headers.h"
 
 class GeometryGenerator
 {

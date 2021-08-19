@@ -1,16 +1,15 @@
-#define GLEW_STATIC
 
 // third-party libraries
 #include <windows.h>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 #include <cassert>
 #include <iostream>
 #include <stdexcept>
 
+#include "GL_headers.h"
+
 #include "Geometry/MarchingChunk.h"
 #include "Engine/Window.h"
+#include "Engine/Shader.h"
 
 GLuint gVAO = 0;
 GLuint gVBO = 0;
@@ -101,6 +100,13 @@ void AppMain() {
 
     LoadTriangle();
     // run while the window is open
+
+    // load the (test) shader
+//    GLuint shader = Shader::LoadVertexFragment(
+//        Shader::ReadShaderFile("Shaders/vert.txt"),
+//        Shader::ReadShaderFile("Shaders/frag.txt"));
+    Shader shader = Shader::ShaderFromFiles("Shaders/vert.txt","Shaders/frag.txt");
+    glUseProgram(shader.getID());
 
     while(glfwGetWindowAttrib(Window::window,GLFW_FOCUSED)){
     // process pending events

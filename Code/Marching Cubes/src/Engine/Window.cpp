@@ -1,5 +1,8 @@
 #include "Window.h"
 
+//initialise static member
+GLFWwindow* Window::window = NULL;
+
 Window::Window()
 {
     //ctor
@@ -9,7 +12,7 @@ Window::~Window()
 {
     //dtor
 }
-GLFWwindow* Window::window = NULL;
+
 bool Window::initGL()
 {
     if (!glfwInit()) {

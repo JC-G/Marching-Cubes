@@ -62,3 +62,8 @@ bool Window::initGL()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     return true;
 }
+
+glm::mat4 Window::getProjectionMatrix()
+{
+    return glm::perspective(glm::radians(90.0f),640.0f/480.0f,0.1f,10000.0f);
+}

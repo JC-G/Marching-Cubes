@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1629386962 source:d:\marching cubes\code\marching cubes\main.cpp
+1629486204 source:d:\marching cubes\code\marching cubes\main.cpp
 	<windows.h>
 	<cassert>
 	<iostream>
@@ -728,19 +728,24 @@
 1629379339 d:\marching cubes\code\marching cubes\src\geometry\marchingchunk.h
 	"GeometryGenerator.h"
 
-1629385405 d:\marching cubes\code\marching cubes\src\engine\window.h
+1629482981 d:\marching cubes\code\marching cubes\src\engine\window.h
 	"GL_headers.h"
+	<glm/gtc/matrix_transform.hpp>
+	<glm/gtx/transform.hpp>
 	<iostream>
 
-1629385278 source:d:\marching cubes\code\marching cubes\src\engine\window.cpp
+1629483075 source:d:\marching cubes\code\marching cubes\src\engine\window.cpp
 	"Window.h"
 
-1629387378 source:d:\marching cubes\code\marching cubes\src\engine\shader.cpp
+1629486487 source:d:\marching cubes\code\marching cubes\src\engine\shader.cpp
 	"Shader.h"
 
-1629387370 d:\marching cubes\code\marching cubes\src\engine\shader.h
+1629485880 d:\marching cubes\code\marching cubes\src\engine\shader.h
 	<iostream>
 	<fstream>
+	<sstream>
+	<vector>
+	<map>
 	<vector>
 	"GL_headers.h"
 
@@ -748,4 +753,73 @@
 	<GL/glew.h>
 	<GLFW/glfw3.h>
 	<glm/glm.hpp>
+
+1535531570 d:\marching cubes\libraries\include\glm\gtc\matrix_transform.hpp
+	"../mat4x4.hpp"
+	"../vec2.hpp"
+	"../vec3.hpp"
+	"../vec4.hpp"
+	"../ext/matrix_projection.hpp"
+	"../ext/matrix_clip_space.hpp"
+	"../ext/matrix_transform.hpp"
+	"matrix_transform.inl"
+
+1537176751 d:\marching cubes\libraries\include\glm\ext\matrix_projection.hpp
+	"../gtc/constants.hpp"
+	"../geometric.hpp"
+	"../trigonometric.hpp"
+	"../matrix.hpp"
+	"matrix_projection.inl"
+
+1535531570 d:\marching cubes\libraries\include\glm\gtc\constants.hpp
+	"../ext/scalar_constants.hpp"
+	"constants.inl"
+
+1574091105 d:\marching cubes\libraries\include\glm\ext\scalar_constants.hpp
+	"../detail/setup.hpp"
+	"scalar_constants.inl"
+
+1574091105 d:\marching cubes\libraries\include\glm\ext\scalar_constants.inl
+	<limits>
+
+1574091105 d:\marching cubes\libraries\include\glm\gtc\constants.inl
+
+1586699936 d:\marching cubes\libraries\include\glm\ext\matrix_projection.inl
+
+1537176751 d:\marching cubes\libraries\include\glm\ext\matrix_clip_space.hpp
+	"../ext/scalar_constants.hpp"
+	"../geometric.hpp"
+	"../trigonometric.hpp"
+	"matrix_clip_space.inl"
+
+1585558029 d:\marching cubes\libraries\include\glm\ext\matrix_clip_space.inl
+
+1537176751 d:\marching cubes\libraries\include\glm\ext\matrix_transform.hpp
+	"../gtc/constants.hpp"
+	"../geometric.hpp"
+	"../trigonometric.hpp"
+	"../matrix.hpp"
+	"matrix_transform.inl"
+
+1554373468 d:\marching cubes\libraries\include\glm\ext\matrix_transform.inl
+
+1535531570 d:\marching cubes\libraries\include\glm\gtc\matrix_transform.inl
+	"../geometric.hpp"
+	"../trigonometric.hpp"
+	"../matrix.hpp"
+
+1554373468 d:\marching cubes\libraries\include\glm\gtx\transform.hpp
+	"../glm.hpp"
+	"../gtc/matrix_transform.hpp"
+	"transform.inl"
+
+1533818822 d:\marching cubes\libraries\include\glm\gtx\transform.inl
+
+1629482960 source:d:\marching cubes\code\marching cubes\src\engine\camera.cpp
+	"Camera.h"
+	<glm/gtc/matrix_transform.hpp>
+	<glm/gtx/transform.hpp>
+
+1629482296 d:\marching cubes\code\marching cubes\src\engine\camera.h
+	"GL_headers.h"
 

@@ -23,7 +23,8 @@ std::string Shader::ReadShaderFile(const char* path)
 }
 
 //Load a vertex and fragment shader from strings, returning the resulting program
-GLuint Shader::LoadVertexFragment(std::string VertString, std::string FragString)
+//Also load the uniforms into the map
+GLuint Shader::LoadVertexFragment(std::string VertString, std::string FragString, std::map<std::string,GLuint>& shaderUniforms)
 {
     GLint Result = GL_FALSE;
     int InfoLogLength;
@@ -72,26 +73,59 @@ GLuint Shader::LoadVertexFragment(std::string VertString, std::string FragString
         glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
         printf("%s\n", &ProgramErrorMessage[0]);
     }
+
+    GLuint i;
+    GLint count;
+
+    GLint size; // size of the variable
+    GLenum type; // type of the variable (float, vec3 or mat4, etc)
+
+    const GLsizei bufSize = 16; // maximum name length
+    GLchar name[bufSize]; // variable name in GLSL
+    GLsizei length; // name length
+    glGetProgramiv(ProgramID, GL_ACTIVE_UNIFORMS, &count);
+    printf("Active Uniforms: %d\n", count);
+
+    for (i = 0; i < count; i++)
+    {
+        glGetActiveUniform(ProgramID, (GLuint)i, bufSize, &length, &size, &type, name);
+
+        printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
+        std::string nameString(name);
+        shaderUniforms[nameString] = i;
+    }
+
     return ProgramID;
 }
+
 Shader Shader::ShaderFromFiles(const char* vertPath, const char* fragPath)
 {
-    return Shader(
-        LoadVertexFragment(
-            Shader::ReadShaderFile(vertPath),
-            Shader::ReadShaderFile(fragPath)
-        )
+    std::map<std::string,GLuint> shaderUniforms;
+    GLuint shaderID = LoadVertexFragment(
+        Shader::ReadShaderFile(vertPath),
+        Shader::ReadShaderFile(fragPath),
+        shaderUniforms
     );
+    return Shader(shaderID, shaderUniforms);
 }
 
-Shader::Shader(GLuint program)
+Shader::Shader(GLuint program, std::map<std::string,GLuint> shaderUniforms)
 :myProgram(program)
 {
-
+    Uniforms = shaderUniforms;
+    std::cout << getUniform("V") << std::endl;
+    std::cout << getUniform("P") << std::endl;
 }
 
 GLuint Shader::getID()
 {
     return myProgram;
 }
+
+GLuint Shader::getUniform(std::string name)
+{
+    //Uniform list should not be changed at runtime
+    return Uniforms[name];
+}
+
 

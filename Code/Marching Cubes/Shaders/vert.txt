@@ -6,7 +6,10 @@ layout(location = 0) in vec4 vertexPosition_modelSpace;
 
 out vec4 vertexPosition_worldSpace;
 
+uniform mat4 V;
+uniform mat4 P;
+
 void main() {
 	vertexPosition_worldSpace = vertexPosition_modelSpace;
-	gl_Position = vertexPosition_worldSpace;
+	gl_Position = V*P*vertexPosition_worldSpace;
 }

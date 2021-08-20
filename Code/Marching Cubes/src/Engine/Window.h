@@ -7,6 +7,9 @@ Static class - there is only one window
 
 #include "GL_headers.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+
 #include <iostream>
 
 class Window
@@ -17,6 +20,7 @@ class Window
         //Initialise OpenGL, Creates Window
         static bool initGL();
         static GLFWwindow* window;
+        glm::mat4 getProjectionMatrix();
     protected:
 
     private:

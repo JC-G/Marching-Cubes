@@ -31,20 +31,20 @@ static void LoadTriangle()
 
     GLfloat vertexData[] = {
 
-        //  X     Y     Z
+        //  X     Y     Z     W
 
-         0.0f, 0.8f, 0.0f,
+         0.0f, 0.8f, 0.0f, 1.0f,
 
-        -0.8f,-0.8f, 0.0f,
+        -0.8f,-0.8f, 0.0f, 1.0f,
 
-         0.8f,-0.8f, 0.0f,
+         0.8f,-0.8f, 0.0f, 1.0f,
 
     };
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
     // connect the xyz to the "vert" attribute of the vertex shader
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
     // unbind the VBO and VAO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -102,11 +102,10 @@ void AppMain() {
     // run while the window is open
 
     // load the (test) shader
-//    GLuint shader = Shader::LoadVertexFragment(
-//        Shader::ReadShaderFile("Shaders/vert.txt"),
-//        Shader::ReadShaderFile("Shaders/frag.txt"));
     Shader shader = Shader::ShaderFromFiles("Shaders/vert.txt","Shaders/frag.txt");
     glUseProgram(shader.getID());
+    glUniformMatrix4fv(shader.getUniform("V"),1,GL_FALSE,&(glm::mat4(1.0f))[0][0]);
+    glUniformMatrix4fv(shader.getUniform("P"),1,GL_FALSE,&(glm::mat4(1.0f))[0][0]);
 
     while(glfwGetWindowAttrib(Window::window,GLFW_FOCUSED)){
     // process pending events

@@ -11,6 +11,9 @@
 #include "Engine/Window.h"
 #include "Engine/Shader.h"
 
+
+    #include <glm/gtx/string_cast.hpp>
+
 GLuint gVAO = 0;
 GLuint gVBO = 0;
 GLuint programId;
@@ -27,24 +30,55 @@ static void LoadTriangle()
    // make and bind the VBO
    glGenBuffers(1, &gVBO);
    glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-   // Put the three triangle verticies into the VBO
 
     GLfloat vertexData[] = {
 
         //  X     Y     Z     W
 
-         0.0f, 0.8f, 0.0f, 1.0f,
+         -1.0f,-1.0f,-1.0f, // triangle 1 : begin
+        -1.0f,-1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f, // triangle 1 : end
+        1.0f, 1.0f,-1.0f, // triangle 2 : begin
+        -1.0f,-1.0f,-1.0f,
+        -1.0f, 1.0f,-1.0f, // triangle 2 : end
+        1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f,-1.0f,
+        1.0f,-1.0f,-1.0f,
+        1.0f, 1.0f,-1.0f,
+        1.0f,-1.0f,-1.0f,
+        -1.0f,-1.0f,-1.0f,
+        -1.0f,-1.0f,-1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,
+        1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f,-1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,
+        1.0f, 1.0f,-1.0f,
+        1.0f,-1.0f,-1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,
+        -1.0f, 1.0f,-1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f
 
-        -0.8f,-0.8f, 0.0f, 1.0f,
-
-         0.8f,-0.8f, 0.0f, 1.0f,
 
     };
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
     // connect the xyz to the "vert" attribute of the vertex shader
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     // unbind the VBO and VAO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -57,15 +91,12 @@ static void LoadTriangle()
 
 static void Render() {
 
-    // clear everything
-//    glClearColor(0, 0, 1, 1); // blue
-
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   // bind the VAO (the triangle)
 
     glBindVertexArray(gVAO);
    // draw the VAO
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 12*3);
    // unbind the VAO
     glBindVertexArray(0);
     // swap the display buffers (displays what was just drawn)
@@ -104,8 +135,13 @@ void AppMain() {
     // load the (test) shader
     Shader shader = Shader::ShaderFromFiles("Shaders/vert.txt","Shaders/frag.txt");
     glUseProgram(shader.getID());
-    glUniformMatrix4fv(shader.getUniform("V"),1,GL_FALSE,&(glm::mat4(1.0f))[0][0]);
-    glUniformMatrix4fv(shader.getUniform("P"),1,GL_FALSE,&(glm::mat4(1.0f))[0][0]);
+
+    glm::mat4 VM = glm::lookAt(glm::vec3(2.0,3.0,4.0),glm::vec3(0.0),glm::vec3(0.0,1.0,0.0));
+    glUniformMatrix4fv(shader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
+
+
+    glm::mat4 PM = Window::getProjectionMatrix();
+    glUniformMatrix4fv(shader.getUniform("P"),1,GL_FALSE,&PM[0][0]);
 
     while(glfwGetWindowAttrib(Window::window,GLFW_FOCUSED)){
     // process pending events

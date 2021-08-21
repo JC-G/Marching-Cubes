@@ -20,7 +20,7 @@ class Window
         //Initialise OpenGL, Creates Window
         static bool initGL();
         static GLFWwindow* window;
-        glm::mat4 getProjectionMatrix();
+        static glm::mat4 getProjectionMatrix();
     protected:
 
     private:

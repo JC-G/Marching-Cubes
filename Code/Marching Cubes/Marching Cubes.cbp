@@ -45,7 +45,11 @@
 			<Add library="C:/MinGW/lib/libgdi32.a" />
 			<Add directory="../../Libraries/lib" />
 		</Linker>
+		<Unit filename="Shaders/frag.txt" />
+		<Unit filename="Shaders/vert.txt" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/Engine/Camera.cpp" />
+		<Unit filename="src/Engine/Camera.h" />
 		<Unit filename="src/Engine/Shader.cpp" />
 		<Unit filename="src/Engine/Shader.h" />
 		<Unit filename="src/Engine/Window.cpp" />

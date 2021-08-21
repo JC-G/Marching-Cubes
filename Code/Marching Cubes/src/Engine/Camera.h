@@ -10,7 +10,6 @@ class Camera
         Camera();
         virtual ~Camera();
         glm::mat4 getViewMatrix();
-
     protected:
 
     private:

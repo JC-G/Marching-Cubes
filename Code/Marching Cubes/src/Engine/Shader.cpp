@@ -113,8 +113,6 @@ Shader::Shader(GLuint program, std::map<std::string,GLuint> shaderUniforms)
 :myProgram(program)
 {
     Uniforms = shaderUniforms;
-    std::cout << getUniform("V") << std::endl;
-    std::cout << getUniform("P") << std::endl;
 }
 
 GLuint Shader::getID()

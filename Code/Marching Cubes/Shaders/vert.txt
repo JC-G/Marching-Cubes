@@ -11,5 +11,5 @@ uniform mat4 P;
 
 void main() {
 	vertexPosition_worldSpace = vertexPosition_modelSpace;
-	gl_Position = V*P*vertexPosition_worldSpace;
+	gl_Position = P*V*vertexPosition_worldSpace;
 }

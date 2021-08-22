@@ -1,7 +1,8 @@
 #include "Window.h"
 
-//initialise static member
+//initialise static members
 GLFWwindow* Window::window = NULL;
+Camera Window::activeCamera;
 
 Window::Window()
 {
@@ -33,7 +34,7 @@ bool Window::initGL()
     glfwWindowHint(GLFW_REFRESH_RATE,60);
     glfwWindowHint(GLFW_VISIBLE,GLFW_TRUE);
 
-    Window::window = glfwCreateWindow(640,480,"Window Title",NULL,NULL);
+    Window::window = glfwCreateWindow(Window::width,Window::height,"Window Title",NULL,NULL);
 //    if (Window::window == NULL) {
 //        printf("Window was not created");
 //        glfwTerminate();
@@ -42,8 +43,9 @@ bool Window::initGL()
     glfwMakeContextCurrent(Window::window);
 
     //set input mode
-//    glfwSetInputMode(Window::window,GLFW_STICKY_KEYS,GL_TRUE);
-//    glfwSetInputMode(Window::window,GLFW_CURSOR,GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(Window::window,GLFW_STICKY_KEYS,GL_TRUE);
+    glfwSetInputMode(Window::window,GLFW_CURSOR,GLFW_CURSOR_DISABLED);
+    glfwSetCursorPos(window,width/2,height/2);
 
 
     //initialise GLEW
@@ -65,5 +67,54 @@ bool Window::initGL()
 
 glm::mat4 Window::getProjectionMatrix()
 {
-    return glm::perspective(glm::radians(90.0f),640.0f/480.0f,0.1f,10000.0f);
+    return glm::perspective(glm::radians(90.0f),(float)(Window::width)/(float)(Window::height),0.1f,10000.0f);
+}
+
+
+void Window::attachCamera(Camera& cam)
+{
+    Window::activeCamera = cam;
+}
+void Window::handleInput()
+{
+    //camera rotation
+    double X,Y;
+    glfwGetCursorPos(window,&X,&Y);
+    glfwSetCursorPos(window,width/2,height/2);
+    double dX = width/2-X;
+    double dY = height/2-Y;
+
+    activeCamera.rotateFromMouse(dX,dY);
+
+    //movement
+    // vec3(fwd/back, up/down, left/right)
+    glm::vec3 movement(0.0f);
+    if (glfwGetKey(window,GLFW_KEY_W)) {
+        movement.x+=1.0f;
+    }
+
+    if (glfwGetKey(window,GLFW_KEY_S)) {
+        movement.x-=1.0f;
+    }
+
+    if (glfwGetKey(window,GLFW_KEY_D)) {
+        movement.z+=1.0f;
+    }
+
+    if (glfwGetKey(window,GLFW_KEY_A)) {
+        movement.z-=1.0f;
+    }
+
+    if (glfwGetKey(window,GLFW_KEY_SPACE)) {
+        movement.y+=1.0f;
+    }
+
+    if (glfwGetKey(window,GLFW_KEY_LEFT_SHIFT)) {
+        movement.y-=1.0f;
+    }
+
+    activeCamera.moveFromVec3(movement);
+
+
+
 }

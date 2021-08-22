@@ -12,7 +12,6 @@
 #include "Engine/Shader.h"
 
 
-    #include <glm/gtx/string_cast.hpp>
 
 GLuint gVAO = 0;
 GLuint gVBO = 0;
@@ -130,6 +129,10 @@ void AppMain() {
    // create buffer and fill it with the points of the triangle
 
     LoadTriangle();
+
+    Camera mainCamera;
+    Window::attachCamera(mainCamera);
+
     // run while the window is open
 
     // load the (test) shader
@@ -137,15 +140,16 @@ void AppMain() {
     glUseProgram(shader.getID());
 
     glm::mat4 VM = glm::lookAt(glm::vec3(2.0,3.0,4.0),glm::vec3(0.0),glm::vec3(0.0,1.0,0.0));
-    glUniformMatrix4fv(shader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
-
-
     glm::mat4 PM = Window::getProjectionMatrix();
     glUniformMatrix4fv(shader.getUniform("P"),1,GL_FALSE,&PM[0][0]);
 
     while(glfwGetWindowAttrib(Window::window,GLFW_FOCUSED)){
     // process pending events
         glfwPollEvents();
+        Window::handleInput();
+        VM = Window::activeCamera.getViewMatrix();
+        glUniformMatrix4fv(shader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
+
        // draw one frame
         Render();
     }

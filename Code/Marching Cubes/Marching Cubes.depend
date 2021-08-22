@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1629545488 source:d:\marching cubes\code\marching cubes\main.cpp
+1629550136 source:d:\marching cubes\code\marching cubes\main.cpp
 	<windows.h>
 	<cassert>
 	<iostream>
@@ -8,7 +8,6 @@
 	"Geometry/MarchingChunk.h"
 	"Engine/Window.h"
 	"Engine/Shader.h"
-	<glm/gtx/string_cast.hpp>
 
 1584280861 d:\marching cubes\libraries\include\gl\glew.h
 	<cstddef>
@@ -729,13 +728,14 @@
 1629379339 d:\marching cubes\code\marching cubes\src\geometry\marchingchunk.h
 	"GeometryGenerator.h"
 
-1629542783 d:\marching cubes\code\marching cubes\src\engine\window.h
+1629549804 d:\marching cubes\code\marching cubes\src\engine\window.h
 	"GL_headers.h"
 	<glm/gtc/matrix_transform.hpp>
 	<glm/gtx/transform.hpp>
 	<iostream>
+	"Engine/Camera.h"
 
-1629545507 source:d:\marching cubes\code\marching cubes\src\engine\window.cpp
+1629626394 source:d:\marching cubes\code\marching cubes\src\engine\window.cpp
 	"Window.h"
 
 1629542837 source:d:\marching cubes\code\marching cubes\src\engine\shader.cpp
@@ -750,10 +750,11 @@
 	<vector>
 	"GL_headers.h"
 
-1629385367 d:\marching cubes\code\marching cubes\src\gl_headers.h
+1629549878 d:\marching cubes\code\marching cubes\src\gl_headers.h
 	<GL/glew.h>
 	<GLFW/glfw3.h>
 	<glm/glm.hpp>
+	<glm/gtx/string_cast.hpp>
 
 1535531570 d:\marching cubes\libraries\include\glm\gtc\matrix_transform.hpp
 	"../mat4x4.hpp"
@@ -816,12 +817,13 @@
 
 1533818822 d:\marching cubes\libraries\include\glm\gtx\transform.inl
 
-1629482960 source:d:\marching cubes\code\marching cubes\src\engine\camera.cpp
+1629626953 source:d:\marching cubes\code\marching cubes\src\engine\camera.cpp
 	"Camera.h"
 	<glm/gtc/matrix_transform.hpp>
 	<glm/gtx/transform.hpp>
+	<iostream>
 
-1629542697 d:\marching cubes\code\marching cubes\src\engine\camera.h
+1629627098 d:\marching cubes\code\marching cubes\src\engine\camera.h
 	"GL_headers.h"
 
 1554373468 d:\marching cubes\libraries\include\glm\gtx\string_cast.hpp

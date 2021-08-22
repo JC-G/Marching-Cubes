@@ -12,6 +12,9 @@ Static class - there is only one window
 
 #include <iostream>
 
+
+#include "Engine/Camera.h"
+
 class Window
 {
     public:
@@ -21,6 +24,11 @@ class Window
         static bool initGL();
         static GLFWwindow* window;
         static glm::mat4 getProjectionMatrix();
+        static void attachCamera(Camera& cam);
+        static void handleInput();
+        static const int width = 640;
+        static const int height = 480;
+        static Camera activeCamera;
     protected:
 
     private:

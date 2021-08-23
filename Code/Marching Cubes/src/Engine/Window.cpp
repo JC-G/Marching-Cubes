@@ -35,11 +35,11 @@ bool Window::initGL()
     glfwWindowHint(GLFW_VISIBLE,GLFW_TRUE);
 
     Window::window = glfwCreateWindow(Window::width,Window::height,"Window Title",NULL,NULL);
-//    if (Window::window == NULL) {
-//        printf("Window was not created");
-//        glfwTerminate();
-//        return false;
-//    }
+    if (Window::window == NULL) {
+        printf("Window was not created");
+        glfwTerminate();
+        return false;
+    }
     glfwMakeContextCurrent(Window::window);
 
     //set input mode
@@ -58,6 +58,7 @@ bool Window::initGL()
 
     //misc OpenGL Setup
     glClearColor(0,148./255,1,1);
+    glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);

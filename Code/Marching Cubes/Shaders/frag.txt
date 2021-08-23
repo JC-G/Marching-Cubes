@@ -8,5 +8,9 @@ in vec4 vertexPosition_worldSpace;
 
 void main() {
 	color.a = 1;
-	color.rgb = vertexPosition_worldSpace.xyz;
+	//color corners of test cube white, rest black
+	if(min(abs(vertexPosition_worldSpace.x),min(abs(vertexPosition_worldSpace.y),abs(vertexPosition_worldSpace.z))) > 0.9)
+        color.rgb = vec3(1.0);
+    else
+        color.rgb = vec3(0.0);
 }

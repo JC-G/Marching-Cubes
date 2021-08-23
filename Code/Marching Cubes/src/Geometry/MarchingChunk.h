@@ -20,7 +20,7 @@ class MarchingChunk
     public:
         MarchingChunk(glm::vec3 chunkLocation, glm::vec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator);
         virtual ~MarchingChunk();
-        void draw();
+        void draw(GLuint VAO);
 
     protected:
 
@@ -29,6 +29,7 @@ class MarchingChunk
         glm::vec3 mySize;
         glm::vec3 myStride;
         GeometryGenerator* Generator;
+        GLuint myGeometrySize;
 
         GLuint vertexBuffer;
         GLuint normalBuffer;

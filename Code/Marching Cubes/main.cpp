@@ -7,9 +7,9 @@
 
 #include "GL_headers.h"
 
-#include "Geometry/MarchingChunk.h"
 #include "Engine/Window.h"
 #include "Engine/Shader.h"
+#include "Geometry/Geometry.h"
 
 
 
@@ -19,68 +19,18 @@ GLuint programId;
 GLFWmonitor* monitor = NULL;
 
 const glm::vec2 SCREEN_SIZE(800, 600);
-
-static void LoadTriangle()
+static MarchingChunk LoadCube()
 {
 
     // make and bind the VAO
-   glGenVertexArrays(1, &gVAO);
-   glBindVertexArray(gVAO);
-   // make and bind the VBO
-   glGenBuffers(1, &gVBO);
-   glBindBuffer(GL_ARRAY_BUFFER, gVBO);
+    glGenVertexArrays(1, &gVAO);
+    glBindVertexArray(gVAO);
 
-    GLfloat vertexData[] = {
+    //create the new object
+    GeometryGenerator* G = new CubeGeometryGenerator();
+    MarchingChunk C(glm::vec3(0.0),glm::vec3(0.0),glm::vec3(0.0), G);
 
-        //  X     Y     Z     W
-
-         -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-        -1.0f,-1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f, // triangle 1 : end
-        1.0f, 1.0f,-1.0f, // triangle 2 : begin
-        -1.0f,-1.0f,-1.0f,
-        -1.0f, 1.0f,-1.0f, // triangle 2 : end
-        1.0f,-1.0f, 1.0f,
-        -1.0f,-1.0f,-1.0f,
-        1.0f,-1.0f,-1.0f,
-        1.0f, 1.0f,-1.0f,
-        1.0f,-1.0f,-1.0f,
-        -1.0f,-1.0f,-1.0f,
-        -1.0f,-1.0f,-1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f,-1.0f,
-        1.0f,-1.0f, 1.0f,
-        -1.0f,-1.0f, 1.0f,
-        -1.0f,-1.0f,-1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f,-1.0f, 1.0f,
-        1.0f,-1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f,-1.0f,-1.0f,
-        1.0f, 1.0f,-1.0f,
-        1.0f,-1.0f,-1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f,-1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f,-1.0f,
-        -1.0f, 1.0f,-1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f,-1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f,-1.0f, 1.0f
-
-
-    };
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
-    // connect the xyz to the "vert" attribute of the vertex shader
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    // unbind the VBO and VAO
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    return C;
 
 }
 
@@ -88,18 +38,17 @@ static void LoadTriangle()
 
 // draws a single frame
 
-static void Render() {
+static void Render(MarchingChunk C) {
 
+    //Clear screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  // bind the VAO (the triangle)
 
-    glBindVertexArray(gVAO);
-   // draw the VAO
-    glDrawArrays(GL_TRIANGLES, 0, 12*3);
-   // unbind the VAO
-    glBindVertexArray(0);
+    //draw the chunk
+    C.draw(gVAO);
+
+
     // swap the display buffers (displays what was just drawn)
-   glfwSwapBuffers(Window::window);
+    glfwSwapBuffers(Window::window);
 
 }
 
@@ -128,12 +77,10 @@ void AppMain() {
 
    // create buffer and fill it with the points of the triangle
 
-    LoadTriangle();
+    MarchingChunk C = LoadCube();
 
     Camera mainCamera;
     Window::attachCamera(mainCamera);
-
-    // run while the window is open
 
     // load the (test) shader
     Shader shader = Shader::ShaderFromFiles("Shaders/vert.txt","Shaders/frag.txt");
@@ -143,15 +90,19 @@ void AppMain() {
     glm::mat4 PM = Window::getProjectionMatrix();
     glUniformMatrix4fv(shader.getUniform("P"),1,GL_FALSE,&PM[0][0]);
 
+
+    // run while the window is open and focused
     while(glfwGetWindowAttrib(Window::window,GLFW_FOCUSED)){
     // process pending events
         glfwPollEvents();
         Window::handleInput();
+
+        //set the view matrix accordingly
         VM = Window::activeCamera.getViewMatrix();
         glUniformMatrix4fv(shader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
 
        // draw one frame
-        Render();
+        Render(C);
     }
    // clean up and exit
    glfwTerminate();

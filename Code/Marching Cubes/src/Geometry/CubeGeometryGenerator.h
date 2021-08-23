@@ -12,7 +12,7 @@ class CubeGeometryGenerator : public GeometryGenerator
         CubeGeometryGenerator();
         virtual ~CubeGeometryGenerator();
 
-        void GenerateGeometry(glm::vec3 chunkLocation, glm::vec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize) override;
+        void GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize) override;
     protected:
 
     private:

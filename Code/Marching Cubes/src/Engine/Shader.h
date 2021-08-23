@@ -4,7 +4,6 @@
 /**
 Shader handles generic shader stuff
 */
-
 #include <iostream>
 #include <fstream>
 #include <sstream>

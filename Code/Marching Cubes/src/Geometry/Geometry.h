@@ -3,3 +3,4 @@
 #include "CubeGeometryGenerator.h"
 #include "GeometryGenerator.h"
 #include "MarchingChunk.h"
+#include "CPUMarchingCubesGenerator.h"

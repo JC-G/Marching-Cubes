@@ -4,7 +4,7 @@
 std::string Shader::ReadShaderFile(const char* path)
 {
     std::string ShaderCode;
-    std::ifstream ShaderStream(path,std::ios::in);
+    std::ifstream ShaderStream(path,std::ifstream::in);
     if(ShaderStream.is_open())
     {
         std::string line = "";

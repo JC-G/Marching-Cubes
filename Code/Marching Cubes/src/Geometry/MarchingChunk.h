@@ -18,7 +18,7 @@ it obtains its geometry from a GeometryGenerator, written into vertexBuffer and 
 class MarchingChunk
 {
     public:
-        MarchingChunk(glm::vec3 chunkLocation, glm::vec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator);
+        MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator);
         virtual ~MarchingChunk();
         void draw(GLuint VAO);
 

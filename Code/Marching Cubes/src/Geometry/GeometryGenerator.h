@@ -14,7 +14,7 @@ class GeometryGenerator
         GeometryGenerator();
         virtual ~GeometryGenerator();
         // return the VBO - assume we have a VAO for now
-        virtual void GenerateGeometry(glm::vec3 chunkLocation, glm::vec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize) = 0;
+        virtual void GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize) = 0;
     protected:
 
     private:

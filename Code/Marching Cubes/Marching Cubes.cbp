@@ -15,6 +15,7 @@
 					<Add option="-g" />
 					<Add directory="include" />
 					<Add directory="src/Engine" />
+					<Add directory="src/Geometry" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -26,6 +27,7 @@
 					<Add option="-O2" />
 					<Add directory="include" />
 					<Add directory="src/Engine" />
+					<Add directory="src/Geometry" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -55,6 +57,11 @@
 		<Unit filename="src/Engine/Window.cpp" />
 		<Unit filename="src/Engine/Window.h" />
 		<Unit filename="src/GL_headers.h" />
+		<Unit filename="src/Geometry/CPUMarchingCubesGenerator.cpp" />
+		<Unit filename="src/Geometry/CPUMarchingCubesGenerator.h" />
+		<Unit filename="src/Geometry/CubeGeometryGenerator.cpp" />
+		<Unit filename="src/Geometry/CubeGeometryGenerator.h" />
+		<Unit filename="src/Geometry/Geometry.h" />
 		<Unit filename="src/Geometry/GeometryGenerator.cpp" />
 		<Unit filename="src/Geometry/GeometryGenerator.h" />
 		<Unit filename="src/Geometry/MarchingChunk.cpp" />

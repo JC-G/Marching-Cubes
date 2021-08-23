@@ -13,7 +13,7 @@ CubeGeometryGenerator::~CubeGeometryGenerator()
 {
     //dtor
 }
-void CubeGeometryGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::vec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize)
+void CubeGeometryGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize)
 {
     GLfloat vertexData[] = {
 

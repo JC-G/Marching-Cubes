@@ -25,6 +25,11 @@ class Shader
         GLuint myProgram;
         std::map<std::string,GLuint> Uniforms;
 
+        static void SetUniforms(GLuint programID, std::map<std::string,GLuint>& shaderUniforms);
+
+        //compute shader loading
+        static GLuint LoadComputeShader(std::string ShaderText, std::map<std::string,GLuint>& shaderUniforms);
+
 };
 
 #endif // SHADER_H

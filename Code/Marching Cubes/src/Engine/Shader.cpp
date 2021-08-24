@@ -74,26 +74,7 @@ GLuint Shader::LoadVertexFragment(std::string VertString, std::string FragString
         printf("%s\n", &ProgramErrorMessage[0]);
     }
 
-    GLuint i;
-    GLint count;
-
-    GLint size; // size of the variable
-    GLenum type; // type of the variable (float, vec3 or mat4, etc)
-
-    const GLsizei bufSize = 16; // maximum name length
-    GLchar name[bufSize]; // variable name in GLSL
-    GLsizei length; // name length
-    glGetProgramiv(ProgramID, GL_ACTIVE_UNIFORMS, &count);
-    printf("Active Uniforms: %d\n", count);
-
-    for (i = 0; i < count; i++)
-    {
-        glGetActiveUniform(ProgramID, (GLuint)i, bufSize, &length, &size, &type, name);
-
-        printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
-        std::string nameString(name);
-        shaderUniforms[nameString] = i;
-    }
+    SetUniforms(ProgramID,shaderUniforms);
 
     return ProgramID;
 }
@@ -126,4 +107,63 @@ GLuint Shader::getUniform(std::string name)
     return Uniforms[name];
 }
 
+GLuint Shader::LoadComputeShader(std::string ShaderText, std::map<std::string, GLuint>& shaderUniforms)
+{
+    GLuint ComputeID = glCreateShader(GL_COMPUTE_SHADER);
 
+    char const* textPointer = ShaderText.c_str();
+    glShaderSource(ComputeID,1,&textPointer,NULL);
+
+    //debug info - compiling
+    GLint Result = GL_FALSE;
+    int InfoLogLength;
+    glGetShaderiv(ComputeID, GL_COMPILE_STATUS, &Result);
+    glGetShaderiv(ComputeID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+    if ( InfoLogLength > 0 )
+    {
+        std::vector<char> VertexShaderErrorMessage(InfoLogLength+1);
+        glGetShaderInfoLog(ComputeID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
+        printf("%s\n", &VertexShaderErrorMessage[0]);
+    }
+
+    GLuint ProgramID = glCreateProgram();
+    glAttachShader(ProgramID,ComputeID);
+    glLinkProgram(ProgramID);
+
+    //debug info - linking
+    glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
+    glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+    if ( InfoLogLength > 0 )
+    {
+        std::vector<char> ProgramErrorMessage(InfoLogLength+1);
+        glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+        printf("%s\n", &ProgramErrorMessage[0]);
+    }
+
+    SetUniforms(ProgramID, shaderUniforms);
+
+    return ProgramID;
+}
+
+void Shader::SetUniforms(GLuint ProgramID, std::map<std::string, GLuint>& shaderUniforms)
+{
+    GLint count;
+
+    GLint size; // size of the variable
+    GLenum type; // type of the variable (float, vec3 or mat4, etc)
+
+    const GLsizei bufSize = 16; // maximum name length
+    GLchar name[bufSize]; // variable name in GLSL
+    GLsizei length; // name length
+    glGetProgramiv(ProgramID, GL_ACTIVE_UNIFORMS, &count);
+    printf("Active Uniforms: %d\n", count);
+
+    for (int i = 0; i < count; i++)
+    {
+        glGetActiveUniform(ProgramID, (GLuint)i, bufSize, &length, &size, &type, name);
+
+        printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
+        std::string nameString(name);
+        shaderUniforms[nameString] = i;
+    }
+}

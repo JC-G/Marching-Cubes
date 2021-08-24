@@ -316,10 +316,14 @@ CPUMarchingCubesGenerator::~CPUMarchingCubesGenerator()
 void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize)
 {
     //generate the density field
-    float densities[chunkSize.x+1][chunkSize.y+1][chunkSize.z+1];
+    //use 3D vector to bypass stack size limit for large chunk sizes
+    std::vector<std::vector<std::vector<float>>> densities;
     for (int x = 0; x <= chunkSize.x; x++) {
+        densities.push_back(std::vector<std::vector<float>>());
         for (int y = 0; y <= chunkSize.y; y++) {
+            densities[x].push_back(std::vector<float>());
             for (int z = 0; z <= chunkSize.z; z++) {
+                densities[x][y].push_back(0.0);
                 //generate the density values
                 glm::vec3 currentPosition = chunkLocation + chunkStride * glm::vec3(x,y,z);
                 densities[x][y][z] = densityFunction(currentPosition);
@@ -347,14 +351,14 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
                 gridCells[7] = densities[x  ][y+1][z+1];
 
                 glm::vec3 gridPos[8];
-                gridPos[0] = chunkLocation + glm::vec3(x  ,y  ,z  );
-                gridPos[1] = chunkLocation + glm::vec3(x+1,y  ,z  );
-                gridPos[2] = chunkLocation + glm::vec3(x+1,y+1,z  );
-                gridPos[3] = chunkLocation + glm::vec3(x  ,y+1,z  );
-                gridPos[4] = chunkLocation + glm::vec3(x  ,y  ,z+1);
-                gridPos[5] = chunkLocation + glm::vec3(x+1,y  ,z+1);
-                gridPos[6] = chunkLocation + glm::vec3(x+1,y+1,z+1);
-                gridPos[7] = chunkLocation + glm::vec3(x  ,y+1,z+1);
+                gridPos[0] = chunkLocation + chunkStride * glm::vec3(x  ,y  ,z  );
+                gridPos[1] = chunkLocation + chunkStride * glm::vec3(x+1,y  ,z  );
+                gridPos[2] = chunkLocation + chunkStride * glm::vec3(x+1,y+1,z  );
+                gridPos[3] = chunkLocation + chunkStride * glm::vec3(x  ,y+1,z  );
+                gridPos[4] = chunkLocation + chunkStride * glm::vec3(x  ,y  ,z+1);
+                gridPos[5] = chunkLocation + chunkStride * glm::vec3(x+1,y  ,z+1);
+                gridPos[6] = chunkLocation + chunkStride * glm::vec3(x+1,y+1,z+1);
+                gridPos[7] = chunkLocation + chunkStride * glm::vec3(x  ,y+1,z+1);
 
 
                 //marching cubes algorithm

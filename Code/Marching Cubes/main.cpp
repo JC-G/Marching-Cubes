@@ -28,7 +28,7 @@ static MarchingChunk LoadCube()
 
     //create the new object
     GeometryGenerator* G = new CPUMarchingCubesGenerator();
-    MarchingChunk C(glm::vec3(-5),glm::vec3(10),glm::vec3(1), G);
+    MarchingChunk C(glm::vec3(-5),glm::vec3(100),glm::vec3(.1), G);
 
     return C;
 

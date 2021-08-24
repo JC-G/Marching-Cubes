@@ -19,7 +19,10 @@ GLuint programId;
 GLFWmonitor* monitor = NULL;
 
 const glm::vec2 SCREEN_SIZE(800, 600);
-static MarchingChunk LoadCube()
+
+static std::vector<MarchingChunk> loadedChunks;
+
+static void LoadObjects()
 {
 
     // make and bind the VAO
@@ -29,8 +32,11 @@ static MarchingChunk LoadCube()
     //create the new object
     GeometryGenerator* G = new CPUMarchingCubesGenerator();
     MarchingChunk C(glm::vec3(-5),glm::vec3(100),glm::vec3(.1), G);
+    loadedChunks.push_back(C);
 
-    return C;
+    G = new CubeGeometryGenerator();
+    MarchingChunk D(glm::vec3(-5),glm::vec3(100),glm::vec3(.1), G);
+    loadedChunks.push_back(D);
 
 }
 
@@ -38,13 +44,16 @@ static MarchingChunk LoadCube()
 
 // draws a single frame
 
-static void Render(MarchingChunk C) {
+static void Render() {
 
     //Clear screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //draw the chunk
-    C.draw(gVAO);
+    for (auto C : loadedChunks) {
+        C.draw(gVAO);
+
+    }
 
 
     // swap the display buffers (displays what was just drawn)
@@ -76,8 +85,7 @@ void AppMain() {
         throw std::runtime_error("OpenGL 4.2 API is not available.");
 
    // create buffer and fill it with the points of the triangle
-
-    MarchingChunk C = LoadCube();
+    LoadObjects();
 
     Camera mainCamera;
     Window::attachCamera(mainCamera);
@@ -101,7 +109,7 @@ void AppMain() {
         glUniformMatrix4fv(shader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
 
        // draw one frame
-        Render(C);
+        Render();
     }
    // clean up and exit
    glfwTerminate();

@@ -21,5 +21,5 @@ uint getArrID(uvec3 gid) {
 float distFunc(vec3 inPos) {
     //TODO - implement this
     //return -inPos.x+0.5;
-    return dot(inPos,inPos) - 4.5 * 4.5;
+    return length(inPos) - 4.5;
 }

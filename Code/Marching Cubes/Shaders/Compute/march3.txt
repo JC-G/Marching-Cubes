@@ -17,11 +17,9 @@ layout(binding = 7) uniform atomic_uint triCount;
 layout(local_size_x=256,local_size_y=1,local_size_z=1) in;
 
 //TODO - major issue with ordering of vertices - makes a geometry mess!
-vec3 VertexInterp(vec3 gp1, vec3 gp2, float valp1, float valp2) {
+vec3 VertexInterp(vec3 p1, vec3 p2, float valp1, float valp2) {
     float mu;
     vec3 p;
-    vec3 p1 = gp1;
-    vec3 p2 = gp2;
 
     if (abs(valp1) < 0.00001)
     {
@@ -39,9 +37,7 @@ vec3 VertexInterp(vec3 gp1, vec3 gp2, float valp1, float valp2) {
 
     }
     mu = -valp1 / (valp2 - valp1);
-    p.x = p1.x + mu * (p2.x - p1.x);
-    p.y = p1.y + mu * (p2.y - p1.y);
-    p.z = p1.z + mu * (p2.z - p1.z);
+    p = p1 + mu * (p2 - p1);
 
     return(p);
 }

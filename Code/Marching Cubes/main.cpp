@@ -29,14 +29,14 @@ static void LoadObjects()
     glGenVertexArrays(1, &gVAO);
     glBindVertexArray(gVAO);
 
-    //create the new object
-    GeometryGenerator* G = new CPUMarchingCubesGenerator();
+    //GeometryGenerator* G = new CPUMarchingCubesGenerator();
+    GeometryGenerator* G = new GPUMarchingCubesGenerator();
     MarchingChunk C(glm::vec3(-5),glm::vec3(100),glm::vec3(.1), G);
     loadedChunks.push_back(C);
 
     G = new CubeGeometryGenerator();
     MarchingChunk D(glm::vec3(-5),glm::vec3(100),glm::vec3(.1), G);
-    loadedChunks.push_back(D);
+    //loadedChunks.push_back(D);
 
 }
 
@@ -54,7 +54,6 @@ static void Render() {
         C.draw(gVAO);
 
     }
-
 
     // swap the display buffers (displays what was just drawn)
     glfwSwapBuffers(Window::window);
@@ -91,7 +90,7 @@ void AppMain() {
     Window::attachCamera(mainCamera);
 
     // load the (test) shader
-    Shader shader = Shader::ShaderFromFiles("Shaders\\vert.txt","Shaders\\frag.txt");
+    Shader shader = Shader::ShaderFromFiles("Shaders/vert.txt","Shaders/frag.txt");
     glUseProgram(shader.getID());
 
     glm::mat4 VM = glm::lookAt(glm::vec3(2.0,3.0,4.0),glm::vec3(0.0),glm::vec3(0.0,1.0,0.0));
@@ -100,6 +99,7 @@ void AppMain() {
 
     // run while the window is open and focused
     while(true){
+        glUseProgram(shader.getID());
     // process pending events
         glfwPollEvents();
         Window::handleInput();

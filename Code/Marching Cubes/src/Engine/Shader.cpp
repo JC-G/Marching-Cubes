@@ -139,7 +139,6 @@ GLuint Shader::LoadComputeShader(std::string ShaderText, std::map<std::string, G
         glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
         printf("%s\n", &ProgramErrorMessage[0]);
     }
-
     SetUniforms(ProgramID, shaderUniforms);
 
     return ProgramID;
@@ -167,3 +166,12 @@ void Shader::SetUniforms(GLuint ProgramID, std::map<std::string, GLuint>& shader
         shaderUniforms[nameString] = i;
     }
 }
+
+Shader Shader::ComputeShaderFromFile(const char* shaderPath)
+{
+    std::map<std::string,GLuint> shaderUniforms;
+    std::string shaderText = ReadShaderFile("Shaders/Compute/common.txt") + "\n" + ReadShaderFile(shaderPath);
+    GLuint shaderID = LoadComputeShader(shaderText,shaderUniforms);
+    return Shader(shaderID,shaderUniforms);
+}
+

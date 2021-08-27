@@ -18,6 +18,7 @@ class Shader
         static Shader ShaderFromFiles(const char* vertPath, const char* fragPath);
         GLuint getID();
         GLuint getUniform(std::string name);
+        static Shader ComputeShaderFromFile(const char* shaderPath);
     private:
         Shader(GLuint program, std::map<std::string,GLuint> shaderUniforms);
         static std::string ReadShaderFile(const char* path);

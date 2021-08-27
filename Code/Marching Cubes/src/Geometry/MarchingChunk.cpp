@@ -18,7 +18,7 @@ void MarchingChunk::draw(GLuint VAO) {
     //bind buffer and set VAO to use this at location 0
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
     glDrawArrays(GL_TRIANGLES, 0, myGeometrySize);
 }

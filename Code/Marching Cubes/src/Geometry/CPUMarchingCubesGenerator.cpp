@@ -8,6 +8,7 @@ Reference: http://paulbourke.net/geometry/polygonise/
 */
 
 
+//TODO - move these tables out - right now they are duplicated
 const int CPUMarchingCubesGenerator::triTable[256][16] = {
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
     {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -451,6 +452,7 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 float CPUMarchingCubesGenerator::densityFunction(glm::vec3 pos)
 {
     //sphere centered at 0, radius 4.5
+    return pos.x-0.5;
     float sph1 = glm::dot(pos,pos) - 4.5*4.5;
     float sph2 = glm::dot(pos-glm::vec3(1.0),pos-glm::vec3(1.0)) - 4.5*4.5;
     return glm::max(sph1,-sph2);

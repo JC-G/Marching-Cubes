@@ -6,7 +6,7 @@
 
 Camera::Camera()
 {
-    position = glm::vec3(2.0);
+    position = glm::vec3(0.0,0.0,-5.0);
     rotation = glm::vec3(0.0);
     up = glm::vec3(0.0,1.0,0.0);
     speed = 0.1;

@@ -2,7 +2,7 @@
 #define GPUMARCHINGCUBESGENERATOR_H
 
 #include <GeometryGenerator.h>
-
+#include "Shader.h"
 
 class GPUMarchingCubesGenerator : public GeometryGenerator
 {
@@ -17,10 +17,25 @@ class GPUMarchingCubesGenerator : public GeometryGenerator
     private:
 
         static const int edgeTable[256];
-        //triTable is the same as in CPU, just flattened
-        static const int triTable[4096];
-        static void loadShaders();
-        static bool shadersLoaded;
+        static const int triTable[4096]; //triTable is the same as in CPU, just flattened
+        static const int totalTable[256];
+
+        Shader stage1Shader;
+        Shader stage2Shader;
+        Shader stage3Shader;
+
+        GLuint densityValuesBuffer;
+
+        GLuint marchableCounter; //stage 2 -> 3
+        GLuint pointCounter; //stage 2 -> out
+        GLuint marchableList; //stage 2 -> 3
+        GLuint triangleCounter; //stage 3
+
+        GLuint triTableBuffer;
+        GLuint totalTableBuffer;
+        GLuint edgeTableBuffer;
+
+
 };
 
 #endif // GPUMARCHINGCUBESGENERATOR_H

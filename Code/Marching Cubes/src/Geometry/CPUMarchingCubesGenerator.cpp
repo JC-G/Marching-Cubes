@@ -335,6 +335,7 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     //polygonize the density field
 
     std::vector<glm::vec4> points;
+    std::vector<glm::vec4> normals;
 
     for (int x = 0; x < chunkSize.x; x++) {
         for (int y = 0; y < chunkSize.y; y++) {
@@ -424,6 +425,10 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
                     points.push_back(glm::vec4(vertlist[triTable[cubeindex][i  ]],1));
                     points.push_back(glm::vec4(vertlist[triTable[cubeindex][i+1]],1));
                     points.push_back(glm::vec4(vertlist[triTable[cubeindex][i+2]],1));
+
+                    normals.push_back(glm::vec4(densityFunction->normal(vertlist[triTable[cubeindex][i  ]]),0));
+                    normals.push_back(glm::vec4(densityFunction->normal(vertlist[triTable[cubeindex][i+1]]),0));
+                    normals.push_back(glm::vec4(densityFunction->normal(vertlist[triTable[cubeindex][i+2]]),0));
                     ntriang++;
                 }
             }
@@ -432,13 +437,16 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
     //TODO - move this out?
     glGenBuffers(1, vertexBuffer);
+    glGenBuffers(1, normalBuffer);
+
     glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
-
-    //see https://stackoverflow.com/questions/2923272/how-to-convert-vector-to-array - this is correct!
-    glm::vec4* vertexData = points.data();
-
-    //put the geometry in
+    glm::vec4* vertexData = points.data(); //see https://stackoverflow.com/questions/2923272/how-to-convert-vector-to-array - this is correct!
     glBufferData(GL_ARRAY_BUFFER, points.size()*sizeof(glm::vec4), vertexData, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER,*normalBuffer);
+    glm::vec4* normalData = normals.data();
+    glBufferData(GL_ARRAY_BUFFER, points.size()*sizeof(glm::vec4), normalData, GL_STATIC_DRAW);
+
 
     //size of geometry
     *geometrySize = points.size();

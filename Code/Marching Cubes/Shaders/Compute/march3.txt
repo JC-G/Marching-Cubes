@@ -122,12 +122,15 @@ void main() {
                     vec3 vertPos = vertlist[triTable[cubeIndex*16+tCount+t]]*chunkStride + chunkPosition;
                     vertices[3*index+t] = vec4(vertPos,1);//vertPos;
 
-                    //TODO - normals
+                    //numerical normals
                     //float eps = 0.1;
                     //float dX = (distFunc(vertPos+vec3(eps,0,0))-distFunc(vertPos));
                     //float dY = (distFunc(vertPos+vec3(0,eps,0))-distFunc(vertPos));
                     //float dZ = (distFunc(vertPos+vec3(0,0,eps))-distFunc(vertPos));
                     //normals[3*index+t] = normalize(vec4(dX,dY,dZ,0));
+
+                    //specified normals
+                    normals[3*index+t] = vec4(normal(vertPos),1);
                 }
 			}
 		}

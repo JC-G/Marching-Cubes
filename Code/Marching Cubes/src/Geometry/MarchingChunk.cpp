@@ -20,6 +20,11 @@ void MarchingChunk::draw(GLuint VAO) {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
+
+    glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+
     glDrawArrays(GL_TRIANGLES, 0, myGeometrySize);
 }
 

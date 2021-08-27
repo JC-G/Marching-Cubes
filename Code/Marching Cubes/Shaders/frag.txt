@@ -5,8 +5,9 @@ precision highp float;
 layout(location = 0) out vec4 color;
 
 in vec4 vertexPosition_worldSpace;
+in vec4 vertexNormal_worldSpace;
 
 void main() {
 	color.a = 1;
-	color.rgb = mod(vertexPosition_worldSpace.xyz,1.0);
+	color.rgb = vertexNormal_worldSpace.xyz;
 }

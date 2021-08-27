@@ -53,6 +53,7 @@
 		<Unit filename="Shaders/Compute/march1.txt" />
 		<Unit filename="Shaders/Compute/march2.txt" />
 		<Unit filename="Shaders/Compute/march3.txt" />
+		<Unit filename="Shaders/Compute/shadertop.txt" />
 		<Unit filename="Shaders/frag.txt" />
 		<Unit filename="Shaders/vert.txt" />
 		<Unit filename="main.cpp" />

@@ -12,6 +12,9 @@
 #include "Geometry/Geometry.h"
 
 
+#include "SDF/Sphere.h"
+
+
 
 GLuint gVAO = 0;
 GLuint gVBO = 0;
@@ -30,7 +33,7 @@ static void LoadObjects()
     glBindVertexArray(gVAO);
 
     //GeometryGenerator* G = new CPUMarchingCubesGenerator();
-    GeometryGenerator* G = new GPUMarchingCubesGenerator();
+    GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),4.5));
     MarchingChunk C(glm::vec3(-5),glm::vec3(100),glm::vec3(.1), G);
     loadedChunks.push_back(C);
 

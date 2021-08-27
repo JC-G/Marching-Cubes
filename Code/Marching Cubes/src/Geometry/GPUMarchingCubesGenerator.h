@@ -1,13 +1,14 @@
 #ifndef GPUMARCHINGCUBESGENERATOR_H
 #define GPUMARCHINGCUBESGENERATOR_H
 
-#include <GeometryGenerator.h>
+#include "GeometryGenerator.h"
 #include "Shader.h"
+#include "SDF.h"
 
 class GPUMarchingCubesGenerator : public GeometryGenerator
 {
     public:
-        GPUMarchingCubesGenerator();
+        GPUMarchingCubesGenerator(SDF* densityFunction);
         virtual ~GPUMarchingCubesGenerator();
 
 
@@ -34,6 +35,8 @@ class GPUMarchingCubesGenerator : public GeometryGenerator
         GLuint triTableBuffer;
         GLuint totalTableBuffer;
         GLuint edgeTableBuffer;
+
+        SDF* densityFunction;
 
 
 };

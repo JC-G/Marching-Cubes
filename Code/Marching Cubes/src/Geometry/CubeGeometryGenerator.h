@@ -1,7 +1,7 @@
 #ifndef CUBEGEOMETRYGENERATOR_H
 #define CUBEGEOMETRYGENERATOR_H
 
-#include <GeometryGenerator.h>
+#include "Geometry/GeometryGenerator.h"
 /*
 Test class - generates only a unit cube at the origin
 */

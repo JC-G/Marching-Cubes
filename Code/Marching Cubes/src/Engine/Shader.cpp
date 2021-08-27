@@ -167,10 +167,10 @@ void Shader::SetUniforms(GLuint ProgramID, std::map<std::string, GLuint>& shader
     }
 }
 
-Shader Shader::ComputeShaderFromFile(const char* shaderPath)
+Shader Shader::ComputeShaderFromFile(const char* shaderPath, std::string SDFCode)
 {
     std::map<std::string,GLuint> shaderUniforms;
-    std::string shaderText = ReadShaderFile("Shaders/Compute/common.txt") + "\n" + ReadShaderFile(shaderPath);
+    std::string shaderText = ReadShaderFile("Shaders/Compute/shadertop.txt") + SDFCode + ReadShaderFile("Shaders/Compute/common.txt") + ReadShaderFile(shaderPath);
     GLuint shaderID = LoadComputeShader(shaderText,shaderUniforms);
     return Shader(shaderID,shaderUniforms);
 }

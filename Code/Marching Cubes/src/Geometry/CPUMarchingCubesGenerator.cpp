@@ -303,7 +303,7 @@ const int CPUMarchingCubesGenerator::edgeTable[256] = {
     0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
 };
 
-CPUMarchingCubesGenerator::CPUMarchingCubesGenerator()
+CPUMarchingCubesGenerator::CPUMarchingCubesGenerator(SDF* densityFunction)
 {
     //ctor
 }
@@ -327,7 +327,7 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
                 densities[x][y].push_back(0.0);
                 //generate the density values
                 glm::vec3 currentPosition = chunkLocation + chunkStride * glm::vec3(x,y,z);
-                densities[x][y][z] = densityFunction(currentPosition);
+                densities[x][y][z] = densityFunction->density(currentPosition);
             }
         }
     }
@@ -446,16 +446,6 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     *geometrySize = points.size();
     std::cout << "Generation Done..." << std::endl;
 
-}
-
-
-float CPUMarchingCubesGenerator::densityFunction(glm::vec3 pos)
-{
-    //sphere centered at 0, radius 4.5
-    return pos.x-0.5;
-    float sph1 = glm::dot(pos,pos) - 4.5*4.5;
-    float sph2 = glm::dot(pos-glm::vec3(1.0),pos-glm::vec3(1.0)) - 4.5*4.5;
-    return glm::max(sph1,-sph2);
 }
 
 glm::vec3 CPUMarchingCubesGenerator::VertexInterp(glm::vec3 p1, glm::vec3 p2, float valp1, float valp2)

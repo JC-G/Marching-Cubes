@@ -33,13 +33,13 @@ static void LoadObjects()
     glBindVertexArray(gVAO);
 
     //GeometryGenerator* G = new CPUMarchingCubesGenerator();
-    GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),4.5));
+    GeometryGenerator* G = new CPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),4.5));
     MarchingChunk C(glm::vec3(-5),glm::vec3(100),glm::vec3(.1), G);
     loadedChunks.push_back(C);
 
     G = new CubeGeometryGenerator();
     MarchingChunk D(glm::vec3(-5),glm::vec3(100),glm::vec3(.1), G);
-    //loadedChunks.push_back(D);
+    loadedChunks.push_back(D);
 
 }
 

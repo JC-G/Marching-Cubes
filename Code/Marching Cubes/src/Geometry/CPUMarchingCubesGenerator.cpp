@@ -304,6 +304,7 @@ const int CPUMarchingCubesGenerator::edgeTable[256] = {
 };
 
 CPUMarchingCubesGenerator::CPUMarchingCubesGenerator(SDF* densityFunction)
+:densityFunction(densityFunction)
 {
     //ctor
 }
@@ -333,7 +334,7 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     }
     //polygonize the density field
 
-    std::vector<glm::vec3> points;
+    std::vector<glm::vec4> points;
 
     for (int x = 0; x < chunkSize.x; x++) {
         for (int y = 0; y < chunkSize.y; y++) {
@@ -420,12 +421,9 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
                 int ntriang = 0;
                 for (int i = 0; triTable[cubeindex][i] != -1; i+= 3) {
-                    points.push_back(vertlist[triTable[cubeindex][i  ]]);
-                    points.push_back(vertlist[triTable[cubeindex][i+1]]);
-                    points.push_back(vertlist[triTable[cubeindex][i+2]]);
-//                    triangles[ntriang].p[0] = vertlist[triTable[cubeindex][i  ]];
-//                    triangles[ntriang].p[1] = vertlist[triTable[cubeindex][i+1]];
-//                    triangles[ntriang].p[2] = vertlist[triTable[cubeindex][i+2]];
+                    points.push_back(glm::vec4(vertlist[triTable[cubeindex][i  ]],1));
+                    points.push_back(glm::vec4(vertlist[triTable[cubeindex][i+1]],1));
+                    points.push_back(glm::vec4(vertlist[triTable[cubeindex][i+2]],1));
                     ntriang++;
                 }
             }
@@ -437,10 +435,10 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
 
     //see https://stackoverflow.com/questions/2923272/how-to-convert-vector-to-array - this is correct!
-    glm::vec3* vertexData = points.data();
+    glm::vec4* vertexData = points.data();
 
     //put the geometry in
-    glBufferData(GL_ARRAY_BUFFER, points.size()*sizeof(glm::vec3), vertexData, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, points.size()*sizeof(glm::vec4), vertexData, GL_STATIC_DRAW);
 
     //size of geometry
     *geometrySize = points.size();

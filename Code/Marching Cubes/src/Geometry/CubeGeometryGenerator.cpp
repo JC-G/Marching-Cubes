@@ -17,44 +17,44 @@ void CubeGeometryGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3
 {
     GLfloat vertexData[] = {
 
-        //  X     Y     Z
+        //  X     Y     Z   W
 
-         -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-        -1.0f,-1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f, // triangle 1 : end
-        1.0f, 1.0f,-1.0f, // triangle 2 : begin
-        -1.0f,-1.0f,-1.0f,
-        -1.0f, 1.0f,-1.0f, // triangle 2 : end
-        1.0f,-1.0f, 1.0f,
-        -1.0f,-1.0f,-1.0f,
-        1.0f,-1.0f,-1.0f,
-        1.0f, 1.0f,-1.0f,
-        1.0f,-1.0f,-1.0f,
-        -1.0f,-1.0f,-1.0f,
-        -1.0f,-1.0f,-1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f,-1.0f,
-        1.0f,-1.0f, 1.0f,
-        -1.0f,-1.0f, 1.0f,
-        -1.0f,-1.0f,-1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f,-1.0f, 1.0f,
-        1.0f,-1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f,-1.0f,-1.0f,
-        1.0f, 1.0f,-1.0f,
-        1.0f,-1.0f,-1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f,-1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f,-1.0f,
-        -1.0f, 1.0f,-1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f,-1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f,-1.0f, 1.0f
+         -1.0f,-1.0f,-1.0f,1.0f,// triangle 1 : begin
+        -1.0f,-1.0f, 1.0f,1.0f,
+        -1.0f, 1.0f, 1.0f,1.0f,// triangle 1 : end
+        1.0f, 1.0f,-1.0f,1.0f,// triangle 2 : begin
+        -1.0f,-1.0f,-1.0f,1.0f,
+        -1.0f, 1.0f,-1.0f,1.0f,// triangle 2 : end
+        1.0f,-1.0f, 1.0f,1.0f,
+        -1.0f,-1.0f,-1.0f,1.0f,
+        1.0f,-1.0f,-1.0f,1.0f,
+        1.0f, 1.0f,-1.0f,1.0f,
+        1.0f,-1.0f,-1.0f,1.0f,
+        -1.0f,-1.0f,-1.0f,1.0f,
+        -1.0f,-1.0f,-1.0f,1.0f,
+        -1.0f, 1.0f, 1.0f,1.0f,
+        -1.0f, 1.0f,-1.0f,1.0f,
+        1.0f,-1.0f, 1.0f,1.0f,
+        -1.0f,-1.0f, 1.0f,1.0f,
+        -1.0f,-1.0f,-1.0f,1.0f,
+        -1.0f, 1.0f, 1.0f,1.0f,
+        -1.0f,-1.0f, 1.0f,1.0f,
+        1.0f,-1.0f, 1.0f,1.0f,
+        1.0f, 1.0f, 1.0f,1.0f,
+        1.0f,-1.0f,-1.0f,1.0f,
+        1.0f, 1.0f,-1.0f,1.0f,
+        1.0f,-1.0f,-1.0f,1.0f,
+        1.0f, 1.0f, 1.0f,1.0f,
+        1.0f,-1.0f, 1.0f,1.0f,
+        1.0f, 1.0f, 1.0f,1.0f,
+        1.0f, 1.0f,-1.0f,1.0f,
+        -1.0f, 1.0f,-1.0f,1.0f,
+        1.0f, 1.0f, 1.0f,1.0f,
+        -1.0f, 1.0f,-1.0f,1.0f,
+        -1.0f, 1.0f, 1.0f,1.0f,
+        1.0f, 1.0f, 1.0f,1.0f,
+        -1.0f, 1.0f, 1.0f,1.0f,
+        1.0f,-1.0f, 1.0f,1.0f,
     };
 
     //Generate a VBO to put generated geometry in
@@ -65,5 +65,5 @@ void CubeGeometryGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
 
     //size of geometry
-    *geometrySize = 12*3;
+    *geometrySize = 12*4;
 }

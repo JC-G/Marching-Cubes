@@ -10,6 +10,8 @@ The normal function must be at least defined everywhere where a marching cubes v
 
 #include "GL_headers.h"
 
+#include <sstream>
+
 class SDF
 {
     public:

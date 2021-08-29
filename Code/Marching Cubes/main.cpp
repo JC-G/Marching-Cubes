@@ -13,6 +13,7 @@
 
 
 #include "SDF/Sphere.h"
+#include "SDF/SinTerrain.h"
 
 
 
@@ -32,9 +33,19 @@ static void LoadObjects()
     glGenVertexArrays(1, &gVAO);
     glBindVertexArray(gVAO);
 
-    GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),4.5));
-    MarchingChunk C(glm::vec3(-5),glm::vec3(100),glm::vec3(.1), G);
-    loadedChunks.push_back(C);
+    //GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),4.5));
+    GeometryGenerator* G = new GPUMarchingCubesGenerator(new SinTerrain());
+
+//    MarchingChunk C1(glm::vec3(-5),glm::vec3(100),glm::vec3(.1), G);
+//    loadedChunks.push_back(C1);
+//
+//    MarchingChunk C2(glm::vec3(5,-5,5),glm::vec3(10),glm::vec3(1), G);
+//    loadedChunks.push_back(C2);
+    for (int i = -50; i < 50; i+=5) {
+        for (int j = -50; j < 50; j+=5) {
+            loadedChunks.push_back(MarchingChunk(glm::vec3(i,-5,j),glm::vec3(100),glm::vec3(.1),G));
+        }
+    }
 }
 
 

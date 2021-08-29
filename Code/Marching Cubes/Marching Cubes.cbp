@@ -77,6 +77,8 @@
 		<Unit filename="src/Geometry/MarchingChunk.h" />
 		<Unit filename="src/SDF/SDF.cpp" />
 		<Unit filename="src/SDF/SDF.h" />
+		<Unit filename="src/SDF/SinTerrain.cpp" />
+		<Unit filename="src/SDF/SinTerrain.h" />
 		<Unit filename="src/SDF/Sphere.cpp" />
 		<Unit filename="src/SDF/Sphere.h" />
 		<Extensions />

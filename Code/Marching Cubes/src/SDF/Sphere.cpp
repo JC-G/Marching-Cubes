@@ -1,5 +1,5 @@
 #include "Sphere.h"
-#include <sstream>
+
 Sphere::~Sphere()
 {
     //dtor

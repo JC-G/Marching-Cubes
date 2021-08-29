@@ -95,7 +95,7 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
     glDispatchCompute(1+chunkSize.x/8, 1+chunkSize.y/8, 1+chunkSize.z/8);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
-    std::cout << "Stage 1 Complete" << std::endl;
+    //std::cout << "Stage 1 Complete" << std::endl;
 
     //Stage 2
 
@@ -117,7 +117,7 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
     glDispatchCompute(1+chunkSize.x/8,1+chunkSize.y/8,1+chunkSize.z/8);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
-    std::cout << "Stage 2 Complete" << std::endl;
+    //std::cout << "Stage 2 Complete" << std::endl;
 
     //Stage 3
 
@@ -128,7 +128,7 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     GLuint marchCount;
     glBindBuffer(GL_ATOMIC_COUNTER_BUFFER,marchableCounter);
     glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER,0,sizeof(GLuint),&marchCount);
-    std::cout << "Marchable Count: " << marchCount << std::endl;
+    //std::cout << "Marchable Count: " << marchCount << std::endl;
 
     int jobSize = 256; //TODO - make consistent with shaders
     int jobCount = 1 + marchCount/jobSize;
@@ -153,9 +153,10 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
     glDispatchCompute(jobCount,1,1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
-    std::cout << "Stage 3 Complete" << std::endl;
+    //std::cout << "Stage 3 Complete" << std::endl;
 
     *geometrySize = pointCount;
+    std::cout << "Generation Done..." << std::endl;
 
 }
 

@@ -42,9 +42,9 @@ const int GPUMarchingCubesGenerator::totalTable[256] = {0,3,3,6,3,6,6,9,3,6,6,9,
 
 //TODO - this is not very efficient... why are we always including common and sdf code when we dont use it
 GPUMarchingCubesGenerator::GPUMarchingCubesGenerator(SDF* densityFunction)
-    :stage1Shader(Shader::ComputeShaderFromFile("Shaders/Compute/march1.txt", densityFunction->getShaderCode())),
-    stage2Shader(Shader::ComputeShaderFromFile("Shaders/Compute/march2.txt", densityFunction->getShaderCode())),
-    stage3Shader(Shader::ComputeShaderFromFile("Shaders/Compute/march3.txt", densityFunction->getShaderCode()))
+    :stage1Shader(Shader::ComputeShaderFromFile("Shaders/Compute/generatedensity.txt", densityFunction->getShaderCode())),
+    stage2Shader(Shader::ComputeShaderFromFile("Shaders/Compute/countpolygons.txt", densityFunction->getShaderCode())),
+    stage3Shader(Shader::ComputeShaderFromFile("Shaders/Compute/polygonize.txt", densityFunction->getShaderCode()))
 {
     glGenBuffers(1,&densityValuesBuffer);
 

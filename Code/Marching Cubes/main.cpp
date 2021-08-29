@@ -43,7 +43,7 @@ static void LoadObjects()
 //    loadedChunks.push_back(C2);
     for (int i = -50; i < 50; i+=5) {
         for (int j = -50; j < 50; j+=5) {
-            loadedChunks.push_back(MarchingChunk(glm::vec3(i,-5,j),glm::vec3(100),glm::vec3(.1),G));
+            loadedChunks.push_back(MarchingChunk(glm::vec3(i,-5,j),glm::vec3(10),glm::vec3(1),G));
         }
     }
 }

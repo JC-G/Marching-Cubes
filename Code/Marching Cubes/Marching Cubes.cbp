@@ -17,6 +17,7 @@
 					<Add directory="src/Engine" />
 					<Add directory="src/Geometry" />
 					<Add directory="src/SDF" />
+					<Add directory="src" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -30,6 +31,7 @@
 					<Add directory="src/Engine" />
 					<Add directory="src/Geometry" />
 					<Add directory="src/SDF" />
+					<Add directory="src" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -75,6 +77,8 @@
 		<Unit filename="src/Geometry/GeometryGenerator.h" />
 		<Unit filename="src/Geometry/MarchingChunk.cpp" />
 		<Unit filename="src/Geometry/MarchingChunk.h" />
+		<Unit filename="src/Octree.cpp" />
+		<Unit filename="src/Octree.h" />
 		<Unit filename="src/SDF/SDF.cpp" />
 		<Unit filename="src/SDF/SDF.h" />
 		<Unit filename="src/SDF/SinTerrain.cpp" />

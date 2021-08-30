@@ -156,7 +156,7 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     //std::cout << "Stage 3 Complete" << std::endl;
 
     *geometrySize = pointCount;
-    std::cout << "Generation Done..." << std::endl;
+//    std::cout << "Generation Done..." << std::endl;
 
 }
 

@@ -25,6 +25,7 @@ void MarchingChunk::draw(GLuint VAO) {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
+    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
     glDrawArrays(GL_TRIANGLES, 0, myGeometrySize);
 }
 

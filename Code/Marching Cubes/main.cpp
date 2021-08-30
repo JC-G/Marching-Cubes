@@ -14,6 +14,7 @@
 
 #include "SDF/Sphere.h"
 #include "SDF/SinTerrain.h"
+#include "Octree.h"
 
 
 
@@ -25,6 +26,7 @@ GLFWmonitor* monitor = NULL;
 const glm::vec2 SCREEN_SIZE(800, 600);
 
 static std::vector<MarchingChunk> loadedChunks;
+Octree* O;
 
 static void LoadObjects()
 {
@@ -36,16 +38,8 @@ static void LoadObjects()
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),4.5));
     GeometryGenerator* G = new GPUMarchingCubesGenerator(new SinTerrain());
 
-//    MarchingChunk C1(glm::vec3(-5),glm::vec3(100),glm::vec3(.1), G);
-//    loadedChunks.push_back(C1);
-//
-//    MarchingChunk C2(glm::vec3(5,-5,5),glm::vec3(10),glm::vec3(1), G);
-//    loadedChunks.push_back(C2);
-    for (int i = -50; i < 50; i+=5) {
-        for (int j = -50; j < 50; j+=5) {
-            loadedChunks.push_back(MarchingChunk(glm::vec3(i,-5,j),glm::vec3(10),glm::vec3(1),G));
-        }
-    }
+    O = new Octree(glm::vec3(10.0),glm::vec3(-5.0),0,G);
+    O->update(glm::vec3(0));
 }
 
 
@@ -62,6 +56,7 @@ static void Render() {
         C.draw(gVAO);
 
     }
+    O->draw(gVAO);
 
     // swap the display buffers (displays what was just drawn)
     glfwSwapBuffers(Window::window);
@@ -111,6 +106,7 @@ void AppMain() {
     // process pending events
         glfwPollEvents();
         Window::handleInput();
+        O->update(Window::activeCamera.position);
 
         //set the view matrix accordingly
         VM = Window::activeCamera.getViewMatrix();

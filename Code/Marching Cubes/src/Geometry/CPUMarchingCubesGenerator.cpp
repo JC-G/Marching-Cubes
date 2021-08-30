@@ -450,7 +450,7 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
     //size of geometry
     *geometrySize = points.size();
-    std::cout << "Generation Done..." << std::endl;
+//    std::cout << "Generation Done..." << std::endl;
 
 }
 

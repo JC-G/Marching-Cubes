@@ -14,6 +14,7 @@
 
 #include "SDF/Sphere.h"
 #include "SDF/SinTerrain.h"
+#include "SDF/NoiseTerrain.h"
 #include "Octree.h"
 
 
@@ -36,7 +37,7 @@ static void LoadObjects()
     glBindVertexArray(gVAO);
 
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),4.5));
-    GeometryGenerator* G = new GPUMarchingCubesGenerator(new SinTerrain());
+    GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
 
     O = new Octree(glm::vec3(10.0),glm::vec3(-5.0),0,G);
     O->update(glm::vec3(0));

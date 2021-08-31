@@ -52,9 +52,9 @@
 			<Add directory="../../Libraries/lib" />
 		</Linker>
 		<Unit filename="Shaders/Compute/common.txt" />
-		<Unit filename="Shaders/Compute/march1.txt" />
-		<Unit filename="Shaders/Compute/march2.txt" />
-		<Unit filename="Shaders/Compute/march3.txt" />
+		<Unit filename="Shaders/Compute/countpolygons.txt" />
+		<Unit filename="Shaders/Compute/generatedensity.txt" />
+		<Unit filename="Shaders/Compute/polygonize.txt" />
 		<Unit filename="Shaders/Compute/shadertop.txt" />
 		<Unit filename="Shaders/frag.txt" />
 		<Unit filename="Shaders/vert.txt" />
@@ -79,6 +79,8 @@
 		<Unit filename="src/Geometry/MarchingChunk.h" />
 		<Unit filename="src/Octree.cpp" />
 		<Unit filename="src/Octree.h" />
+		<Unit filename="src/SDF/NoiseTerrain.cpp" />
+		<Unit filename="src/SDF/NoiseTerrain.h" />
 		<Unit filename="src/SDF/SDF.cpp" />
 		<Unit filename="src/SDF/SDF.h" />
 		<Unit filename="src/SDF/SinTerrain.cpp" />

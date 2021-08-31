@@ -19,7 +19,7 @@ class Octree
         glm::vec3 myPosition;
         int myDetailLevel;
         std::shared_ptr<MarchingChunk> myChunk;
-        std::shared_ptr<Octree> myChildren[2][2][2];
+        Octree* myChildren[2][2][2];
         GeometryGenerator* myGenerator;
 
         bool isLeaf;

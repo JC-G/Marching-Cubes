@@ -48,7 +48,7 @@ void Octree::split(glm::vec3 inPos)
     for(int i = 0; i <= 1; i++) {
         for(int j = 0; j <= 1; j++) {
             for(int k = 0; k <= 1; k++) {
-                myChildren[i][j][k] = std::shared_ptr<Octree>(new Octree(0.5f * mySize,myPosition + mySize * 0.5f * glm::vec3(i,j,k), myDetailLevel + 1,myGenerator));
+                myChildren[i][j][k] = new Octree(0.5f * mySize,myPosition + mySize * 0.5f * glm::vec3(i,j,k), myDetailLevel + 1,myGenerator);
             }
         }
     }
@@ -57,8 +57,15 @@ void Octree::split(glm::vec3 inPos)
 
 void Octree::chop(glm::vec3 inPos)
 {
-    //do not delete children right now, just dont draw them
     isLeaf = true;
+    for(int i = 0; i <= 1; i++) {
+        for(int j = 0; j <= 1; j++) {
+            for(int k = 0; k <= 1; k++) {
+                //delete children
+                delete myChildren[i][j][k];
+            }
+        }
+    }
 }
 
 bool Octree::shouldSplit(glm::vec3 inPos)
@@ -68,7 +75,7 @@ bool Octree::shouldSplit(glm::vec3 inPos)
         return false;
     }
     //TODO - Split condition
-    if ((myDetailLevel < 1) && glm::length(myPosition - inPos) <= 10) {
+    if ((myDetailLevel < 2) && glm::length(myPosition - inPos) <= 10) {
         return true;
     }
     return false;
@@ -91,7 +98,7 @@ bool Octree::shouldChop(glm::vec3 inPos)
 void Octree::generateMarchingChunk()
 {
     //TODO - decide stride
-    myChunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(myPosition,glm::vec3(32),mySize/32.0f,myGenerator));
+    myChunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(myPosition,glm::vec3(100),mySize/100.0f,myGenerator));
     hasChunk = true;
 }
 

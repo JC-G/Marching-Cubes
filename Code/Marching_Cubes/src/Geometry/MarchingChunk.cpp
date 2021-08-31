@@ -9,10 +9,10 @@ MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm:
 
 MarchingChunk::~MarchingChunk() {
     //dtor
+    std::cout << "Deleting MC";
 }
 
 void MarchingChunk::draw(GLuint VAO) {
-
     glBindVertexArray(VAO);
 
     //bind buffer and set VAO to use this at location 0
@@ -25,7 +25,7 @@ void MarchingChunk::draw(GLuint VAO) {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
-    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+//    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
     glDrawArrays(GL_TRIANGLES, 0, myGeometrySize);
 }
 

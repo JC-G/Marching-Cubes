@@ -103,11 +103,11 @@ void AppMain() {
 
     // run while the window is open and focused
     while(true){
-        glUseProgram(shader.getID());
     // process pending events
         glfwPollEvents();
         Window::handleInput();
         O->update(Window::activeCamera.position);
+        glUseProgram(shader.getID());
 
         //set the view matrix accordingly
         VM = Window::activeCamera.getViewMatrix();

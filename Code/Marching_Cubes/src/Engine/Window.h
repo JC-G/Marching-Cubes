@@ -26,13 +26,15 @@ class Window
         static glm::mat4 getProjectionMatrix();
         static void attachCamera(Camera& cam);
         static void handleInput();
-        static const int width = 640;
-        static const int height = 480;
+        static const int width = 1920;
+        static const int height = 1080;
         static Camera activeCamera;
     protected:
 
     private:
         Window();
+
+        static double deltaTime();
 };
 
 #endif // WINDOW_H

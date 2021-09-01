@@ -11,8 +11,8 @@ class Camera
         virtual ~Camera();
         glm::mat4 getViewMatrix();
 
-        void rotateFromMouse(double dX, double dY);
-        void moveFromVec3(glm::vec3 movement);
+        void rotateFromMouse(double dX, double dY, double dt);
+        void moveFromVec3(glm::vec3 movement, double dt);
     protected:
 
     private:

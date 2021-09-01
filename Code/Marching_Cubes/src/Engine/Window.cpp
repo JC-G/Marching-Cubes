@@ -13,6 +13,12 @@ Window::~Window()
 {
     //dtor
 }
+double Window::deltaTime()
+{
+    double dt = glfwGetTime();
+    glfwSetTime(0);
+    return dt;
+}
 
 bool Window::initGL()
 {
@@ -85,7 +91,9 @@ void Window::handleInput()
     double dX = width/2-X;
     double dY = height/2-Y;
 
-    activeCamera.rotateFromMouse(dX,dY);
+    double dt = deltaTime();
+
+    activeCamera.rotateFromMouse(dX,dY,dt);
 
     //movement
     // vec3(fwd/back, up/down, left/right)
@@ -114,7 +122,7 @@ void Window::handleInput()
         movement.y-=1.0f;
     }
 
-    activeCamera.moveFromVec3(movement);
+    activeCamera.moveFromVec3(movement,dt);
 
 
 

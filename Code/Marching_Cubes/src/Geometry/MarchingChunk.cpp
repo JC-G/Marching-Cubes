@@ -9,7 +9,6 @@ MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm:
 
 MarchingChunk::~MarchingChunk() {
     //dtor
-    std::cout << "Deleting MC";
 }
 
 void MarchingChunk::draw(GLuint VAO) {

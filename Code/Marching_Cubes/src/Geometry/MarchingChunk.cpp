@@ -9,6 +9,8 @@ MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm:
 
 MarchingChunk::~MarchingChunk() {
     //dtor
+    glDeleteBuffers(1,&vertexBuffer);
+    glDeleteBuffers(1,&normalBuffer);
 }
 
 void MarchingChunk::draw(GLuint VAO) {

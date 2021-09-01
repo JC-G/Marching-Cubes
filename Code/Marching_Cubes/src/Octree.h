@@ -33,7 +33,10 @@ class Octree
         bool shouldSplit(glm::vec3 inPos);
         bool shouldChop(glm::vec3 inPos);
 
+        glm::vec3 getCenter();
+
         void generateMarchingChunk();
+        void deleteChildren();
 };
 
 #endif // OCTREE_H

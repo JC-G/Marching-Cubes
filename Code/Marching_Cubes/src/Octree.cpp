@@ -4,7 +4,9 @@
 #include <iostream>
 Octree::~Octree()
 {
-    //dtor
+    if (!isLeaf) {
+        deleteChildren();
+    }
 }
 
 
@@ -58,6 +60,10 @@ void Octree::split(glm::vec3 inPos)
 void Octree::chop(glm::vec3 inPos)
 {
     isLeaf = true;
+    deleteChildren();
+}
+void Octree::deleteChildren()
+{
     for(int i = 0; i <= 1; i++) {
         for(int j = 0; j <= 1; j++) {
             for(int k = 0; k <= 1; k++) {
@@ -68,6 +74,8 @@ void Octree::chop(glm::vec3 inPos)
     }
 }
 
+
+
 bool Octree::shouldSplit(glm::vec3 inPos)
 {
     if (!isLeaf) {
@@ -75,9 +83,15 @@ bool Octree::shouldSplit(glm::vec3 inPos)
         return false;
     }
     //TODO - Split condition
-    if ((myDetailLevel < 2) && glm::length(myPosition - inPos) <= 10) {
+    if (myDetailLevel >= 3) {
+        return false;
+    }
+    if (glm::length(inPos - getCenter()) <= 10.0*glm::pow(0.5,myDetailLevel)) {
         return true;
     }
+//    if ((myDetailLevel < 2) && glm::length(myPosition - inPos) <= 10) {
+//        return true;
+//    }
     return false;
 }
 
@@ -88,7 +102,7 @@ bool Octree::shouldChop(glm::vec3 inPos)
         return false;
     }
     //TODO - Chop condition
-    if (glm::length(myPosition - inPos) > 10) {
+    if (glm::length(getCenter() - inPos) >= 10.0 * glm::pow(0.5,myDetailLevel - 1)) {
         return true;
     }
     return false;
@@ -118,5 +132,10 @@ void Octree::draw(GLuint VAO)
             }
         }
     }
+}
+
+glm::vec3 Octree::getCenter()
+{
+    return myPosition + mySize*0.5f;
 }
 

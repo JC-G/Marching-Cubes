@@ -83,10 +83,10 @@ bool Octree::shouldSplit(glm::vec3 inPos)
         return false;
     }
     //TODO - Split condition
-    if (myDetailLevel >= 3) {
+    if (myDetailLevel >= Config::get<int>("octree_max_depth")) {
         return false;
     }
-    if (glm::length(inPos - getCenter()) <= 10.0*glm::pow(0.5,myDetailLevel)) {
+    if (glm::length(inPos - getCenter()) <= Config::get<float>("octree_lod_scale")*glm::pow(0.5,myDetailLevel)) {
         return true;
     }
 //    if ((myDetailLevel < 2) && glm::length(myPosition - inPos) <= 10) {
@@ -102,7 +102,7 @@ bool Octree::shouldChop(glm::vec3 inPos)
         return false;
     }
     //TODO - Chop condition
-    if (glm::length(getCenter() - inPos) >= 10.0 * glm::pow(0.5,myDetailLevel - 1)) {
+    if (glm::length(getCenter() - inPos) >= Config::get<float>("octree_lod_scale") * glm::pow(0.5,myDetailLevel - 1)) {
         return true;
     }
     return false;
@@ -112,7 +112,8 @@ bool Octree::shouldChop(glm::vec3 inPos)
 void Octree::generateMarchingChunk()
 {
     //TODO - decide stride
-    myChunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(myPosition,glm::vec3(100),mySize/100.0f,myGenerator));
+    float stride = Config::get<float>("chunk_size");
+    myChunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(myPosition,glm::vec3(stride),mySize/stride,myGenerator));
     hasChunk = true;
 }
 

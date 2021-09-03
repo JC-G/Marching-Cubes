@@ -16,7 +16,7 @@
 #include "SDF/SinTerrain.h"
 #include "SDF/NoiseTerrain.h"
 #include "Octree.h"
-#include "json.hpp"
+#include "Config.h"
 
 
 
@@ -24,8 +24,6 @@ GLuint gVAO = 0;
 GLuint gVBO = 0;
 GLuint programId;
 GLFWmonitor* monitor = NULL;
-
-const glm::vec2 SCREEN_SIZE(800, 600);
 
 static std::vector<MarchingChunk> loadedChunks;
 Octree* O;
@@ -40,7 +38,7 @@ static void LoadObjects()
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),4.5));
     GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
 
-    O = new Octree(glm::vec3(10.0),glm::vec3(-5.0),0,G);
+    O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);
     O->update(glm::vec3(0));
 }
 
@@ -91,8 +89,7 @@ void AppMain() {
    // create buffer and fill it with the points of the triangle
     LoadObjects();
 
-    Camera mainCamera;
-    Window::attachCamera(mainCamera);
+    Window::attachCamera(new Camera);
 
     // load the (test) shader
     Shader shader = Shader::ShaderFromFiles("Shaders/vert.txt","Shaders/frag.txt");
@@ -107,11 +104,11 @@ void AppMain() {
     // process pending events
         glfwPollEvents();
         Window::handleInput();
-        O->update(Window::activeCamera.position);
+        O->update(Window::activeCamera->position);
         glUseProgram(shader.getID());
 
         //set the view matrix accordingly
-        VM = Window::activeCamera.getViewMatrix();
+        VM = Window::activeCamera->getViewMatrix();
         glUniformMatrix4fv(shader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
 
        // draw one frame

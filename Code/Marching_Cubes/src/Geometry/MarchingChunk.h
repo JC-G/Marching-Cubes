@@ -14,6 +14,7 @@ it obtains its geometry from a GeometryGenerator, written into vertexBuffer and 
 */
 
 #include "GeometryGenerator.h"
+#include "Config.h"
 
 class MarchingChunk
 {

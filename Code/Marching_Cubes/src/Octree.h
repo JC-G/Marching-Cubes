@@ -3,6 +3,7 @@
 
 #include "GL_headers.h"
 #include "MarchingChunk.h"
+#include "Config.h"
 
 #include <memory>
 class Octree

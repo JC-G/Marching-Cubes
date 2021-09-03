@@ -58,7 +58,10 @@
 		<Unit filename="Shaders/Compute/shadertop.txt" />
 		<Unit filename="Shaders/frag.txt" />
 		<Unit filename="Shaders/vert.txt" />
+		<Unit filename="config.json" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/Config.cpp" />
+		<Unit filename="src/Config.h" />
 		<Unit filename="src/Engine/Camera.cpp" />
 		<Unit filename="src/Engine/Camera.h" />
 		<Unit filename="src/Engine/Shader.cpp" />

@@ -2,8 +2,9 @@
 
 //initialise static members
 GLFWwindow* Window::window = NULL;
-Camera Window::activeCamera;
-
+Camera* Window::activeCamera;
+int Window::width;
+int Window::height;
 Window::Window()
 {
     //ctor
@@ -25,7 +26,8 @@ bool Window::initGL()
     if (!glfwInit()) {
         return false;
     }
-
+    width = Config::get<int>("screen_width");
+    height = Config::get<int>("screen_height");
     // open a Window::window with GLFW
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -78,7 +80,7 @@ glm::mat4 Window::getProjectionMatrix()
 }
 
 
-void Window::attachCamera(Camera& cam)
+void Window::attachCamera(Camera* cam)
 {
     Window::activeCamera = cam;
 }
@@ -93,7 +95,7 @@ void Window::handleInput()
 
     double dt = deltaTime();
 
-    activeCamera.rotateFromMouse(dX,dY,dt);
+    activeCamera->rotateFromMouse(dX,dY,dt);
 
     //movement
     // vec3(fwd/back, up/down, left/right)
@@ -122,7 +124,7 @@ void Window::handleInput()
         movement.y-=1.0f;
     }
 
-    activeCamera.moveFromVec3(movement,dt);
+    activeCamera->moveFromVec3(movement,dt);
 
 
 

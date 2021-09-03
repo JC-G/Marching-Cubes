@@ -3,13 +3,12 @@
 #include <glm/gtx/transform.hpp>
 #include <iostream>
 
-
 Camera::Camera()
 {
-    position = glm::vec3(0.0,0.0,-5.0);
+    position = Config::getVec3("camera_start_position");
     rotation = glm::vec3(0.0);
     up = glm::vec3(0.0,1.0,0.0);
-    speed = 1.0;
+    speed = Config::get<float>("camera_move_speed");
 }
 
 Camera::~Camera()
@@ -20,7 +19,7 @@ glm::mat4 Camera::getViewMatrix()
 {
     //Look in this direction
     glm::vec3 direction = getDirection();
-    return glm::lookAt(position, position+direction, glm::vec3(0,1,0));
+    return glm::lookAt(position, position+direction, up);
 }
 void Camera::rotateFromMouse(double dX, double dY, double dt)
 {

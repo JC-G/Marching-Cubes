@@ -11,7 +11,7 @@ Static class - there is only one window
 #include <glm/gtx/transform.hpp>
 
 #include <iostream>
-
+#include "Config.h"
 
 #include "Engine/Camera.h"
 
@@ -24,11 +24,11 @@ class Window
         static bool initGL();
         static GLFWwindow* window;
         static glm::mat4 getProjectionMatrix();
-        static void attachCamera(Camera& cam);
+        static void attachCamera(Camera* cam);
         static void handleInput();
-        static const int width = 1920;
-        static const int height = 1080;
-        static Camera activeCamera;
+        static int width;
+        static int height;
+        static Camera* activeCamera;
     protected:
 
     private:

@@ -35,7 +35,7 @@ static void LoadObjects()
     glGenVertexArrays(1, &gVAO);
     glBindVertexArray(gVAO);
 
-    //GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),4.5));
+    //GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),10.0));
     GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
 
     O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);
@@ -110,6 +110,7 @@ void AppMain() {
         //set the view matrix accordingly
         VM = Window::activeCamera->getViewMatrix();
         glUniformMatrix4fv(shader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
+        glUniform3fv(shader.getUniform("cameraPosition"),1,&(Window::activeCamera->position)[0]);
 
        // draw one frame
         Render();

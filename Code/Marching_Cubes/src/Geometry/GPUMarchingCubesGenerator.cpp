@@ -83,6 +83,7 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
     //Stage 1
 
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER,densityValuesBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,(1+chunkSize.x) * (1+chunkSize.y) * (1+chunkSize.z) * sizeof(float), NULL, GL_STATIC_READ); //TODO - READ?
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,densityValuesBuffer);
@@ -97,6 +98,7 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
     //Stage 2
 
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
     GLuint zero = 0;
 
     glUseProgram(stage2Shader.getID());
@@ -118,6 +120,7 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
     //Stage 3
 
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
     GLuint pointCount;
     glBindBuffer(GL_ATOMIC_COUNTER_BUFFER,pointCounter);
     glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER,0,sizeof(GLuint),&pointCount);
@@ -152,6 +155,7 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
     //std::cout << "Stage 3 Complete" << std::endl;
 
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
     *geometrySize = pointCount;
 //    std::cout << "Generation Done..." << std::endl;
 

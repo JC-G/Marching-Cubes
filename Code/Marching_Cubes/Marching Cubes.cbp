@@ -56,6 +56,10 @@
 		<Unit filename="Shaders/Compute/generatedensity.txt" />
 		<Unit filename="Shaders/Compute/polygonize.txt" />
 		<Unit filename="Shaders/Compute/shadertop.txt" />
+		<Unit filename="Shaders/Compute/transvoxel_common.txt" />
+		<Unit filename="Shaders/Compute/transvoxel_count.txt" />
+		<Unit filename="Shaders/Compute/transvoxel_generate.txt" />
+		<Unit filename="Shaders/Compute/transvoxel_polygonize.txt" />
 		<Unit filename="Shaders/frag.txt" />
 		<Unit filename="Shaders/vert.txt" />
 		<Unit filename="config.json" />
@@ -80,6 +84,10 @@
 		<Unit filename="src/Geometry/GeometryGenerator.h" />
 		<Unit filename="src/Geometry/MarchingChunk.cpp" />
 		<Unit filename="src/Geometry/MarchingChunk.h" />
+		<Unit filename="src/Geometry/TransvoxelGenerator.cpp" />
+		<Unit filename="src/Geometry/TransvoxelGenerator.h" />
+		<Unit filename="src/Geometry/TransvoxelTables.cpp" />
+		<Unit filename="src/Geometry/TransvoxelTables.h" />
 		<Unit filename="src/Octree.cpp" />
 		<Unit filename="src/Octree.h" />
 		<Unit filename="src/SDF/NoiseTerrain.cpp" />

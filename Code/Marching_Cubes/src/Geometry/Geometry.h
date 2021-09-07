@@ -7,3 +7,4 @@
 #include "CubeGeometryGenerator.h"
 #include "CPUMarchingCubesGenerator.h"
 #include "GPUMarchingCubesGenerator.h"
+#include "TransvoxelGenerator.h"

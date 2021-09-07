@@ -175,3 +175,18 @@ Shader Shader::ComputeShaderFromFile(const char* shaderPath, std::string SDFCode
     return Shader(shaderID,shaderUniforms);
 }
 
+
+Shader Shader::ComputeShaderFromVector(std::vector<std::string> shaderParts)
+{
+    std::map<std::string,GLuint> shaderUniforms;
+    std::string shaderText = "";
+    for (std::string str : shaderParts) {
+        shaderText += str + "\n";
+    }
+    if (Config::get<bool>("debug")) {
+        std::cout << "Shader Text" << std::endl << shaderText << std::endl;
+    }
+    GLuint shaderID = LoadComputeShader(shaderText,shaderUniforms);
+    return Shader(shaderID,shaderUniforms);
+}
+

@@ -44,7 +44,8 @@ const int GPUMarchingCubesGenerator::totalTable[256] = {0,3,3,6,3,6,6,9,3,6,6,9,
 GPUMarchingCubesGenerator::GPUMarchingCubesGenerator(SDF* densityFunction)
     :stage1Shader(Shader::ComputeShaderFromFile("Shaders/Compute/generatedensity.txt", densityFunction->getShaderCode())),
     stage2Shader(Shader::ComputeShaderFromFile("Shaders/Compute/countpolygons.txt", densityFunction->getShaderCode())),
-    stage3Shader(Shader::ComputeShaderFromFile("Shaders/Compute/polygonize.txt", densityFunction->getShaderCode()))
+    stage3Shader(Shader::ComputeShaderFromFile("Shaders/Compute/polygonize.txt", densityFunction->getShaderCode())),
+    densityFunction(densityFunction)
 {
     glGenBuffers(1,&densityValuesBuffer);
 
@@ -57,14 +58,6 @@ GPUMarchingCubesGenerator::GPUMarchingCubesGenerator(SDF* densityFunction)
     glGenBuffers(1,&totalTableBuffer);
     glGenBuffers(1,&edgeTableBuffer);
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,8,edgeTableBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER,256*sizeof(int),edgeTable,GL_DYNAMIC_DRAW);
-
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,9,triTableBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER,4096*sizeof(int),triTable,GL_DYNAMIC_DRAW);
-
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,10,totalTableBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER,256*sizeof(int),totalTable,GL_DYNAMIC_DRAW);
 
 
 }
@@ -80,6 +73,15 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 {
     glGenBuffers(1, vertexBuffer);
     glGenBuffers(1, normalBuffer);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,8,edgeTableBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,256*sizeof(int),edgeTable,GL_DYNAMIC_DRAW);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,9,triTableBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,4096*sizeof(int),triTable,GL_DYNAMIC_DRAW);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,10,totalTableBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,256*sizeof(int),totalTable,GL_DYNAMIC_DRAW);
 
     //Stage 1
 
@@ -147,7 +149,6 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,5,*vertexBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,pointCount * sizeof(glm::vec4),NULL,GL_DYNAMIC_DRAW);
 
-    //TODO - Normals
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,6,*normalBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,pointCount*sizeof(glm::vec4),NULL,GL_DYNAMIC_DRAW);
 

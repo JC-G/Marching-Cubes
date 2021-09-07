@@ -36,7 +36,13 @@ static void LoadObjects()
     glBindVertexArray(gVAO);
 
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),10.0));
-    GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
+    //GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
+    GeometryGenerator* G = new TransvoxelGenerator(new Sphere(glm::vec3(0.0),10.0),0);
+
+    GLuint tv;
+    GLuint tn;
+    GLuint tg;
+    //H->GenerateGeometry(glm::vec3(0),glm::uvec3(10),glm::vec3(1),&tv, &tn, &tg);
 
     O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);
     O->update(glm::vec3(0));

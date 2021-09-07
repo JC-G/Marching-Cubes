@@ -10,6 +10,7 @@ Shader handles generic shader stuff
 #include <vector>
 #include <map>
 #include <vector>
+#include "Config.h"
 
 #include "GL_headers.h"
 class Shader
@@ -19,9 +20,10 @@ class Shader
         GLuint getID();
         GLuint getUniform(std::string name);
         static Shader ComputeShaderFromFile(const char* shaderPath, std::string SDFCode);
+        static Shader ComputeShaderFromVector(std::vector<std::string> shaderParts);
+        static std::string ReadShaderFile(const char* path);
     private:
         Shader(GLuint program, std::map<std::string,GLuint> shaderUniforms);
-        static std::string ReadShaderFile(const char* path);
         static GLuint LoadVertexFragment(std::string VertString, std::string FragString, std::map<std::string,GLuint>& shaderUniforms);
         GLuint myProgram;
         std::map<std::string,GLuint> Uniforms;

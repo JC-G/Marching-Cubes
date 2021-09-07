@@ -1,0 +1,89 @@
+//Transvoxel Marching Cubes Stage 3 - Actually generate the geometry
+
+layout(binding = 1) buffer Grid {
+    float densityValues[];
+};
+uniform uint marchableCount;
+
+layout(std430,binding = 4) buffer Marchables {
+    uvec4 marchableList[]; //x,y,z,cubeIndex
+};
+
+layout(std430, binding = 5) buffer v {vec4 vertices[];};
+layout(std430, binding = 6) buffer n {vec4 normals[];};
+
+layout(binding = 7) uniform atomic_uint triCount;
+
+layout(local_size_x=256,local_size_y=1,local_size_z=1) in;
+
+vec3 VertexInterp(vec3 p1, vec3 p2, float valp1, float valp2) {
+    float mu;
+    vec3 p;
+
+    if (abs(valp1) < 0.00001)
+    {
+        return(p1);
+
+    }
+    if (abs(valp2) < 0.00001)
+    {
+        return(p2);
+
+    }
+    if (abs(valp1-valp2) < 0.00001)
+    {
+        return(p1);
+
+    }
+    mu = -valp1 / (valp2 - valp1);
+    p = p1 + mu * (p2 - p1);
+
+    return(p);
+}
+
+void main() {
+    if (gl_GlobalInvocationID.x >= marchableCount) {
+        return;
+    }
+
+    //TODO - transition cells
+    uvec3 gid = marchableList[gl_GlobalInvocationID.x].xyz;
+
+    float gridCells[8];
+    uvec3 gridPos[8];
+
+    //assigned as per Figure 3.7 in transvoxel paper - note this is DIFFERENT to the previous marching cubes algorithm
+    gridPos[0] = gid;
+	gridPos[1] = gid+uvec3(1,0,0);
+	gridPos[2] = gid+uvec3(0,1,0);
+	gridPos[3] = gid+uvec3(1,1,0);
+	gridPos[4] = gid+uvec3(0,0,1);
+	gridPos[5] = gid+uvec3(1,0,1);
+	gridPos[6] = gid+uvec3(0,1,1);
+	gridPos[7] = gid+uvec3(1,1,1);
+
+    for (int i = 0; i < 8; i++) {
+        gridCells[i] = densityValues[getArrID(gridPos[i],uvec3(0))];
+    }
+
+	uint cellIndex = marchableList[gl_GlobalInvocationID.x].w;
+	uint cellClass = regularCellClass[cellIndex];
+	uint totalPoints = regularTotalTable[regularCellClass[cellClass]];
+
+    uint index = 0;
+    for (int i = 0; i < totalPoints; i++) {
+        if (i % 3 == 0) {
+            index = atomicCounterIncrement(triCount);
+        }
+        uint vertexIndex = index * 3 + (i % 3);
+
+        uint vertexData = regularVertexData[cellIndex * 12 + regularCellData[cellClass * 16 + 1+i]];
+        uint v1Index = vertexData & 0x0F;
+        uint v2Index = vertexData >> 4;
+
+        vec3 vertPos = VertexInterp(gridPos[v1Index],gridPos[v2Index],gridCells[v1Index],gridCells[v2Index]) * chunkStride + chunkPosition;
+
+        vertices[vertexIndex] = vec4(vertPos,1);
+        normals[vertexIndex] = vec4(normal(vertPos),0);
+    }
+}

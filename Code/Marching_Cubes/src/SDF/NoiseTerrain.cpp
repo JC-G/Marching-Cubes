@@ -62,7 +62,6 @@ std::string NoiseTerrain::getShaderCode()
     "float density(vec3 inPos) {\n"
     "   return inPos.y - 5.*terrain(inPos.xz / 5);\n"
     "}\n"
-    //TODO - normals
     "vec3 normal(vec3 inPos) {\n"
     "    float max = 0.0;\n"
     "    float heightScale = 1.0;\n"

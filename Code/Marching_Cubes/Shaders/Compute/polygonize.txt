@@ -10,13 +10,12 @@ layout(std430,binding = 4) buffer Marchables {
 };
 
 layout(std430, binding = 5) buffer v {vec4 vertices[];};
-layout(std430, binding = 6) buffer n {vec4 normals[];}; //TODO - generate normals
+layout(std430, binding = 6) buffer n {vec4 normals[];};
 
 layout(binding = 7) uniform atomic_uint triCount;
 
 layout(local_size_x=256,local_size_y=1,local_size_z=1) in;
 
-//TODO - major issue with ordering of vertices - makes a geometry mess!
 vec3 VertexInterp(vec3 p1, vec3 p2, float valp1, float valp2) {
     float mu;
     vec3 p;

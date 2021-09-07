@@ -1,0 +1,127 @@
+
+//Chunk Information
+uniform uvec3 chunkSize;
+uniform vec3 chunkStride;
+uniform vec3 chunkPosition;
+uniform int edgeIndex; //where are extra values needed
+
+//Transvoxel Algorithm Tables
+layout(binding = 8 ) buffer rcc {int regularCellClass[];};
+layout(binding = 9 ) buffer rcd {int regularCellData[];};
+layout(binding = 10) buffer rvd {int regularVertexData[];}; //number of triangles within cube with given cubeIndex;
+layout(binding = 11) buffer rtt {int regularTotalTable[];};
+
+//should be as close to a bijection as possible - minimise the values that need to be generated twice
+//gid is between 0 and chunkSize inclusive
+//halfXYZ is 0 or 1 for half values
+uint getArrID(uvec3 gid, uvec3 halfXYZ) {
+    //if cell is in the interior
+    if (gid.x > 0 && gid.x < chunkSize.x && gid.y > 0 && gid.y < chunkSize.y && gid.z > 0 && gid.z < chunkSize.z) {
+        return (gid.x - 1)
+            + (gid.y - 1) * (chunkSize.x - 1)
+            + (gid.z - 1) * (chunkSize.x - 1) * (chunkSize.y - 1);
+    }
+
+    //if the cell is on the edge
+    uint offset = (chunkSize.x - 1) * (chunkSize.y - 1) * (chunkSize.z - 1);
+
+    // -x
+    if ((edgeIndex & 1) != 0) {
+        if (gid.x == 0) {
+            return offset
+                + (2 * gid.y + halfXYZ.y)
+                + (2 * gid.z + halfXYZ.z) * (2 * chunkSize.y + 1);
+        }
+        offset += (2 * chunkSize.y + 1) * (2 * chunkSize.z + 1);
+    } else {
+        if (gid.x == 0) {
+            return offset
+                + gid.y
+                + gid.z * (chunkSize.y + 1);
+        }
+        offset += (chunkSize.y + 1) * (chunkSize.z + 1);
+    }
+    // +x
+    if ((edgeIndex & 2) != 0) {
+        if (gid.x == chunkSize.x) {
+            return offset
+                + (2 * gid.y + halfXYZ.y)
+                + (2 * gid.z + halfXYZ.z) * (2 * chunkSize.y + 1);
+        }
+        offset += (2 * chunkSize.y + 1) * (2 * chunkSize.z + 1);
+    } else {
+        if (gid.x == chunkSize.x) {
+            return offset
+                + gid.y
+                + gid.z * (chunkSize.y + 1);
+        }
+        offset += (chunkSize.y + 1) * (chunkSize.z + 1);
+    }
+
+    // -y
+    if ((edgeIndex & 4) != 0) {
+        if (gid.y == 0) {
+            return offset
+                + (2 * gid.x + halfXYZ.x)
+                + (2 * gid.z + halfXYZ.z) * (2 * chunkSize.x + 1);
+        }
+        offset += (2 * chunkSize.x + 1) * (2 * chunkSize.z + 1);
+    } else {
+        if (gid.y == 0) {
+            return offset
+                + gid.x
+                + gid.z * (chunkSize.x + 1);
+        }
+        offset += (chunkSize.x + 1) * (chunkSize.z + 1);
+    }
+    // +y
+    if ((edgeIndex & 8) != 0) {
+        if (gid.y == chunkSize.y) {
+            return offset
+                + (2 * gid.x + halfXYZ.x)
+                + (2 * gid.z + halfXYZ.z) * (2 * chunkSize.x + 1);
+        }
+        offset += (2 * chunkSize.x + 1) * (2 * chunkSize.z + 1);
+    } else {
+        if (gid.y == chunkSize.y) {
+            return offset
+                + gid.x
+                + gid.z * (chunkSize.x + 1);
+        }
+        offset += (chunkSize.x + 1) * (chunkSize.z + 1);
+    }
+
+    // -z
+    if ((edgeIndex & 16) != 0) {
+        if (gid.z == 0) {
+            return offset
+                + (2 * gid.y + halfXYZ.y)
+                + (2 * gid.x + halfXYZ.x) * (2 * chunkSize.y + 1);
+        }
+        offset += (2 * chunkSize.y + 1) * (2 * chunkSize.x + 1);
+    } else {
+        if (gid.z == 0) {
+            return offset
+                + gid.y
+                + gid.x * (chunkSize.x + 1);
+        }
+        offset += (chunkSize.y + 1) * (chunkSize.x + 1);
+    }
+    // +z
+    if ((edgeIndex & 32) != 0) {
+        if (gid.z == chunkSize.z) {
+            return offset
+                + (2 * gid.y + halfXYZ.y)
+                + (2 * gid.x + halfXYZ.x) * (2 * chunkSize.y + 1);
+        }
+        offset += (2 * chunkSize.y + 1) * (2 * chunkSize.x + 1);
+    } else {
+        if (gid.z == chunkSize.z) {
+            return offset
+                + gid.y
+                + gid.x * (chunkSize.y + 1);
+        }
+        offset += (chunkSize.y + 1) * (chunkSize.x + 1);
+    }
+
+}

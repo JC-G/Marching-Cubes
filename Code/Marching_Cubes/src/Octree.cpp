@@ -111,7 +111,6 @@ bool Octree::shouldChop(glm::vec3 inPos)
 
 void Octree::generateMarchingChunk()
 {
-    //TODO - decide stride
     float stride = Config::get<float>("chunk_size");
     myChunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(myPosition,glm::vec3(stride),mySize/stride,myGenerator));
     hasChunk = true;

@@ -15,10 +15,3 @@ layout(binding = 10) buffer tot {int totalTable[];}; //number of triangles withi
 uint getArrID(uvec3 gid) {
     return gid.x + gid.y * (1+chunkSize.x) + gid.z * (1+chunkSize.x) * (1+chunkSize.y);
 }
-
-float distFunc(vec3 inPos) {
-    //TODO - implement this
-    //return -inPos.x+0.5;
-    //return length(inPos) - 4.5;
-    return density(inPos);
-}

@@ -15,6 +15,7 @@
 #include "SDF/Sphere.h"
 #include "SDF/SinTerrain.h"
 #include "SDF/NoiseTerrain.h"
+#include "SDF/TestSDF.h"
 #include "Octree.h"
 #include "Config.h"
 
@@ -37,7 +38,7 @@ static void LoadObjects()
 
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),10.0));
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
-    GeometryGenerator* G = new TransvoxelGenerator(new Sphere(glm::vec3(0.0),10.0),0);
+    GeometryGenerator* G = new TransvoxelGenerator(new NoiseTerrain());
 
     GLuint tv;
     GLuint tn;

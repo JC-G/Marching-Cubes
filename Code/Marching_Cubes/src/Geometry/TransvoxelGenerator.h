@@ -10,7 +10,7 @@
 class TransvoxelGenerator : public GeometryGenerator
 {
     public:
-        TransvoxelGenerator(SDF* densityFunction, unsigned int edgeIndex);
+        TransvoxelGenerator(SDF* densityFunction);
         virtual ~TransvoxelGenerator();
 
         void GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize) override;

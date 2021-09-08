@@ -98,6 +98,8 @@
 		<Unit filename="src/SDF/SinTerrain.h" />
 		<Unit filename="src/SDF/Sphere.cpp" />
 		<Unit filename="src/SDF/Sphere.h" />
+		<Unit filename="src/SDF/TestSDF.cpp" />
+		<Unit filename="src/SDF/TestSDF.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

@@ -68,7 +68,7 @@ void main() {
 
 	uint cellIndex = marchableList[gl_GlobalInvocationID.x].w;
 	uint cellClass = regularCellClass[cellIndex];
-	uint totalPoints = regularTotalTable[regularCellClass[cellClass]];
+	uint totalPoints = regularTotalTable[cellClass];
 
     uint index = 0;
     for (int i = 0; i < totalPoints; i++) {

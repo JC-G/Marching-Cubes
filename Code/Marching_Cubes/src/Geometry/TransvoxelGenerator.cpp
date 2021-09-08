@@ -1,7 +1,7 @@
 #include "TransvoxelGenerator.h"
 
-TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction, unsigned int edgeIndex)
-    :edgeIndex(edgeIndex), densityFunction(densityFunction),
+TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
+    :densityFunction(densityFunction),
     generateShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.txt"),
         densityFunction->getShaderCode(),

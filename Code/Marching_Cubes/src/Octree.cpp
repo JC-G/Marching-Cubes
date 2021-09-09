@@ -10,8 +10,8 @@ Octree::~Octree()
 }
 
 
-Octree::Octree(glm::vec3 size, glm::vec3 position, int detailLevel, GeometryGenerator* G)
-:mySize(size),myPosition(position),myDetailLevel(detailLevel), myGenerator(G)
+Octree::Octree(glm::vec3 size, glm::vec3 position, int detailLevel, GeometryGenerator* G, Octree* parent, glm::uvec3 positionInParent)
+:mySize(size),myPosition(position),myDetailLevel(detailLevel), myGenerator(G), myParent(parent), myPositionInParent(positionInParent)
 {
     isLeaf = true;
 }
@@ -24,11 +24,9 @@ void Octree::update(glm::vec3 inPos)
     } else if (shouldSplit(inPos)) {
         split(inPos);
     }
-
     if (!isLeaf) {
+        //std::cout << "Updating Children" << std::endl;
         updateChildren(inPos);
-    } else if (!hasChunk) {
-        generateMarchingChunk();
     }
 }
 
@@ -50,7 +48,7 @@ void Octree::split(glm::vec3 inPos)
     for(int i = 0; i <= 1; i++) {
         for(int j = 0; j <= 1; j++) {
             for(int k = 0; k <= 1; k++) {
-                myChildren[i][j][k] = new Octree(0.5f * mySize,myPosition + mySize * 0.5f * glm::vec3(i,j,k), myDetailLevel + 1,myGenerator);
+                myChildren[i][j][k] = new Octree(0.5f * mySize,myPosition + mySize * 0.5f * glm::vec3(i,j,k), myDetailLevel + 1,myGenerator,this,glm::uvec3(i,j,k));
             }
         }
     }
@@ -138,4 +136,143 @@ glm::vec3 Octree::getCenter()
 {
     return myPosition + mySize*0.5f;
 }
+
+
+unsigned int Octree::getEdgeCode()
+{
+    unsigned int edgeCode = 0;
+    Octree* neighbor;
+    //-x
+    neighbor = getNeighbor(glm::ivec3(-1,0,0));
+    if (neighbor && !neighbor->isLeaf) {
+        edgeCode++;
+    }
+    edgeCode = edgeCode << 1;
+    //+x
+    neighbor = getNeighbor(glm::ivec3(1,0,0));
+    if (neighbor && !neighbor->isLeaf) {
+        edgeCode++;
+    }
+    edgeCode = edgeCode << 1;
+    //-y
+    neighbor = getNeighbor(glm::ivec3(0,-1,0));
+    if (neighbor && !neighbor->isLeaf) {
+        edgeCode++;
+    }
+    edgeCode = edgeCode << 1;
+    //+y
+    neighbor = getNeighbor(glm::ivec3(0,1,0));
+    if (neighbor && !neighbor->isLeaf) {
+        edgeCode++;
+    }
+    edgeCode = edgeCode << 1;
+    //-z
+    neighbor = getNeighbor(glm::ivec3(0,0,-1));
+    if (neighbor && !neighbor->isLeaf) {
+        edgeCode++;
+    }
+    edgeCode = edgeCode << 1;
+    //+z
+    neighbor = getNeighbor(glm::ivec3(0,0,1));
+    if (neighbor && !neighbor->isLeaf) {
+        edgeCode++;
+    }
+    //edgeCode = edgeCode << 1;
+    return edgeCode;
+}
+
+//return the neighbor if it is at the same or greater LOD, or NULL
+Octree* Octree::getNeighbor(glm::ivec3 relativePosition)
+{
+    if (!myParent) {
+        return NULL;
+    }
+    //-x
+    if (relativePosition.x == -1) {
+        if (myPositionInParent.x == 1) {
+            //just return the octree node next to it
+            return myParent->myChildren[0][myPositionInParent.y][myPositionInParent.z];
+        } else {
+            //return the "rightmost" node in the parents neighbor, or NULL if none at that LOD
+            Octree* neighbor = myParent->getNeighbor(glm::ivec3(-1,0,0));
+            if (!neighbor || neighbor->isLeaf) return NULL;
+            return neighbor->myChildren[1][myPositionInParent.y][myPositionInParent.z];
+        }
+    }
+    //+x
+    if (relativePosition.x == 1) {
+        if (myPositionInParent.x == 0) {
+            //just return the octree node next to it
+            return myParent->myChildren[1][myPositionInParent.y][myPositionInParent.z];
+        } else {
+            //return the "leftmost" node in the parents neighbor, or NULL if none at that LOD
+            Octree* neighbor = myParent->getNeighbor(glm::ivec3(1,0,0));
+            if (!neighbor || neighbor->isLeaf) return NULL;
+            return neighbor->myChildren[0][myPositionInParent.y][myPositionInParent.z];
+        }
+    }
+    //-y
+    if (relativePosition.y == -1) {
+        if (myPositionInParent.y == 1) {
+            return myParent->myChildren[myPositionInParent.x][0][myPositionInParent.z];
+        } else {
+            Octree* neighbor = myParent->getNeighbor(glm::ivec3(0,-1,0));
+            if (!neighbor || neighbor->isLeaf) return NULL;
+            return neighbor->myChildren[myPositionInParent.x][1][myPositionInParent.z];
+        }
+    }
+    //+y
+    if (relativePosition.y == 1) {
+        if (myPositionInParent.y == 0) {
+            return myParent->myChildren[myPositionInParent.x][1][myPositionInParent.z];
+        } else {
+            Octree* neighbor = myParent->getNeighbor(glm::ivec3(0,1,0));
+            if (!neighbor || neighbor->isLeaf) return NULL;
+            return neighbor->myChildren[myPositionInParent.x][1][myPositionInParent.z];
+        }
+    }
+    //-z
+    if (relativePosition.z == -1) {
+        if (myPositionInParent.z == 1) {
+            return myParent->myChildren[myPositionInParent.x][myPositionInParent.y][0];
+        } else {
+            Octree* neighbor = myParent->getNeighbor(glm::ivec3(0,0,-1));
+            if (!neighbor || neighbor->isLeaf) return NULL;
+            return neighbor->myChildren[myPositionInParent.x][myPositionInParent.y][1];
+        }
+    }
+    //+z
+    if (relativePosition.z == 1) {
+        if (myPositionInParent.z == 0) {
+            return myParent->myChildren[myPositionInParent.x][myPositionInParent.y][1];
+        } else {
+            Octree* neighbor = myParent->getNeighbor(glm::ivec3(0,0,1));
+            if (!neighbor || neighbor->isLeaf) return NULL;
+            return neighbor->myChildren[myPositionInParent.x][myPositionInParent.y][0];
+        }
+    }
+}
+
+void Octree::generateAllChunks()
+{
+    //needed so we have the shape of the octree before generating chunks that rely on it
+
+    //TODO - only update when something has actually changed
+    unsigned int E = getEdgeCode();
+
+    if (isLeaf) {
+        if (!hasChunk) {
+            generateMarchingChunk();
+        }
+    } else {
+        for(int i = 0; i <= 1; i++) {
+            for(int j = 0; j <= 1; j++) {
+                for(int k = 0; k <= 1; k++) {
+                    myChildren[i][j][k]->generateAllChunks();
+                }
+            }
+        }
+    }
+}
+
 

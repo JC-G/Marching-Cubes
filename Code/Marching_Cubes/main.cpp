@@ -40,11 +40,6 @@ static void LoadObjects()
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
     GeometryGenerator* G = new TransvoxelGenerator(new NoiseTerrain());
 
-    GLuint tv;
-    GLuint tn;
-    GLuint tg;
-    //H->GenerateGeometry(glm::vec3(0),glm::uvec3(10),glm::vec3(1),&tv, &tn, &tg);
-
     O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);
     O->update(glm::vec3(0));
 }
@@ -106,12 +101,14 @@ void AppMain() {
     glm::mat4 PM = Window::getProjectionMatrix();
     glUniformMatrix4fv(shader.getUniform("P"),1,GL_FALSE,&PM[0][0]);
 
+
     // run while the window is open and focused
     while(true){
     // process pending events
         glfwPollEvents();
         Window::handleInput();
         O->update(Window::activeCamera->position);
+        O->generateAllChunks();
         glUseProgram(shader.getID());
 
         //set the view matrix accordingly

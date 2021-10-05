@@ -107,10 +107,10 @@ bool Octree::shouldChop(glm::vec3 inPos)
 }
 
 
-void Octree::generateMarchingChunk()
+void Octree::generateMarchingChunk(int edgeCode)
 {
     float stride = Config::get<float>("chunk_size");
-    myChunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(myPosition,glm::vec3(stride),mySize/stride,myGenerator));
+    myChunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(myPosition,glm::vec3(stride),mySize/stride,myGenerator,edgeCode));
     hasChunk = true;
 }
 
@@ -262,7 +262,7 @@ void Octree::generateAllChunks()
 
     if (isLeaf) {
         if (!hasChunk) {
-            generateMarchingChunk();
+            generateMarchingChunk(E);
         }
     } else {
         for(int i = 0; i <= 1; i++) {

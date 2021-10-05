@@ -48,7 +48,7 @@ TransvoxelGenerator::~TransvoxelGenerator()
 }
 
 
-void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize)
+void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex)
 {
     glGenBuffers(1,vertexBuffer);
     glGenBuffers(1,normalBuffer);
@@ -69,13 +69,14 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
 
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER,densityValuesBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER,getDensityBufferSize(chunkSize) * sizeof(float), NULL, GL_STATIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,getDensityBufferSize(chunkSize,edgeIndex) * sizeof(float), NULL, GL_STATIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,densityValuesBuffer);
 
     glUseProgram(generateShader.getID());
     glUniform3fv(generateShader.getUniform("chunkPosition"),1,&chunkLocation[0]);
     glUniform3fv(generateShader.getUniform("chunkStride"),1,&chunkStride[0]);
     glUniform3uiv(generateShader.getUniform("chunkSize"),1,&chunkSize[0]);
+    glUniform1i(generateShader.getUniform("edgeIndex"),edgeIndex);
 
     glDispatchCompute(1+chunkSize.x/8, 1+chunkSize.y/8, 1+chunkSize.z/8);
 
@@ -99,6 +100,7 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,4,marchableList);
 
     glUniform3uiv(countShader.getUniform("chunkSize"),1,&chunkSize[0]);
+    glUniform1i(countShader.getUniform("edgeIndex"),edgeIndex);
 
     glDispatchCompute(1+chunkSize.x/8,1+chunkSize.y/8,1+chunkSize.z/8);
 
@@ -123,6 +125,8 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     glUniform1ui(polygonizeShader.getUniform("marchableCount"),marchCount);
     glUniform3uiv(polygonizeShader.getUniform("chunkSize"),1,&chunkSize[0]);
 
+    glUniform1i(polygonizeShader.getUniform("edgeIndex"),edgeIndex);
+
     glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER,7,triangleCounter);
     glBufferData(GL_ATOMIC_COUNTER_BUFFER,sizeof(GLuint),&zero,GL_DYNAMIC_DRAW);
 
@@ -138,7 +142,7 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     *geometrySize = pointCount;
 
 }
-int TransvoxelGenerator::getDensityBufferSize(glm::uvec3 chunkSize)
+int TransvoxelGenerator::getDensityBufferSize(glm::uvec3 chunkSize, int edgeIndex)
 {
     int total = (chunkSize.x - 1) * (chunkSize.y - 1) * (chunkSize.z - 1);
     if (edgeIndex & 1) {

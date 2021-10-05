@@ -287,13 +287,14 @@ regularVertexData = r"""{},
 """
 
 #regularVertexData becomes a char[3072] - throw away the vertex reuse data
+#0xFF is "empty" value
 import re
 print("unsigned char regularVertexData[3072]")
 for line in regularVertexData.splitlines():
-    outLine = line.replace(r"{}",r"{0x0000}").replace("{","").replace("}","")
+    outLine = line.replace(r"{}",r"{0xFFFF}").replace("{","").replace("}","")
     outLine = re.sub("0x[0-9A-F][0-9A-F]","0x",outLine)
     for i in range(outLine.count(","),12):
-        outLine += " 0x00,"
+        outLine += " 0xFF,"
     print(outLine)
 
 input()

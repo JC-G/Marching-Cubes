@@ -1,10 +1,13 @@
 #include "MarchingChunk.h"
 #include <iostream>
-MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator)
+MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex)
    :myLocation(chunkLocation),mySize(chunkSize),myStride(chunkStride),Generator(Generator)
 {
     //ctor
-    Generator->GenerateGeometry(myLocation,mySize,myStride,&vertexBuffer,&normalBuffer, &myGeometrySize);
+    if (edgeIndex != 0) {
+        std::cout << "Edge Index " << edgeIndex << std::endl;
+    }
+    Generator->GenerateGeometry(myLocation,mySize,myStride,&vertexBuffer,&normalBuffer, &myGeometrySize, edgeIndex);
 }
 
 MarchingChunk::~MarchingChunk() {

@@ -69,7 +69,7 @@ GPUMarchingCubesGenerator::~GPUMarchingCubesGenerator()
 
 
 
-void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize)
+void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex)
 {
     glGenBuffers(1, vertexBuffer);
     glGenBuffers(1, normalBuffer);

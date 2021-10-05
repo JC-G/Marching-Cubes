@@ -315,7 +315,7 @@ CPUMarchingCubesGenerator::~CPUMarchingCubesGenerator()
 }
 
 
-void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize)
+void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize,int edgeIndex = 0)
 {
     //generate the density field
     //use 3D vector to bypass stack size limit for large chunk sizes

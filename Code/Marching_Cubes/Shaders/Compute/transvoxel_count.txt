@@ -27,6 +27,7 @@ void main () {
 	}
 
 	//TODO - detect transition cells here
+	//if edge code -x
 
 	float gridCells[8];
 	uvec3 gridPos[8];

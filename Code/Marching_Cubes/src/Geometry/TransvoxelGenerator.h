@@ -13,15 +13,14 @@ class TransvoxelGenerator : public GeometryGenerator
         TransvoxelGenerator(SDF* densityFunction);
         virtual ~TransvoxelGenerator();
 
-        void GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize) override;
+        void GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex = 0) override;
 
     protected:
 
     private:
 
         SDF* densityFunction;
-        unsigned int edgeIndex;
-        int getDensityBufferSize(glm::uvec3 chunkSize);
+        int getDensityBufferSize(glm::uvec3 chunkSize, int edgeIndex);
 
         Shader generateShader;
         Shader countShader;

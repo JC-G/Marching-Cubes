@@ -41,7 +41,7 @@ class Octree
         glm::vec3 getCenter();
 
 
-        void generateMarchingChunk();
+        void generateMarchingChunk(int edgeCode);
         void deleteChildren();
 
         //relativePosition - if -1 then in negative direction, if 1 then in positive direction

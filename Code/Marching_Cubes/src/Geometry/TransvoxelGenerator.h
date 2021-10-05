@@ -37,6 +37,11 @@ class TransvoxelGenerator : public GeometryGenerator
         GLuint regularCellDataBuffer;
         GLuint regularVertexDataBuffer;
         GLuint regularTotalTableBuffer;
+
+        GLuint transitionCellClassBuffer;
+        GLuint transitionCellDataBuffer;
+        GLuint transitionVertexDataBuffer;
+        GLuint transitionTotalTableBuffer;
 };
 
 #endif // TRANSVOXELGENERATOR_H

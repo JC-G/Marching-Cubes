@@ -38,6 +38,11 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
     glGenBuffers(1,&regularVertexDataBuffer);
     glGenBuffers(1,&regularTotalTableBuffer);
 
+    glGenBuffers(1,&transitionCellClassBuffer);
+    glGenBuffers(1,&transitionCellDataBuffer);
+    glGenBuffers(1,&transitionVertexDataBuffer);
+    glGenBuffers(1,&transitionTotalTableBuffer);
+
 
 
 }
@@ -53,6 +58,7 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     glGenBuffers(1,vertexBuffer);
     glGenBuffers(1,normalBuffer);
 
+    //transvoxel algorithm tables
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,8,regularCellClassBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,256*sizeof(int),TransvoxelTables::regularCellClass,GL_DYNAMIC_DRAW);
 
@@ -64,6 +70,18 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,11,regularTotalTableBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,16*sizeof(int),TransvoxelTables::regularTotalTable,GL_DYNAMIC_DRAW);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,12,transitionCellClassBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,512*sizeof(int),TransvoxelTables::transitionCellClass,GL_DYNAMIC_DRAW);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,13,transitionCellDataBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,2072*sizeof(int),TransvoxelTables::transitionCellData,GL_DYNAMIC_DRAW);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,14,transitionVertexDataBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,6144*sizeof(int),TransvoxelTables::transitionVertexData,GL_DYNAMIC_DRAW);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,15,transitionTotalTableBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,56*sizeof(int),TransvoxelTables::transitionTotalTable,GL_DYNAMIC_DRAW);
 
     //Stage 1
 

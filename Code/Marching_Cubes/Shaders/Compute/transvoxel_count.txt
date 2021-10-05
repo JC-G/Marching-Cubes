@@ -13,7 +13,11 @@ layout(binding = 2) uniform atomic_uint marchableCount;
 layout(binding = 3) uniform atomic_uint pointCount;
 
 layout(std430,binding = 4) buffer Marchables {
-    uvec4 marchableList[]; //x,y,z, cell class - cell class is the lowest 2 nibbles, cell type (transition or regular) is the rest
+    uvec4 marchableList[]; //x,y,z, cell index
+    //cell index is the lowest 9 bits, (from 0 to 511)
+    //cell type (transition or regular) is 10th bit (512, 1<<9)
+    //transition cell orientation is the 11th to 16th bit (1024 - 32768, 1<<10 - 15)
+
     //TODO - how are we dealing with orientation of transition cells
 };
 
@@ -26,8 +30,7 @@ void main () {
 		return;
 	}
 
-	//TODO - detect transition cells here
-	//if edge code -x
+	//regular (non-transition) cell
 
 	float gridCells[8];
 	uvec3 gridPos[8];
@@ -65,5 +68,16 @@ void main () {
 		uvec4 mc = uvec4(gid.x,gid.y,gid.z,cellIndex);
 		marchableList[bufferIndex] = mc;
 	}
+
+	//transition cells - TODO
+
+	//if (gid.x = 0 && (edgeIndex & 1) != 0) {
+        //TODO - increase vertex count, create tables
+		//atomicCounterAddARB(pointCount,regularTotalTable[regularCellClass[cellIndex]]);
+		//TODO - increase the maximum buffer size to account for transition cells
+		//uint bufferIndex = atomicCounterIncrement(marchableCount);
+		//uvec4 mc = uvec4(gid.x,gid.y,gid.z,)
+
+	//}
 
 }

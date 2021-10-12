@@ -142,26 +142,8 @@ unsigned int Octree::getEdgeCode()
 {
     unsigned int edgeCode = 0;
     Octree* neighbor;
-    //-x
-    neighbor = getNeighbor(glm::ivec3(-1,0,0));
-    if (neighbor && !neighbor->isLeaf) {
-        edgeCode++;
-    }
-    edgeCode = edgeCode << 1;
-    //+x
-    neighbor = getNeighbor(glm::ivec3(1,0,0));
-    if (neighbor && !neighbor->isLeaf) {
-        edgeCode++;
-    }
-    edgeCode = edgeCode << 1;
-    //-y
-    neighbor = getNeighbor(glm::ivec3(0,-1,0));
-    if (neighbor && !neighbor->isLeaf) {
-        edgeCode++;
-    }
-    edgeCode = edgeCode << 1;
-    //+y
-    neighbor = getNeighbor(glm::ivec3(0,1,0));
+    //+z
+    neighbor = getNeighbor(glm::ivec3(0,0,1));
     if (neighbor && !neighbor->isLeaf) {
         edgeCode++;
     }
@@ -172,8 +154,26 @@ unsigned int Octree::getEdgeCode()
         edgeCode++;
     }
     edgeCode = edgeCode << 1;
-    //+z
-    neighbor = getNeighbor(glm::ivec3(0,0,1));
+    //+y
+    neighbor = getNeighbor(glm::ivec3(0,1,0));
+    if (neighbor && !neighbor->isLeaf) {
+        edgeCode++;
+    }
+    edgeCode = edgeCode << 1;
+    //-y
+    neighbor = getNeighbor(glm::ivec3(0,-1,0));
+    if (neighbor && !neighbor->isLeaf) {
+        edgeCode++;
+    }
+    edgeCode = edgeCode << 1;
+    //+x
+    neighbor = getNeighbor(glm::ivec3(1,0,0));
+    if (neighbor && !neighbor->isLeaf) {
+        edgeCode++;
+    }
+    edgeCode = edgeCode << 1;
+    //-x
+    neighbor = getNeighbor(glm::ivec3(-1,0,0));
     if (neighbor && !neighbor->isLeaf) {
         edgeCode++;
     }

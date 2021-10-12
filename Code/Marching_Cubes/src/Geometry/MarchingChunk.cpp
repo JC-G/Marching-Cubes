@@ -4,9 +4,6 @@ MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm:
    :myLocation(chunkLocation),mySize(chunkSize),myStride(chunkStride),Generator(Generator)
 {
     //ctor
-    if (edgeIndex != 0) {
-        std::cout << "Edge Index " << edgeIndex << std::endl;
-    }
     Generator->GenerateGeometry(myLocation,mySize,myStride,&vertexBuffer,&normalBuffer, &myGeometrySize, edgeIndex);
 }
 

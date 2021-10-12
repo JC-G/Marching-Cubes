@@ -29,55 +29,102 @@ void main () {
 	{
 		return;
 	}
+	if(generateRegularCells) {
+		//regular (non-transition) cell
 
-	//regular (non-transition) cell
+		float gridCells[8];
+		uvec3 gridPos[8];
 
-	float gridCells[8];
-	uvec3 gridPos[8];
+		//assigned as per Figure 3.7 in transvoxel paper - note this is DIFFERENT to the previous marching cubes algorithm
+		gridPos[0] = gid;
+		gridPos[1] = gid+uvec3(1,0,0);
+		gridPos[2] = gid+uvec3(0,1,0);
+		gridPos[3] = gid+uvec3(1,1,0);
+		gridPos[4] = gid+uvec3(0,0,1);
+		gridPos[5] = gid+uvec3(1,0,1);
+		gridPos[6] = gid+uvec3(0,1,1);
+		gridPos[7] = gid+uvec3(1,1,1);
 
-	//assigned as per Figure 3.7 in transvoxel paper - note this is DIFFERENT to the previous marching cubes algorithm
-    gridPos[0] = gid;
-	gridPos[1] = gid+uvec3(1,0,0);
-	gridPos[2] = gid+uvec3(0,1,0);
-	gridPos[3] = gid+uvec3(1,1,0);
-	gridPos[4] = gid+uvec3(0,0,1);
-	gridPos[5] = gid+uvec3(1,0,1);
-	gridPos[6] = gid+uvec3(0,1,1);
-	gridPos[7] = gid+uvec3(1,1,1);
+		for (int i = 0; i < 8; i++)
+		{
+			gridCells[i] = densityValues[getArrID(gridPos[i],uvec3(0))];
+		}
 
-    for (int i = 0; i < 8; i++)
-	{
-		gridCells[i] = densityValues[getArrID(gridPos[i],uvec3(0))];
+		int cellIndex = 0;
+
+		if (gridCells[0] < 0) cellIndex |= 1;
+		if (gridCells[1] < 0) cellIndex |= 2;
+		if (gridCells[2] < 0) cellIndex |= 4;
+		if (gridCells[3] < 0) cellIndex |= 8;
+		if (gridCells[4] < 0) cellIndex |= 16;
+		if (gridCells[5] < 0) cellIndex |= 32;
+		if (gridCells[6] < 0) cellIndex |= 64;
+		if (gridCells[7] < 0) cellIndex |= 128;
+
+		if (cellIndex != 0 && cellIndex != 255)
+		{
+			atomicCounterAddARB(pointCount,regularTotalTable[regularCellClass[cellIndex]]);
+			uint bufferIndex = atomicCounterIncrement(marchableCount);
+			uvec4 mc = uvec4(gid.x,gid.y,gid.z,cellIndex);
+			marchableList[bufferIndex] = mc;
+		}
 	}
-
-	int cellIndex = 0;
-
-    if (gridCells[0] < 0) cellIndex |= 1;
-	if (gridCells[1] < 0) cellIndex |= 2;
-	if (gridCells[2] < 0) cellIndex |= 4;
-	if (gridCells[3] < 0) cellIndex |= 8;
-	if (gridCells[4] < 0) cellIndex |= 16;
-	if (gridCells[5] < 0) cellIndex |= 32;
-	if (gridCells[6] < 0) cellIndex |= 64;
-	if (gridCells[7] < 0) cellIndex |= 128;
-
-	if (cellIndex != 0 && cellIndex != 255)
-	{
-		atomicCounterAddARB(pointCount,regularTotalTable[regularCellClass[cellIndex]]);
-		uint bufferIndex = atomicCounterIncrement(marchableCount);
-		uvec4 mc = uvec4(gid.x,gid.y,gid.z,cellIndex);
-		marchableList[bufferIndex] = mc;
-	}
-
 	//transition cells - TODO
+	if (generateTransitionCells) {
+		if (gid.x == 0 && (edgeIndex & 1) != 0) {
 
-	//if (gid.x = 0 && (edgeIndex & 1) != 0) {
-        //TODO - increase vertex count, create tables
-		//atomicCounterAddARB(pointCount,regularTotalTable[regularCellClass[cellIndex]]);
-		//TODO - increase the maximum buffer size to account for transition cells
-		//uint bufferIndex = atomicCounterIncrement(marchableCount);
-		//uvec4 mc = uvec4(gid.x,gid.y,gid.z,)
+			float transitionGridCells[9];
+			uvec3 transitionGridPos[9];
 
-	//}
+			//assigned as per Figure 4.16 in transvoxel paper
 
+			transitionGridCells[0] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,0,0))];
+			transitionGridCells[1] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,1,0))];
+			transitionGridCells[2] = densityValues[getArrID(gid+uvec3(0,1,0),uvec3(0,0,0))];
+
+			transitionGridCells[3] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,0,1))];
+			transitionGridCells[4] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,1,1))];
+			transitionGridCells[5] = densityValues[getArrID(gid+uvec3(0,1,0),uvec3(0,0,1))];
+
+			transitionGridCells[6] = densityValues[getArrID(gid+uvec3(0,0,1),uvec3(0,0,0))];
+			transitionGridCells[7] = densityValues[getArrID(gid+uvec3(0,0,1),uvec3(0,1,0))];
+			transitionGridCells[8] = densityValues[getArrID(gid+uvec3(0,1,1),uvec3(0,0,0))];
+
+			int transitionCellIndex = 0;
+
+			//Note the obscure order of this - see Figure 4.17
+			//order is 0,1,2,5,8,7,6,3,4
+			if (transitionGridCells[0] < 0) transitionCellIndex |= 1;
+			if (transitionGridCells[1] < 0) transitionCellIndex |= 2;
+			if (transitionGridCells[2] < 0) transitionCellIndex |= 4;
+			if (transitionGridCells[5] < 0) transitionCellIndex |= 8;
+			if (transitionGridCells[8] < 0) transitionCellIndex |= 16;
+			if (transitionGridCells[7] < 0) transitionCellIndex |= 32;
+			if (transitionGridCells[6] < 0) transitionCellIndex |= 64;
+			if (transitionGridCells[3] < 0) transitionCellIndex |= 128;
+			if (transitionGridCells[4] < 0) transitionCellIndex |= 256;
+
+			//cell is a transition cell:
+			int paddedTransitionCellIndex = transitionCellIndex;
+			paddedTransitionCellIndex |= (1<<9);
+
+			//cell is a -x oriented cell:
+			paddedTransitionCellIndex |= (1<<10);
+
+
+			//do not march if all inside or all outside
+			//TODO for testing purpose only - generate a single transition cell
+			//if(gid != uvec3(0,1,0)) {return;}
+			if (transitionCellIndex != 0 && transitionCellIndex != 511) {
+				//number of points in the mesh
+				//and with 0x7f
+				atomicCounterAddARB(pointCount,transitionTotalTable[0x7F & transitionCellClass[transitionCellIndex]]);
+
+				//TODO - increase the maximum buffer size to account for transition cells
+				uint bufferIndex = atomicCounterIncrement(marchableCount);
+				uvec4 mc = uvec4(gid.x,gid.y,gid.z,paddedTransitionCellIndex);
+				marchableList[bufferIndex] = mc;
+			}
+		}
+	}
 }

@@ -1,5 +1,6 @@
 #include "TransvoxelGenerator.h"
 
+    #include <bitset>
 TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
     :densityFunction(densityFunction),
     generateShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
@@ -55,6 +56,27 @@ TransvoxelGenerator::~TransvoxelGenerator()
 
 void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex)
 {
+    //BEGIN DEBUG REGION
+
+
+//    int debugCellIndex = 16;
+//    std::cout << "Cell Index: " << debugCellIndex << std::endl;
+//    int debugCellClass = TransvoxelTables::transitionCellClass[debugCellIndex];
+//    std::cout << "Cell Class: " << debugCellClass << std::endl;
+//    debugCellClass = debugCellClass & 0x7F;
+//    std::cout << "0x7F transformation: " << debugCellClass << std::endl;
+//    int debugPointCount = TransvoxelTables::transitionTotalTable[debugCellClass];
+//    std::cout << "Point Count: " << debugPointCount << std::endl;
+//    for (int i = 0; i < debugPointCount; i++) {
+//        int debugVertexIndex = TransvoxelTables::transitionCellData[debugCellClass * 37 + i + 1];
+//        std::cout << "Vertex index " << i << ": " << debugVertexIndex << std::endl;
+//        int debugVertexPosition = TransvoxelTables::transitionVertexData[debugCellIndex * 12 + debugVertexIndex];
+//        std::cout << "Vertex position data " << i << ": " << std::hex << debugVertexPosition << std::dec << std::endl;
+//    }
+
+
+
+    //END DEBUG REGION
     glGenBuffers(1,vertexBuffer);
     glGenBuffers(1,normalBuffer);
 
@@ -98,6 +120,20 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
 
     glDispatchCompute(1+chunkSize.x/8, 1+chunkSize.y/8, 1+chunkSize.z/8);
 
+    //BEGIN DEBUG REGION
+//
+//    int dbsize = getDensityBufferSize(chunkSize,edgeIndex);
+//    std::cout << "Densities:" << dbsize<< std::endl;
+//    glBindBuffer(GL_SHADER_STORAGE_BUFFER,densityValuesBuffer);
+//    float* mappedDensities;
+//    mappedDensities = (float*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,dbsize,GL_MAP_READ_BIT);
+//    for (int i = 0; i < dbsize; i++) {
+//        std::cout << i << ": " << mappedDensities[i] << std::endl;
+//    }
+//    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+    //END DEBUG REGION
+
     //Stage 2
 
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -120,7 +156,32 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     glUniform3uiv(countShader.getUniform("chunkSize"),1,&chunkSize[0]);
     glUniform1i(countShader.getUniform("edgeIndex"),edgeIndex);
 
+    glUniform1i(countShader.getUniform("generateTransitionCells"),Config::get<bool>("generate_transition_cells"));
+    glUniform1i(countShader.getUniform("generateRegularCells"),Config::get<bool>("generate_regular_cells"));
+
     glDispatchCompute(1+chunkSize.x/8,1+chunkSize.y/8,1+chunkSize.z/8);
+
+    //BEGIN DEBUG REGION
+
+
+//    GLint sz;
+//
+//    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER,marchableCounter);
+//    glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER,0,sizeof(GLuint),&sz);
+//
+//    if (sz > 0) {
+//        std::cout << "Marchables:" << sz << std::endl;
+//        glBindBuffer(GL_SHADER_STORAGE_BUFFER,marchableList);
+//        glm::uvec4* mappedMarchables;
+//        mappedMarchables = (glm::uvec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,sz,GL_MAP_READ_BIT);
+//        for (int i = 0; i < sz; i++) {
+//            std::cout << mappedMarchables[i].x << ", " << mappedMarchables[i].y << ", " << mappedMarchables[i].z << ": " << std::bitset<16>(mappedMarchables[i].w) << "(" << (mappedMarchables[i].w & 511) << ")" <<std::endl;
+//        }
+//        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+//    }
+
+
+    //END DEBUG REGION
 
     //Stage 3
 
@@ -154,10 +215,29 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,6,*normalBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,pointCount*sizeof(glm::vec4),NULL,GL_DYNAMIC_DRAW);
 
+    glUniform1f(polygonizeShader.getUniform("transitionWidth"),Config::get<float>("transition_width"));
+
+    glUniform1i(polygonizeShader.getUniform("generateTransitionCells"),Config::get<bool>("generate_transition_cells"));
+    glUniform1i(polygonizeShader.getUniform("generateRegularCells"),Config::get<bool>("generate_regular_cells"));
+    glUniform1i(polygonizeShader.getUniform("interpolate"), Config::get<bool>("interpolate"));
+
     glDispatchCompute(jobCount,1,1);
 
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
     *geometrySize = pointCount;
+
+    //BEGIN DEBUG REGION
+//    std::cout << "Total points in mesh: " << pointCount << std::endl;
+//
+//
+//    glBindBuffer(GL_SHADER_STORAGE_BUFFER,*vertexBuffer);
+//    glm::vec4* mappedVertices;
+//    mappedVertices = (glm::vec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,pointCount,GL_MAP_READ_BIT);
+//    for (int i = 0; i < pointCount; i++) {
+//        std::cout << mappedVertices[i].x << ", " << mappedVertices[i].y << ", " << mappedVertices[i].z << std::endl;
+//    }
+//    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    //END DEBUG REGION
 
 }
 int TransvoxelGenerator::getDensityBufferSize(glm::uvec3 chunkSize, int edgeIndex)

@@ -66,7 +66,9 @@ bool Window::initGL()
 
     //misc OpenGL Setup
     glClearColor(0,148./255,1,1);
-    glEnable(GL_CULL_FACE);
+    if (Config::get<bool>("backface_culling")) {
+        glEnable(GL_CULL_FACE);
+    }
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);

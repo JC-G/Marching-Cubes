@@ -16,6 +16,8 @@ layout(binding = 7) uniform atomic_uint triCount;
 
 layout(local_size_x=256,local_size_y=1,local_size_z=1) in;
 
+uniform bool interpolate;
+
 vec3 VertexInterp(vec3 p1, vec3 p2, float valp1, float valp2) {
     float mu;
     vec3 p;
@@ -35,18 +37,17 @@ vec3 VertexInterp(vec3 p1, vec3 p2, float valp1, float valp2) {
         return(p1);
 
     }
-    mu = -valp1 / (valp2 - valp1);
+    if (!interpolate) {
+        mu = 0.5;
+    } else {
+        mu = -valp1 / (valp2 - valp1);
+    }
     p = p1 + mu * (p2 - p1);
 
     return(p);
 }
 
-void main() {
-    if (gl_GlobalInvocationID.x >= marchableCount) {
-        return;
-    }
-
-    //TODO - transition cells
+void generateCell() {
     uvec3 gid = marchableList[gl_GlobalInvocationID.x].xyz;
 
     float gridCells[8];
@@ -62,11 +63,27 @@ void main() {
 	gridPos[6] = gid+uvec3(0,1,1);
 	gridPos[7] = gid+uvec3(1,1,1);
 
+    //transitionGridPos is the grid positions including the offset from the transition cells
+    vec3 transitionGridPos[8];
+
+    for (int i = 0; i < 8; i++) {
+        transitionGridPos[i] = gridPos[i];
+    }
+
+    if ((edgeIndex & 1) != 0 && gid.x == 0) {
+        transitionGridPos[0].x += transitionWidth;
+        transitionGridPos[2].x += transitionWidth;
+        transitionGridPos[4].x += transitionWidth;
+        transitionGridPos[6].x += transitionWidth;
+    }
+    //TODO - other directions and corners
+
+    //Actual density values
     for (int i = 0; i < 8; i++) {
         gridCells[i] = densityValues[getArrID(gridPos[i],uvec3(0))];
     }
 
-	uint cellIndex = marchableList[gl_GlobalInvocationID.x].w;
+	uint cellIndex = marchableList[gl_GlobalInvocationID.x].w & ((1<<9)-1);
 	uint cellClass = regularCellClass[cellIndex];
 	uint totalPoints = regularTotalTable[cellClass];
 
@@ -81,9 +98,109 @@ void main() {
         uint v1Index = vertexData & 0x0F;
         uint v2Index = vertexData >> 4;
 
-        vec3 vertPos = VertexInterp(gridPos[v1Index],gridPos[v2Index],gridCells[v1Index],gridCells[v2Index]) * chunkStride + chunkPosition;
+        vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],gridCells[v1Index],gridCells[v2Index]) * chunkStride + chunkPosition;
 
         vertices[vertexIndex] = vec4(vertPos,1);
         normals[vertexIndex] = vec4(normal(vertPos),0);
     }
 }
+
+void generateTransitionCell() {
+    uvec3 gid = marchableList[gl_GlobalInvocationID.x].xyz;
+	if (gid.x == 0 && (edgeIndex & 1) != 0) {
+
+        //transitionGridPos is the actual vertex positions - as labelled in Figure 4.16
+        vec3 transitionGridPos[13];
+
+        transitionGridPos[0] = gid + vec3(0,0,0) + 0.5 * vec3(0,0,0);
+        transitionGridPos[1] = gid + vec3(0,0,0) + 0.5 * vec3(0,1,0);
+        transitionGridPos[2] = gid + vec3(0,1,0) + 0.5 * vec3(0,0,0);
+
+        transitionGridPos[3] = gid + vec3(0,0,0) + 0.5 * vec3(0,0,1);
+        transitionGridPos[4] = gid + vec3(0,0,0) + 0.5 * vec3(0,1,1);
+        transitionGridPos[5] = gid + vec3(0,1,0) + 0.5 * vec3(0,0,1);
+
+        transitionGridPos[6] = gid + vec3(0,0,1) + 0.5 * vec3(0,0,0);
+        transitionGridPos[7] = gid + vec3(0,0,1) + 0.5 * vec3(0,1,0);
+        transitionGridPos[8] = gid + vec3(0,1,1) + 0.5 * vec3(0,0,0);
+
+        transitionGridPos[9 ] = transitionGridPos[0] + vec3(1-transitionWidth,0,0);
+        transitionGridPos[10] = transitionGridPos[2] + vec3(1-transitionWidth,0,0);
+        transitionGridPos[11] = transitionGridPos[6] + vec3(1-transitionWidth,0,0);
+        transitionGridPos[12] = transitionGridPos[8] + vec3(1-transitionWidth,0,0);
+
+
+        float transitionGridCells[13];
+
+        transitionGridCells[0] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,0,0))];
+        transitionGridCells[1] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,1,0))];
+        transitionGridCells[2] = densityValues[getArrID(gid+uvec3(0,1,0),uvec3(0,0,0))];
+
+        transitionGridCells[3] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,0,1))];
+        transitionGridCells[4] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,1,1))];
+        transitionGridCells[5] = densityValues[getArrID(gid+uvec3(0,1,0),uvec3(0,0,1))];
+
+        transitionGridCells[6] = densityValues[getArrID(gid+uvec3(0,0,1),uvec3(0,0,0))];
+        transitionGridCells[7] = densityValues[getArrID(gid+uvec3(0,0,1),uvec3(0,1,0))];
+        transitionGridCells[8] = densityValues[getArrID(gid+uvec3(0,1,1),uvec3(0,0,0))];
+
+        transitionGridCells[9 ] = transitionGridCells[0];
+        transitionGridCells[10] = transitionGridCells[2];
+        transitionGridCells[11] = transitionGridCells[6];
+        transitionGridCells[12] = transitionGridCells[8];
+
+        uint paddedTransitionCellIndex = marchableList[gl_GlobalInvocationID.x].w;
+        uint transitionCellIndex = paddedTransitionCellIndex & ((1<<9)-1);
+        uint cellClass = transitionCellClass[transitionCellIndex];
+        uint totalPoints = transitionTotalTable[cellClass & 0x7F];
+
+        uint index = 0;
+        for (int i = 0; i < totalPoints; i++) {
+            if (i % 3 == 0) {
+                index = atomicCounterIncrement(triCount);
+            }
+            uint vertexIndex = index * 3 + (i % 3);
+
+            //CONTINUE - here - this still isnt working!
+            uint vertexData = transitionVertexData[transitionCellIndex * 12 + transitionCellData[(cellClass & 0x7F) * 37 + 1+i]];
+            uint v1Index;
+            uint v2Index;
+
+            //TODO - when do we reverse the order
+            if (cellClass > 0x7f) {
+                v1Index = vertexData >> 4;
+                v2Index = vertexData & 0x0F;
+            } else {
+                v1Index = vertexData & 0x0F;
+                v2Index = vertexData >> 4;
+            }
+
+            vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],transitionGridCells[v1Index],transitionGridCells[v2Index]) * chunkStride + chunkPosition;
+            vertices[vertexIndex] = vec4(vertPos,1);
+            normals[vertexIndex] = vec4(normal(vertPos),0);
+        }
+
+	}
+    return;
+}
+
+void main() {
+    if (gl_GlobalInvocationID.x >= marchableCount) {
+        return;
+    }
+
+    //TODO - transition cells
+    if (marchableList[gl_GlobalInvocationID.x].w > 255) {
+        if (generateTransitionCells) {
+            generateTransitionCell();
+        }
+    } else {
+        if (generateRegularCells) {
+            generateCell();
+        }
+    }
+
+}
+
+
+

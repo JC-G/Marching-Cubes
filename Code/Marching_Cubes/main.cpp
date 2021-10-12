@@ -26,7 +26,7 @@ GLuint gVBO = 0;
 GLuint programId;
 GLFWmonitor* monitor = NULL;
 
-static std::vector<MarchingChunk> loadedChunks;
+static std::vector<MarchingChunk*> loadedChunks;
 Octree* O;
 
 static void LoadObjects()
@@ -36,12 +36,18 @@ static void LoadObjects()
     glGenVertexArrays(1, &gVAO);
     glBindVertexArray(gVAO);
 
-    //GeometryGenerator* G = new GPUMarchingCubesGenerator(new Sphere(glm::vec3(0.0),10.0));
+    //GeometryGenerator* G = new TransvoxelGenerator(new Sphere(glm::vec3(0.0),1.3));
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
     GeometryGenerator* G = new TransvoxelGenerator(new NoiseTerrain());
+    if (!Config::get<bool>("single_chunk_mode")) {
+        O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);
+        O->update(glm::vec3(0));
 
-    O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);
-    O->update(glm::vec3(0));
+    } else {
+        //test code to generate a single chunk
+        int testEdgeIndex = 1;
+        loadedChunks.push_back(new MarchingChunk(glm::vec3(-1),glm::vec3(4),glm::vec3(0.5),G,1));
+    }
 }
 
 
@@ -55,10 +61,12 @@ static void Render() {
 
     //draw the chunk
     for (auto C : loadedChunks) {
-        C.draw(gVAO);
-
+        C->draw(gVAO);
     }
-    O->draw(gVAO);
+    if (!Config::get<bool>("single_chunk_mode")) {
+        O->draw(gVAO);
+    } else {
+    }
 
     // swap the display buffers (displays what was just drawn)
     glfwSwapBuffers(Window::window);
@@ -89,9 +97,10 @@ void AppMain() {
         throw std::runtime_error("OpenGL 4.2 API is not available.");
 
    // create buffer and fill it with the points of the triangle
-    LoadObjects();
 
     Window::attachCamera(new Camera);
+
+    LoadObjects();
 
     // load the (test) shader
     Shader shader = Shader::ShaderFromFiles("Shaders/vert.txt","Shaders/frag.txt");
@@ -107,8 +116,14 @@ void AppMain() {
     // process pending events
         glfwPollEvents();
         Window::handleInput();
-        O->update(Window::activeCamera->position);
-        O->generateAllChunks();
+
+        if (!Config::get<bool>("single_chunk_mode")) {
+            if (Config::get<bool>("update_octree")) {
+                O->update(Window::activeCamera->position);
+            }
+            O->generateAllChunks();
+        }
+
         glUseProgram(shader.getID());
 
         //set the view matrix accordingly

@@ -100,6 +100,8 @@
 		<Unit filename="src/SDF/Sphere.h" />
 		<Unit filename="src/SDF/TestSDF.cpp" />
 		<Unit filename="src/SDF/TestSDF.h" />
+		<Unit filename="src/SDF/planesdf.cpp" />
+		<Unit filename="src/SDF/planesdf.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

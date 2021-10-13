@@ -70,13 +70,156 @@ void generateCell() {
         transitionGridPos[i] = gridPos[i];
     }
 
+    //Figure 4.13
+    // -x
     if ((edgeIndex & 1) != 0 && gid.x == 0) {
-        transitionGridPos[0].x += transitionWidth;
-        transitionGridPos[2].x += transitionWidth;
-        transitionGridPos[4].x += transitionWidth;
-        transitionGridPos[6].x += transitionWidth;
+        //-y
+        if (gid.y != 0 || (edgeIndex & 4) != 0) {
+            transitionGridPos[0].x = gridPos[0].x + transitionWidth;
+            transitionGridPos[4].x = gridPos[4].x + transitionWidth;
+        }
+        //+y
+        if (gid.y != chunkSize.y - 1 || (edgeIndex & 8) != 0) {
+            transitionGridPos[2].x = gridPos[2].x + transitionWidth;
+            transitionGridPos[6].x = gridPos[6].x + transitionWidth;
+        }
+
+        //-z
+        if (gid.z != 0 || (edgeIndex & 16) != 0) {
+            transitionGridPos[0].x = gridPos[0].x + transitionWidth;
+            transitionGridPos[2].x = gridPos[2].x + transitionWidth;
+        }
+        //+z
+        if (gid.z != chunkSize.z - 1 || (edgeIndex & 32) != 0) {
+            transitionGridPos[4].x = gridPos[4].x + transitionWidth;
+            transitionGridPos[6].x = gridPos[6].x + transitionWidth;
+        }
     }
-    //TODO - other directions and corners
+
+    //+x
+    if ((edgeIndex & 2) != 0 && gid.x == chunkSize.x - 1) {
+        //-y
+        if (gid.y != 0 || (edgeIndex & 4) != 0) {
+            transitionGridPos[1].x = gridPos[1].x - transitionWidth;
+            transitionGridPos[5].x = gridPos[5].x - transitionWidth;
+        }
+        //+y
+        if (gid.y != chunkSize.y - 1 || (edgeIndex & 8) != 0) {
+            transitionGridPos[3].x = gridPos[3].x - transitionWidth;
+            transitionGridPos[7].x = gridPos[7].x - transitionWidth;
+        }
+
+        //-z
+        if (gid.z != 0 || (edgeIndex & 16) != 0) {
+            transitionGridPos[1].x = gridPos[1].x - transitionWidth;
+            transitionGridPos[3].x = gridPos[3].x - transitionWidth;
+        }
+        //+z
+        if (gid.z != chunkSize.z - 1 || (edgeIndex & 32) != 0) {
+            transitionGridPos[5].x = gridPos[5].x - transitionWidth;
+            transitionGridPos[7].x = gridPos[7].x - transitionWidth;
+        }
+    }
+    
+    // -y
+    if ((edgeIndex & 4) != 0 && gid.y == 0) {
+        //-x
+        if (gid.x != 0 || (edgeIndex & 1) != 0) {
+            transitionGridPos[0].y = gridPos[0].y + transitionWidth;
+            transitionGridPos[4].y = gridPos[4].y + transitionWidth;
+        }
+        //+x
+        if (gid.x != chunkSize.x - 1 || (edgeIndex & 2) != 0) {
+            transitionGridPos[1].y = gridPos[1].y + transitionWidth;
+            transitionGridPos[5].y = gridPos[5].y + transitionWidth;
+        }
+
+        //-z
+        if (gid.z != 0 || (edgeIndex & 16) != 0) {
+            transitionGridPos[0].y = gridPos[0].y + transitionWidth;
+            transitionGridPos[1].y = gridPos[1].y + transitionWidth;
+        }
+        //+z
+        if (gid.z != chunkSize.z - 1 || (edgeIndex & 32) != 0) {
+            transitionGridPos[4].y = gridPos[4].y + transitionWidth;
+            transitionGridPos[5].y = gridPos[5].y + transitionWidth;
+        }
+    }
+
+    // +y
+    if ((edgeIndex & 8) != 0 && gid.y == chunkSize.y-1) {
+        //-x
+        if (gid.x != 0 || (edgeIndex & 1) != 0) {
+            transitionGridPos[2].y = gridPos[2].y - transitionWidth;
+            transitionGridPos[6].y = gridPos[6].y - transitionWidth;
+        }
+        //+x
+        if (gid.x != chunkSize.x - 1 || (edgeIndex & 2) != 0) {
+            transitionGridPos[3].y = gridPos[3].y - transitionWidth;
+            transitionGridPos[7].y = gridPos[7].y - transitionWidth;
+        }
+
+        //-z
+        if (gid.z != 0 || (edgeIndex & 16) != 0) {
+            transitionGridPos[2].y = gridPos[2].y - transitionWidth;
+            transitionGridPos[3].y = gridPos[3].y - transitionWidth;
+        }
+        //+z
+        if (gid.z != chunkSize.z - 1 || (edgeIndex & 32) != 0) {
+            transitionGridPos[6].y = gridPos[6].y - transitionWidth;
+            transitionGridPos[7].y = gridPos[7].y - transitionWidth;
+        }
+    }
+
+    // -z
+    if ((edgeIndex & 16) != 0 && gid.z == 0) {
+        //-x
+        if (gid.x != 0 || (edgeIndex & 1) != 0) {
+            transitionGridPos[0].z = gridPos[0].z + transitionWidth;
+            transitionGridPos[2].z = gridPos[2].z + transitionWidth;
+        }
+        //+x
+        if (gid.x != chunkSize.x - 1 || (edgeIndex & 2) != 0) {
+            transitionGridPos[1].z = gridPos[1].z + transitionWidth;
+            transitionGridPos[3].z = gridPos[3].z + transitionWidth;
+        }
+
+        //-y
+        if (gid.y != 0 || (edgeIndex & 4) != 0) {
+            transitionGridPos[0].z = gridPos[0].z + transitionWidth;
+            transitionGridPos[1].z = gridPos[1].z + transitionWidth;
+        }
+        //+y
+        if (gid.y != chunkSize.y - 1 || (edgeIndex & 8) != 0) {
+            transitionGridPos[2].z = gridPos[2].z + transitionWidth;
+            transitionGridPos[3].z = gridPos[3].z + transitionWidth;
+        }
+    }
+
+    //+z
+    if ((edgeIndex & 32) != 0 && gid.z == chunkSize.z - 1) {
+        //-x
+        if (gid.x != 0 || (edgeIndex & 1) != 0) {
+            transitionGridPos[4].z = gridPos[4].z - transitionWidth;
+            transitionGridPos[6].z = gridPos[6].z - transitionWidth;
+        }
+        //+x
+        if (gid.x != chunkSize.x - 1 || (edgeIndex & 2) != 0) {
+            transitionGridPos[5].z = gridPos[5].z - transitionWidth;
+            transitionGridPos[7].z = gridPos[7].z - transitionWidth;
+        }
+
+        //-y
+        if (gid.y != 0 || (edgeIndex & 4) != 0) {
+            transitionGridPos[4].z = gridPos[4].z - transitionWidth;
+            transitionGridPos[5].z = gridPos[5].z - transitionWidth;
+        }
+        //+y
+        if (gid.y != chunkSize.y - 1 || (edgeIndex & 8) != 0) {
+            transitionGridPos[6].z = gridPos[6].z - transitionWidth;
+            transitionGridPos[7].z = gridPos[7].z - transitionWidth;
+        }
+    }
 
     //Actual density values
     for (int i = 0; i < 8; i++) {
@@ -124,10 +267,21 @@ void generateTransitionCell() {
         transitionGridPos[7] = gid + vec3(0,0,1) + 0.5 * vec3(0,1,0);
         transitionGridPos[8] = gid + vec3(0,1,1) + 0.5 * vec3(0,0,0);
 
-        transitionGridPos[9 ] = transitionGridPos[0] + vec3(1-transitionWidth,0,0);
-        transitionGridPos[10] = transitionGridPos[2] + vec3(1-transitionWidth,0,0);
-        transitionGridPos[11] = transitionGridPos[6] + vec3(1-transitionWidth,0,0);
-        transitionGridPos[12] = transitionGridPos[8] + vec3(1-transitionWidth,0,0);
+        //change the shape of the transition cell at the end of the chunk - Figure 4.13
+        if (gid.z == 0) {
+            transitionGridPos[9 ] = transitionGridPos[0];
+            transitionGridPos[10] = transitionGridPos[2];
+        } else {
+            transitionGridPos[9 ] = transitionGridPos[0] + vec3(transitionWidth,0,0);
+            transitionGridPos[10] = transitionGridPos[2] + vec3(transitionWidth,0,0);
+        }
+        if (gid.z == chunkSize.y - 1) {
+            transitionGridPos[11] = transitionGridPos[6];
+            transitionGridPos[12] = transitionGridPos[8];
+        } else{
+            transitionGridPos[11] = transitionGridPos[6] + vec3(transitionWidth,0,0);
+            transitionGridPos[12] = transitionGridPos[8] + vec3(transitionWidth,0,0);
+        }
 
 
         float transitionGridCells[13];
@@ -161,7 +315,6 @@ void generateTransitionCell() {
             }
             uint vertexIndex = index * 3 + (i % 3);
 
-            //CONTINUE - here - this still isnt working!
             uint vertexData = transitionVertexData[transitionCellIndex * 12 + transitionCellData[(cellClass & 0x7F) * 37 + 1+i]];
             uint v1Index;
             uint v2Index;

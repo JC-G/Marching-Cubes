@@ -72,7 +72,6 @@ void main () {
 	//transition cells - TODO
 	if (generateTransitionCells) {
 		if (gid.x == 0 && (edgeIndex & 1) != 0) {
-
 			float transitionGridCells[9];
 			uvec3 transitionGridPos[9];
 

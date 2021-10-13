@@ -16,6 +16,7 @@
 #include "SDF/SinTerrain.h"
 #include "SDF/NoiseTerrain.h"
 #include "SDF/TestSDF.h"
+#include "SDF/PlaneSDF.h"
 #include "Octree.h"
 #include "Config.h"
 
@@ -38,7 +39,8 @@ static void LoadObjects()
 
     //GeometryGenerator* G = new TransvoxelGenerator(new Sphere(glm::vec3(0.0),1.3));
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
-    GeometryGenerator* G = new TransvoxelGenerator(new NoiseTerrain());
+    //GeometryGenerator* G = new TransvoxelGenerator(new NoiseTerrain());
+    GeometryGenerator* G = new TransvoxelGenerator(new PlaneSDF());
     if (!Config::get<bool>("single_chunk_mode")) {
         O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);
         O->update(glm::vec3(0));

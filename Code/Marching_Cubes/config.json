@@ -10,17 +10,20 @@
     "chunk_size": 4,
 
     "camera_move_speed": 1.0,
-    "camera_start_position": [0.0,10.0,0.0],
+    "camera_start_position": [0.0,1.0,0.0],
 
     "draw_lines": true,
     "backface_culling": false,
 
-    "transition_width": 0.3,
+    "transition_width": 0.5,
     "generate_transition_cells": false,
     "generate_regular_cells": true,
     "interpolate": true,
 
     "single_chunk_mode": false,
+    "load_octree": true,
+
+    "show_test_cube": false,
 
     "debug": true
 }

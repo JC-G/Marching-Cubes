@@ -39,16 +39,21 @@ static void LoadObjects()
 
     //GeometryGenerator* G = new TransvoxelGenerator(new Sphere(glm::vec3(0.0),1.3));
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
-    //GeometryGenerator* G = new TransvoxelGenerator(new NoiseTerrain());
-    GeometryGenerator* G = new TransvoxelGenerator(new PlaneSDF());
-    if (!Config::get<bool>("single_chunk_mode")) {
+    GeometryGenerator* G = new TransvoxelGenerator(new NoiseTerrain());
+    //GeometryGenerator* G = new TransvoxelGenerator(new PlaneSDF());
+    if (Config::get<bool>("single_chunk_mode")) {
+        //test code to generate a single chunk
+        int testEdgeIndex = 1;
+        loadedChunks.push_back(new MarchingChunk(glm::vec3(-2,0,4),glm::vec3(4),glm::vec3(0.5),G,32));
+    }
+    if (Config::get<bool>("load_octree")) {
         O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);
         O->update(glm::vec3(0));
 
-    } else {
-        //test code to generate a single chunk
-        int testEdgeIndex = 1;
-        loadedChunks.push_back(new MarchingChunk(glm::vec3(-1),glm::vec3(4),glm::vec3(0.5),G,1));
+    }
+    if (Config::get<bool>("show_test_cube")) {
+        GeometryGenerator* C = new CubeGeometryGenerator();
+        loadedChunks.push_back(new MarchingChunk(glm::vec3(0),glm::vec3(0),glm::vec3(0),C,0));
     }
 }
 
@@ -65,9 +70,8 @@ static void Render() {
     for (auto C : loadedChunks) {
         C->draw(gVAO);
     }
-    if (!Config::get<bool>("single_chunk_mode")) {
+    if (Config::get<bool>("load_octree")) {
         O->draw(gVAO);
-    } else {
     }
 
     // swap the display buffers (displays what was just drawn)
@@ -119,7 +123,7 @@ void AppMain() {
         glfwPollEvents();
         Window::handleInput();
 
-        if (!Config::get<bool>("single_chunk_mode")) {
+        if (Config::get<bool>("load_octree")) {
             if (Config::get<bool>("update_octree")) {
                 O->update(Window::activeCamera->position);
             }

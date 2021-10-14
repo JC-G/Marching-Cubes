@@ -47,6 +47,86 @@ vec3 VertexInterp(vec3 p1, vec3 p2, float valp1, float valp2) {
     return(p);
 }
 
+vec3 alternateVertexPosition(uvec3 vertexPosition) {
+    //calculate the position the vertex goes to make space for transition cells
+    vec3 newPos = vertexPosition;
+    if (vertexPosition.x == 0) {
+        newPos.x += transitionWidth;
+    }
+    if (vertexPosition.x == chunkSize.x) {
+        newPos.x -= transitionWidth;
+    }
+    if (vertexPosition.y == 0) {
+        newPos.y += transitionWidth;
+    }
+    if (vertexPosition.y == chunkSize.y) {
+        newPos.y -= transitionWidth;
+    }
+    if (vertexPosition.z == 0) {
+        newPos.z += transitionWidth;
+    }
+    if (vertexPosition.z == chunkSize.z) {
+        newPos.z -= transitionWidth;
+    }
+    return newPos;
+}
+
+int getAdjacentEdges(uvec3 vertexPosition) {
+    //return an edgeIndex-like value corresponding to the edges this cell is closest to
+    int adjIndex = 0;
+    if (vertexPosition.x == 0) {
+        adjIndex |= 1;
+    }
+    if (vertexPosition.x == chunkSize.x) {
+        adjIndex |= 2;
+    }
+    if (vertexPosition.y == 0) {
+        adjIndex |= 4;
+    }
+    if (vertexPosition.y == chunkSize.y) {
+        adjIndex |= 8;
+    }
+    if (vertexPosition.z == 0) {
+        adjIndex |= 16;
+    }
+    if (vertexPosition.z == chunkSize.z) {
+        adjIndex |= 32;
+    }
+    return adjIndex;
+}
+
+vec3 actualVertexPosition(uvec3 gid, uvec3 vertexPosition) {
+    if (vertexPosition.x > 0 && vertexPosition.x < chunkSize.x
+        && vertexPosition.y > 0 && vertexPosition.y < chunkSize.y
+        && vertexPosition.z > 0 && vertexPosition.z < chunkSize.z) {
+            return vertexPosition;
+    }
+
+    int adjEdges = getAdjacentEdges(vertexPosition);
+
+    //equivalent to bitwise not on a 6-bit integer
+    int inverseEdgeIndex = 0x3F ^ (0x3F & edgeIndex);
+
+    //find the edges where we are adjacent to a cell rendering at a lower resolution
+    //ie adjacent and not edgeindex
+    int lowerResolutionEdges = inverseEdgeIndex & adjEdges;
+    int lowerResolutionCount = 0;
+    for (int i = 0; i < 6; i++) {
+        if ((lowerResolutionEdges & (1<<i)) != 0) {
+            lowerResolutionCount += 1;
+        }
+    }
+
+    if (lowerResolutionCount > 0) {
+        //use the regular vertex position
+        return vertexPosition;
+    } else {
+        //use the shifted vertex position
+        return alternateVertexPosition(vertexPosition);
+    }
+
+}
+
 void generateCell() {
     uvec3 gid = marchableList[gl_GlobalInvocationID.x].xyz;
 
@@ -67,158 +147,7 @@ void generateCell() {
     vec3 transitionGridPos[8];
 
     for (int i = 0; i < 8; i++) {
-        transitionGridPos[i] = gridPos[i];
-    }
-
-    //Figure 4.13
-    // -x
-    if ((edgeIndex & 1) != 0 && gid.x == 0) {
-        //-y
-        if (gid.y != 0 || (edgeIndex & 4) != 0) {
-            transitionGridPos[0].x = gridPos[0].x + transitionWidth;
-            transitionGridPos[4].x = gridPos[4].x + transitionWidth;
-        }
-        //+y
-        if (gid.y != chunkSize.y - 1 || (edgeIndex & 8) != 0) {
-            transitionGridPos[2].x = gridPos[2].x + transitionWidth;
-            transitionGridPos[6].x = gridPos[6].x + transitionWidth;
-        }
-
-        //-z
-        if (gid.z != 0 || (edgeIndex & 16) != 0) {
-            transitionGridPos[0].x = gridPos[0].x + transitionWidth;
-            transitionGridPos[2].x = gridPos[2].x + transitionWidth;
-        }
-        //+z
-        if (gid.z != chunkSize.z - 1 || (edgeIndex & 32) != 0) {
-            transitionGridPos[4].x = gridPos[4].x + transitionWidth;
-            transitionGridPos[6].x = gridPos[6].x + transitionWidth;
-        }
-    }
-
-    //+x
-    if ((edgeIndex & 2) != 0 && gid.x == chunkSize.x - 1) {
-        //-y
-        if (gid.y != 0 || (edgeIndex & 4) != 0) {
-            transitionGridPos[1].x = gridPos[1].x - transitionWidth;
-            transitionGridPos[5].x = gridPos[5].x - transitionWidth;
-        }
-        //+y
-        if (gid.y != chunkSize.y - 1 || (edgeIndex & 8) != 0) {
-            transitionGridPos[3].x = gridPos[3].x - transitionWidth;
-            transitionGridPos[7].x = gridPos[7].x - transitionWidth;
-        }
-
-        //-z
-        if (gid.z != 0 || (edgeIndex & 16) != 0) {
-            transitionGridPos[1].x = gridPos[1].x - transitionWidth;
-            transitionGridPos[3].x = gridPos[3].x - transitionWidth;
-        }
-        //+z
-        if (gid.z != chunkSize.z - 1 || (edgeIndex & 32) != 0) {
-            transitionGridPos[5].x = gridPos[5].x - transitionWidth;
-            transitionGridPos[7].x = gridPos[7].x - transitionWidth;
-        }
-    }
-    
-    // -y
-    if ((edgeIndex & 4) != 0 && gid.y == 0) {
-        //-x
-        if (gid.x != 0 || (edgeIndex & 1) != 0) {
-            transitionGridPos[0].y = gridPos[0].y + transitionWidth;
-            transitionGridPos[4].y = gridPos[4].y + transitionWidth;
-        }
-        //+x
-        if (gid.x != chunkSize.x - 1 || (edgeIndex & 2) != 0) {
-            transitionGridPos[1].y = gridPos[1].y + transitionWidth;
-            transitionGridPos[5].y = gridPos[5].y + transitionWidth;
-        }
-
-        //-z
-        if (gid.z != 0 || (edgeIndex & 16) != 0) {
-            transitionGridPos[0].y = gridPos[0].y + transitionWidth;
-            transitionGridPos[1].y = gridPos[1].y + transitionWidth;
-        }
-        //+z
-        if (gid.z != chunkSize.z - 1 || (edgeIndex & 32) != 0) {
-            transitionGridPos[4].y = gridPos[4].y + transitionWidth;
-            transitionGridPos[5].y = gridPos[5].y + transitionWidth;
-        }
-    }
-
-    // +y
-    if ((edgeIndex & 8) != 0 && gid.y == chunkSize.y-1) {
-        //-x
-        if (gid.x != 0 || (edgeIndex & 1) != 0) {
-            transitionGridPos[2].y = gridPos[2].y - transitionWidth;
-            transitionGridPos[6].y = gridPos[6].y - transitionWidth;
-        }
-        //+x
-        if (gid.x != chunkSize.x - 1 || (edgeIndex & 2) != 0) {
-            transitionGridPos[3].y = gridPos[3].y - transitionWidth;
-            transitionGridPos[7].y = gridPos[7].y - transitionWidth;
-        }
-
-        //-z
-        if (gid.z != 0 || (edgeIndex & 16) != 0) {
-            transitionGridPos[2].y = gridPos[2].y - transitionWidth;
-            transitionGridPos[3].y = gridPos[3].y - transitionWidth;
-        }
-        //+z
-        if (gid.z != chunkSize.z - 1 || (edgeIndex & 32) != 0) {
-            transitionGridPos[6].y = gridPos[6].y - transitionWidth;
-            transitionGridPos[7].y = gridPos[7].y - transitionWidth;
-        }
-    }
-
-    // -z
-    if ((edgeIndex & 16) != 0 && gid.z == 0) {
-        //-x
-        if (gid.x != 0 || (edgeIndex & 1) != 0) {
-            transitionGridPos[0].z = gridPos[0].z + transitionWidth;
-            transitionGridPos[2].z = gridPos[2].z + transitionWidth;
-        }
-        //+x
-        if (gid.x != chunkSize.x - 1 || (edgeIndex & 2) != 0) {
-            transitionGridPos[1].z = gridPos[1].z + transitionWidth;
-            transitionGridPos[3].z = gridPos[3].z + transitionWidth;
-        }
-
-        //-y
-        if (gid.y != 0 || (edgeIndex & 4) != 0) {
-            transitionGridPos[0].z = gridPos[0].z + transitionWidth;
-            transitionGridPos[1].z = gridPos[1].z + transitionWidth;
-        }
-        //+y
-        if (gid.y != chunkSize.y - 1 || (edgeIndex & 8) != 0) {
-            transitionGridPos[2].z = gridPos[2].z + transitionWidth;
-            transitionGridPos[3].z = gridPos[3].z + transitionWidth;
-        }
-    }
-
-    //+z
-    if ((edgeIndex & 32) != 0 && gid.z == chunkSize.z - 1) {
-        //-x
-        if (gid.x != 0 || (edgeIndex & 1) != 0) {
-            transitionGridPos[4].z = gridPos[4].z - transitionWidth;
-            transitionGridPos[6].z = gridPos[6].z - transitionWidth;
-        }
-        //+x
-        if (gid.x != chunkSize.x - 1 || (edgeIndex & 2) != 0) {
-            transitionGridPos[5].z = gridPos[5].z - transitionWidth;
-            transitionGridPos[7].z = gridPos[7].z - transitionWidth;
-        }
-
-        //-y
-        if (gid.y != 0 || (edgeIndex & 4) != 0) {
-            transitionGridPos[4].z = gridPos[4].z - transitionWidth;
-            transitionGridPos[5].z = gridPos[5].z - transitionWidth;
-        }
-        //+y
-        if (gid.y != chunkSize.y - 1 || (edgeIndex & 8) != 0) {
-            transitionGridPos[6].z = gridPos[6].z - transitionWidth;
-            transitionGridPos[7].z = gridPos[7].z - transitionWidth;
-        }
+        transitionGridPos[i] = actualVertexPosition(gid,gridPos[i]);
     }
 
     //Actual density values

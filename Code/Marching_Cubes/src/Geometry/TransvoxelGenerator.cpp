@@ -227,7 +227,9 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     *geometrySize = pointCount;
 
     //BEGIN DEBUG REGION
-//    std::cout << "Total points in mesh: " << pointCount << std::endl;
+//    if (pointCount > 0) {
+//        std::cout << "Total points in mesh: " << pointCount << std::endl;
+//    }
 //
 //
 //    glBindBuffer(GL_SHADER_STORAGE_BUFFER,*vertexBuffer);
@@ -240,8 +242,13 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     //END DEBUG REGION
 
 }
+
+//Changes here may affect getArrID in transvoxel_common
 int TransvoxelGenerator::getDensityBufferSize(glm::uvec3 chunkSize, int edgeIndex)
 {
+    //TODO - remove
+    return (2*chunkSize.x + 1) * (2*chunkSize.y + 1) * (2*chunkSize.z + 1);
+
     int total = (chunkSize.x - 1) * (chunkSize.y - 1) * (chunkSize.z - 1);
     if (edgeIndex & 1) {
         total += (2 * chunkSize.y + 1) * (2 * chunkSize.z + 1);

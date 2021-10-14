@@ -228,7 +228,7 @@ Octree* Octree::getNeighbor(glm::ivec3 relativePosition)
         } else {
             Octree* neighbor = myParent->getNeighbor(glm::ivec3(0,1,0));
             if (!neighbor || neighbor->isLeaf) return NULL;
-            return neighbor->myChildren[myPositionInParent.x][1][myPositionInParent.z];
+            return neighbor->myChildren[myPositionInParent.x][0][myPositionInParent.z];
         }
     }
     //-z

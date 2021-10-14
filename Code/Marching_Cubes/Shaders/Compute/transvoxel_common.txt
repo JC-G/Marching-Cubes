@@ -24,7 +24,15 @@ layout(binding = 15) buffer ttt {int transitionTotalTable[];};
 //should be as close to a bijection as possible - minimise the values that need to be generated twice
 //gid is between 0 and chunkSize inclusive
 //halfXYZ is 0 or 1 for half values
+
+//Changes here may affect TransvoxelGenerator::getDensityBufferSize
 uint getArrID(uvec3 gid, uvec3 halfXYZ) {
+
+    //TODO - remove debug method for something better
+    uvec3 temp = 2*gid + halfXYZ;
+    return temp.x + temp.y * (2 * chunkSize.x + 1) + temp.z * (2 * chunkSize.x + 1) * (2 * chunkSize.y + 1);
+
+
     //if cell is in the interior
     if (gid.x > 0 && gid.x < chunkSize.x && gid.y > 0 && gid.y < chunkSize.y && gid.z > 0 && gid.z < chunkSize.z) {
         return (gid.x - 1)

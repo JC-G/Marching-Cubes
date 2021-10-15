@@ -47,7 +47,7 @@ vec3 VertexInterp(vec3 p1, vec3 p2, float valp1, float valp2) {
     return(p);
 }
 
-vec3 alternateVertexPosition(uvec3 vertexPosition) {
+vec3 alternateVertexPosition(ivec3 vertexPosition) {
     //calculate the position the vertex goes to make space for transition cells
     vec3 newPos = vertexPosition;
     if (vertexPosition.x == 0) {
@@ -71,7 +71,7 @@ vec3 alternateVertexPosition(uvec3 vertexPosition) {
     return newPos;
 }
 
-int getAdjacentEdges(uvec3 vertexPosition) {
+int getAdjacentEdges(ivec3 vertexPosition) {
     //return an edgeIndex-like value corresponding to the edges this cell is closest to
     int adjIndex = 0;
     if (vertexPosition.x == 0) {
@@ -95,7 +95,7 @@ int getAdjacentEdges(uvec3 vertexPosition) {
     return adjIndex;
 }
 
-vec3 actualVertexPosition(uvec3 gid, uvec3 vertexPosition) {
+vec3 actualVertexPosition(ivec3 vertexPosition) {
     if (vertexPosition.x > 0 && vertexPosition.x < chunkSize.x
         && vertexPosition.y > 0 && vertexPosition.y < chunkSize.y
         && vertexPosition.z > 0 && vertexPosition.z < chunkSize.z) {
@@ -111,13 +111,8 @@ vec3 actualVertexPosition(uvec3 gid, uvec3 vertexPosition) {
     //ie adjacent and not edgeindex
     int lowerResolutionEdges = inverseEdgeIndex & adjEdges;
     int lowerResolutionCount = 0;
-    for (int i = 0; i < 6; i++) {
-        if ((lowerResolutionEdges & (1<<i)) != 0) {
-            lowerResolutionCount += 1;
-        }
-    }
 
-    if (lowerResolutionCount > 0) {
+    if (lowerResolutionEdges > 0) {
         //use the regular vertex position
         return vertexPosition;
     } else {
@@ -131,23 +126,23 @@ void generateCell() {
     uvec3 gid = marchableList[gl_GlobalInvocationID.x].xyz;
 
     float gridCells[8];
-    uvec3 gridPos[8];
+    ivec3 gridPos[8];
 
     //assigned as per Figure 3.7 in transvoxel paper - note this is DIFFERENT to the previous marching cubes algorithm
-    gridPos[0] = gid;
-	gridPos[1] = gid+uvec3(1,0,0);
-	gridPos[2] = gid+uvec3(0,1,0);
-	gridPos[3] = gid+uvec3(1,1,0);
-	gridPos[4] = gid+uvec3(0,0,1);
-	gridPos[5] = gid+uvec3(1,0,1);
-	gridPos[6] = gid+uvec3(0,1,1);
-	gridPos[7] = gid+uvec3(1,1,1);
+    gridPos[0] = ivec3(gid);
+    gridPos[1] = ivec3(gid)+ivec3(1,0,0);
+	gridPos[2] = ivec3(gid)+ivec3(0,1,0);
+	gridPos[3] = ivec3(gid)+ivec3(1,1,0);
+	gridPos[4] = ivec3(gid)+ivec3(0,0,1);
+	gridPos[5] = ivec3(gid)+ivec3(1,0,1);
+	gridPos[6] = ivec3(gid)+ivec3(0,1,1);
+	gridPos[7] = ivec3(gid)+ivec3(1,1,1);
 
     //transitionGridPos is the grid positions including the offset from the transition cells
     vec3 transitionGridPos[8];
 
     for (int i = 0; i < 8; i++) {
-        transitionGridPos[i] = actualVertexPosition(gid,gridPos[i]);
+        transitionGridPos[i] = actualVertexPosition(gridPos[i]);
     }
 
     //Actual density values
@@ -179,53 +174,83 @@ void generateCell() {
 
 void generateTransitionCell() {
     uvec3 gid = marchableList[gl_GlobalInvocationID.x].xyz;
-	if (gid.x == 0 && (edgeIndex & 1) != 0) {
+
+    ivec3 integerFace[4];
+    vec3 transitionGridPos[13];
+    float transitionGridCells[13];
+    //bits 10-15 describe the orientation of the cell, in the same way as edgeIndex
+    int mask = int(marchableList[gl_GlobalInvocationID.x].w) >> 10;
+	if (doGenerateTransitionCell(gid,mask)) {
+        ivec3 cellEdges = ivec3(0);
+        if (mask == 2) {
+            cellEdges.x = 1;
+        }
+        if (mask == 8) {
+            cellEdges.y = 1;
+        }
+        if (mask == 32) {
+            cellEdges.z = 1;
+        }
 
         //transitionGridPos is the actual vertex positions - as labelled in Figure 4.16
+        //keep these as uvec3 so we can use actualVertexPosition
+        ivec3 directionData = getDirectionData(mask);
+        ivec3 transformedDirectionData = transformDirectionData(directionData);
+        ivec3 integerFace[4];
+
+        int integerFaceCounter = 0;
+        for (int zi = 0; zi < 2; zi++) {
+            for (int yi = 0; yi < 2; yi++) {
+                for (int xi = 0; xi < 2; xi++) {
+                    // if component is -1, start at gid+1
+                    // if component is +1, start at gid
+                    // if component is 0, do not move this coordinate
+                    integerFace[integerFaceCounter] = ivec3(gid) + cellEdges + (ivec3(xi,yi,zi) * directionData) + transformedDirectionData;
+                    integerFaceCounter++;
+                    if (directionData.x == 0) break;
+                }
+                if (directionData.y == 0) break;
+            }
+            if (directionData.z == 0) break;
+        }
+
         vec3 transitionGridPos[13];
 
-        transitionGridPos[0] = gid + vec3(0,0,0) + 0.5 * vec3(0,0,0);
-        transitionGridPos[1] = gid + vec3(0,0,0) + 0.5 * vec3(0,1,0);
-        transitionGridPos[2] = gid + vec3(0,1,0) + 0.5 * vec3(0,0,0);
-
-        transitionGridPos[3] = gid + vec3(0,0,0) + 0.5 * vec3(0,0,1);
-        transitionGridPos[4] = gid + vec3(0,0,0) + 0.5 * vec3(0,1,1);
-        transitionGridPos[5] = gid + vec3(0,1,0) + 0.5 * vec3(0,0,1);
-
-        transitionGridPos[6] = gid + vec3(0,0,1) + 0.5 * vec3(0,0,0);
-        transitionGridPos[7] = gid + vec3(0,0,1) + 0.5 * vec3(0,1,0);
-        transitionGridPos[8] = gid + vec3(0,1,1) + 0.5 * vec3(0,0,0);
+        int transitionCellCounter = 0;
+        for (int zi = 0; zi < 3; zi++) {
+            for (int yi = 0; yi < 3; yi++) {
+                for (int xi = 0; xi < 3; xi++) {
+                    ivec3 actualPosition = getActualPosition(ivec3(xi,yi,zi),directionData);
+                    transitionGridPos[transitionCellCounter] = vec3(gid + cellEdges + getFullPart(actualPosition)) + 0.5 * vec3(getHalfPart(actualPosition));
+                    transitionCellCounter++;
+                    if (directionData.x == 0) break;
+                }
+                if (directionData.y == 0) break;
+            }
+            if (directionData.z == 0) break;
+        }
 
         //change the shape of the transition cell at the end of the chunk - Figure 4.13
-        if (gid.z == 0) {
-            transitionGridPos[9 ] = transitionGridPos[0];
-            transitionGridPos[10] = transitionGridPos[2];
-        } else {
-            transitionGridPos[9 ] = transitionGridPos[0] + vec3(transitionWidth,0,0);
-            transitionGridPos[10] = transitionGridPos[2] + vec3(transitionWidth,0,0);
-        }
-        if (gid.z == chunkSize.y - 1) {
-            transitionGridPos[11] = transitionGridPos[6];
-            transitionGridPos[12] = transitionGridPos[8];
-        } else{
-            transitionGridPos[11] = transitionGridPos[6] + vec3(transitionWidth,0,0);
-            transitionGridPos[12] = transitionGridPos[8] + vec3(transitionWidth,0,0);
-        }
-
+        transitionGridPos[9 ] = actualVertexPosition(integerFace[0]);
+        transitionGridPos[10] = actualVertexPosition(integerFace[1]);
+        transitionGridPos[11] = actualVertexPosition(integerFace[2]);
+        transitionGridPos[12] = actualVertexPosition(integerFace[3]);
 
         float transitionGridCells[13];
-
-        transitionGridCells[0] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,0,0))];
-        transitionGridCells[1] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,1,0))];
-        transitionGridCells[2] = densityValues[getArrID(gid+uvec3(0,1,0),uvec3(0,0,0))];
-
-        transitionGridCells[3] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,0,1))];
-        transitionGridCells[4] = densityValues[getArrID(gid+uvec3(0,0,0),uvec3(0,1,1))];
-        transitionGridCells[5] = densityValues[getArrID(gid+uvec3(0,1,0),uvec3(0,0,1))];
-
-        transitionGridCells[6] = densityValues[getArrID(gid+uvec3(0,0,1),uvec3(0,0,0))];
-        transitionGridCells[7] = densityValues[getArrID(gid+uvec3(0,0,1),uvec3(0,1,0))];
-        transitionGridCells[8] = densityValues[getArrID(gid+uvec3(0,1,1),uvec3(0,0,0))];
+        //TODO - this is duplicate from transvoxel_count
+        int gridCellCounter = 0;
+        for (int zi = 0; zi < 3; zi++) {
+            for (int yi = 0; yi < 3; yi++) {
+                for (int xi = 0; xi < 3; xi++) {
+                    ivec3 actualPosition = getActualPosition(ivec3(xi,yi,zi),directionData);
+                    transitionGridCells[gridCellCounter] = densityValues[getArrID(gid + cellEdges + getFullPart(actualPosition), getHalfPart(actualPosition))];
+                    gridCellCounter++;
+                    if (directionData.x == 0) break;
+                }
+                if (directionData.y == 0) break;
+            }
+            if (directionData.z == 0) break;
+        }
 
         transitionGridCells[9 ] = transitionGridCells[0];
         transitionGridCells[10] = transitionGridCells[2];

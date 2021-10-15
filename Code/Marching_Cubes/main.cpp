@@ -39,12 +39,13 @@ static void LoadObjects()
 
     //GeometryGenerator* G = new TransvoxelGenerator(new Sphere(glm::vec3(0.0),1.3));
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
-    GeometryGenerator* G = new TransvoxelGenerator(new NoiseTerrain());
+    //GeometryGenerator* G = new TransvoxelGenerator(new NoiseTerrain());
     //GeometryGenerator* G = new TransvoxelGenerator(new PlaneSDF());
+    GeometryGenerator* G = new TransvoxelGenerator(new SinTerrain());
     if (Config::get<bool>("single_chunk_mode")) {
         //test code to generate a single chunk
         int testEdgeIndex = 1;
-        loadedChunks.push_back(new MarchingChunk(glm::vec3(-2,0,4),glm::vec3(4),glm::vec3(0.5),G,32));
+        loadedChunks.push_back(new MarchingChunk(glm::vec3(-1,-1,-1),glm::vec3(4),glm::vec3(0.5),G,0b111111));
     }
     if (Config::get<bool>("load_octree")) {
         O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);

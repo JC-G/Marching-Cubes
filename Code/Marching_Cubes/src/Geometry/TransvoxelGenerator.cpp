@@ -121,7 +121,7 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     glDispatchCompute(1+chunkSize.x/8, 1+chunkSize.y/8, 1+chunkSize.z/8);
 
     //BEGIN DEBUG REGION
-//
+
 //    int dbsize = getDensityBufferSize(chunkSize,edgeIndex);
 //    std::cout << "Densities:" << dbsize<< std::endl;
 //    glBindBuffer(GL_SHADER_STORAGE_BUFFER,densityValuesBuffer);
@@ -168,7 +168,7 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
 //
 //    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER,marchableCounter);
 //    glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER,0,sizeof(GLuint),&sz);
-//
+
 //    if (sz > 0) {
 //        std::cout << "Marchables:" << sz << std::endl;
 //        glBindBuffer(GL_SHADER_STORAGE_BUFFER,marchableList);

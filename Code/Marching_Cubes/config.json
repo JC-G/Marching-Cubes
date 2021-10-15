@@ -12,11 +12,11 @@
     "camera_move_speed": 1.0,
     "camera_start_position": [0.0,1.0,0.0],
 
-    "draw_lines": true,
+    "draw_lines": false,
     "backface_culling": false,
 
     "transition_width": 0.5,
-    "generate_transition_cells": false,
+    "generate_transition_cells": true,
     "generate_regular_cells": true,
     "interpolate": true,
 

@@ -40,8 +40,18 @@ static void LoadObjects()
     //GeometryGenerator* G = new TransvoxelGenerator(new Sphere(glm::vec3(0.0),1.3));
     //GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
     //GeometryGenerator* G = new TransvoxelGenerator(new NoiseTerrain());
-    //GeometryGenerator* G = new TransvoxelGenerator(new PlaneSDF());
-    GeometryGenerator* G = new TransvoxelGenerator(new SinTerrain());
+    std::string terrainMode = Config::get<std::string>("terrain_mode");
+    SDF* usedSDF;
+    if (terrainMode == "plane") {
+        usedSDF = new PlaneSDF();
+    } else if (terrainMode == "terrain") {
+        usedSDF = new NoiseTerrain();
+    } else if (terrainMode == "sphere") {
+        usedSDF = new Sphere(glm::vec3(0.0),1.3);
+    } else if (terrainMode == "sin") {
+        usedSDF = new SinTerrain();
+    }
+    GeometryGenerator* G = new TransvoxelGenerator(usedSDF);
     if (Config::get<bool>("single_chunk_mode")) {
         //test code to generate a single chunk
         int testEdgeIndex = 1;

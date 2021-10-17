@@ -100,7 +100,7 @@ bool Octree::shouldChop(glm::vec3 inPos)
         return false;
     }
     //TODO - Chop condition
-    if (glm::length(getCenter() - inPos) >= Config::get<float>("octree_lod_scale") * glm::pow(0.5,myDetailLevel - 1)) {
+    if (glm::length(inPos - getCenter()) >= Config::get<float>("octree_lod_scale") * glm::pow(0.5,myDetailLevel - 1)) {
         return true;
     }
     return false;
@@ -257,11 +257,11 @@ void Octree::generateAllChunks()
 {
     //needed so we have the shape of the octree before generating chunks that rely on it
 
-    //TODO - only update when something has actually changed
     unsigned int E = getEdgeCode();
 
     if (isLeaf) {
-        if (!hasChunk) {
+        if (!hasChunk || E != edgeCode) {
+            edgeCode = E;
             generateMarchingChunk(E);
         }
     } else {

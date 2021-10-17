@@ -17,8 +17,6 @@ layout(std430,binding = 4) buffer Marchables {
     //cell index is the lowest 9 bits, (from 0 to 511)
     //cell type (transition or regular) is 10th bit (512, 1<<9)
     //transition cell orientation is the 11th to 16th bit (1024 - 32768, 1<<10 - 15)
-
-    //TODO - how are we dealing with orientation of transition cells
 };
 
 layout(local_size_x=8,local_size_y=8,local_size_z=8) in;
@@ -69,20 +67,20 @@ void main () {
 			marchableList[bufferIndex] = mc;
 		}
 	}
-	//transition cells - TODO
+
 	if (generateTransitionCells) {
-		float transitionGridCells[9];
-		ivec3 transitionGridPos[9];
-		int transitionCellIndex = 0;
 
 		for (int mask = 1; mask <= 32; mask *= 2) {
+			float transitionGridCells[9];
+			ivec3 transitionGridPos[9];
+			int transitionCellIndex = 0;
 			if (doGenerateTransitionCell(gid,mask)) {
 
 				//assigned as per Figure 4.16 in transvoxel paper
-			
+
 				ivec3 directionData = getDirectionData(mask);
 				ivec3 transformedDirectionData = transformDirectionData(directionData);
-				
+
 				ivec3 cellEdges = ivec3(0);
 				if (mask == 2) {
 					cellEdges.x = 1;
@@ -133,12 +131,11 @@ void main () {
 					//and with 0x7f
 					atomicCounterAddARB(pointCount,transitionTotalTable[0x7F & transitionCellClass[transitionCellIndex]]);
 
-					//TODO - increase the maximum buffer size to account for transition cells
 					uint bufferIndex = atomicCounterIncrement(marchableCount);
 					uvec4 mc = uvec4(gid.x,gid.y,gid.z,paddedTransitionCellIndex);
 					marchableList[bufferIndex] = mc;
 				}
 			}
-		}		
+		}
 	}
 }

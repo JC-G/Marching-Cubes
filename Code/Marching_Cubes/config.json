@@ -5,15 +5,15 @@
     "octree_size": 1024.0,
     "octree_max_depth": 10,
     "octree_lod_scale": 2048.0,
-    "update_octree": false,
+    "update_octree": true,
 
-    "chunk_size": 4,
+    "chunk_size": 32,
 
     "camera_move_speed": 1.0,
     "camera_start_position": [0.0,1.0,0.0],
 
     "draw_lines": false,
-    "backface_culling": false,
+    "backface_culling": true,
 
     "transition_width": 0.5,
     "generate_transition_cells": true,
@@ -24,6 +24,8 @@
     "load_octree": true,
 
     "show_test_cube": false,
+
+    "terrain_mode": "terrain",
 
     "debug": true
 }

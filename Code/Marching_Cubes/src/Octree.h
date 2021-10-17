@@ -47,6 +47,8 @@ class Octree
         //relativePosition - if -1 then in negative direction, if 1 then in positive direction
         //only one of the components should be non-zero
         Octree* getNeighbor(glm::ivec3 relativePosition);
+
+        unsigned int edgeCode = 0;
 };
 
 #endif // OCTREE_H

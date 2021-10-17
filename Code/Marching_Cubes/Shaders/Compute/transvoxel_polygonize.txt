@@ -267,22 +267,20 @@ void generateTransitionCell() {
             if (i % 3 == 0) {
                 index = atomicCounterIncrement(triCount);
             }
-            uint vertexIndex = index * 3 + (i % 3);
 
-            uint vertexData = transitionVertexData[transitionCellIndex * 12 + transitionCellData[(cellClass & 0x7F) * 37 + 1+i]];
-            uint v1Index;
-            uint v2Index;
-
-            //TODO - when do we reverse the order
-            if (cellClass > 0x7f) {
-                v1Index = vertexData >> 4;
-                v2Index = vertexData & 0x0F;
+            uint vertexIndex;
+            if (cellClass >= 0x7f) {
+                vertexIndex = index * 3 + 2 - (i % 3);
             } else {
-                v1Index = vertexData & 0x0F;
-                v2Index = vertexData >> 4;
+                vertexIndex = index * 3 + (i % 3);
             }
 
+            uint vertexData = transitionVertexData[transitionCellIndex * 12 + transitionCellData[(cellClass & 0x7F) * 37 + 1+i]];
+            uint v1Index = vertexData & 0x0F;
+            uint v2Index = vertexData >> 4;
+
             vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],transitionGridCells[v1Index],transitionGridCells[v2Index]) * chunkStride + chunkPosition;
+
             vertices[vertexIndex] = vec4(vertPos,1);
             normals[vertexIndex] = vec4(normal(vertPos),0);
         }
@@ -296,7 +294,6 @@ void main() {
         return;
     }
 
-    //TODO - transition cells
     if (marchableList[gl_GlobalInvocationID.x].w > 255) {
         if (generateTransitionCells) {
             generateTransitionCell();

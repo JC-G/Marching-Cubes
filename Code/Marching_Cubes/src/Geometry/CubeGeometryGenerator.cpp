@@ -64,6 +64,12 @@ void CubeGeometryGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3
     //put the geometry in
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
 
+    //fake normal buffer so the program doesnt crash...
+    glGenBuffers(1,normalBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER,*normalBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+
+
     //size of geometry
     *geometrySize = 12*4;
 }

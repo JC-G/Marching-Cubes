@@ -141,8 +141,13 @@ void generateCell() {
     //transitionGridPos is the grid positions including the offset from the transition cells
     vec3 transitionGridPos[8];
 
+    //hasShifted is true if the vertex has been moved as a result of being on a transition cell
+    bool hasShifted[8];
+
     for (int i = 0; i < 8; i++) {
-        transitionGridPos[i] = actualVertexPosition(gridPos[i]);
+        vec3 avp = actualVertexPosition(gridPos[i]);
+        transitionGridPos[i] = avp;
+        hasShifted[i] = (avp != vec3(gridPos[i]));
     }
 
     //Actual density values
@@ -165,7 +170,21 @@ void generateCell() {
         uint v1Index = vertexData & 0x0F;
         uint v2Index = vertexData >> 4;
 
-        vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],gridCells[v1Index],gridCells[v2Index]) * chunkStride + chunkPosition;
+        vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],gridCells[v1Index],gridCells[v2Index]);// * chunkStride + chunkPosition;
+
+        if (hasShifted[v1Index] || hasShifted[v2Index]) { //if this vertex has moved
+            //apply the transformation as in Figure 4.12
+
+            //where the vertex would have been
+            vec3 vp2 = VertexInterp(gridPos[v1Index],gridPos[v2Index],gridCells[v1Index], gridCells[v2Index]);
+            //normal at this position - in world space
+            vec3 n = normal(vp2 * chunkStride + chunkPosition);
+
+            vec3 dv = vertPos - vp2;
+            vertPos -= (dot(n,dv)) * n;
+        }
+
+        vertPos = vertPos * chunkStride + chunkPosition;
 
         vertices[vertexIndex] = vec4(vertPos,1);
         normals[vertexIndex] = vec4(normal(vertPos),0);
@@ -279,7 +298,36 @@ void generateTransitionCell() {
             uint v1Index = vertexData & 0x0F;
             uint v2Index = vertexData >> 4;
 
-            vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],transitionGridCells[v1Index],transitionGridCells[v2Index]) * chunkStride + chunkPosition;
+            vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],transitionGridCells[v1Index],transitionGridCells[v2Index]);// * chunkStride + chunkPosition;
+
+            //the back face has always been shifted, the front face has never been shifted
+            bool hasShifted[13] = {false,false,false,
+                                   false,false,false,
+                                   false,false,false,
+                                   true,true,
+                                   true,true};
+
+            vec3 gridPos[13];
+            for (int i = 0; i < 9; i++) {
+                gridPos[i] = transitionGridPos[i];
+            }
+            for (int i = 9; i < 13; i++) {
+                gridPos[i] = integerFace[i-9];
+            }
+
+            if (hasShifted[v1Index] || hasShifted[v2Index]) { //if this vertex has moved
+                //apply the transformation as in Figure 4.12
+                
+                //where the vertex would have been
+                vec3 vp2 = VertexInterp(gridPos[v1Index],gridPos[v2Index],transitionGridCells[v1Index], transitionGridCells[v2Index]);
+                //normal at this position - in world space
+                vec3 n = normal(vp2 * chunkStride + chunkPosition);
+
+                vec3 dv = vertPos - vp2;
+                vertPos -= (dot(n,dv)) * n;
+            }
+            
+            vertPos = vertPos * chunkStride + chunkPosition;
 
             vertices[vertexIndex] = vec4(vertPos,1);
             normals[vertexIndex] = vec4(normal(vertPos),0);

@@ -12,7 +12,7 @@
     "camera_move_speed": 1.0,
     "camera_start_position": [0.0,1.0,0.0],
 
-    "draw_lines": false,
+    "draw_lines": true,
     "backface_culling": true,
 
     "transition_width": 0.5,
@@ -23,7 +23,7 @@
     "single_chunk_mode": false,
     "load_octree": true,
 
-    "show_test_cube": false,
+    "show_test_cube": true,
 
     "terrain_mode": "terrain",
 

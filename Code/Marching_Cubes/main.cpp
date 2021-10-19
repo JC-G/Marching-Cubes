@@ -51,7 +51,15 @@ static void LoadObjects()
     } else if (terrainMode == "sin") {
         usedSDF = new SinTerrain();
     }
-    GeometryGenerator* G = new TransvoxelGenerator(usedSDF);
+    GeometryGenerator* G;
+    std::string generatorMode = Config::get<std::string>("generator_mode");
+    if (generatorMode == "transvoxel") {
+        G = new TransvoxelGenerator(usedSDF);
+    } else if (generatorMode == "CPU") {
+        G = new CPUMarchingCubesGenerator(usedSDF);
+    } else if (generatorMode == "GPU") {
+        G = new GPUMarchingCubesGenerator(usedSDF);
+    }
     if (Config::get<bool>("single_chunk_mode")) {
         //test code to generate a single chunk
         int testEdgeIndex = 1;

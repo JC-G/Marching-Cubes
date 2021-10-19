@@ -78,7 +78,7 @@ bool Window::initGL()
 
 glm::mat4 Window::getProjectionMatrix()
 {
-    return glm::perspective(glm::radians(90.0f),(float)(Window::width)/(float)(Window::height),0.1f,10000.0f);
+    return glm::perspective(glm::radians(90.0f),(float)(Window::width)/(float)(Window::height),0.01f,10000.0f);
 }
 
 

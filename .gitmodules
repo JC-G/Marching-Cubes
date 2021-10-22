@@ -1,0 +1,9 @@
+[submodule "Code/Marching_Cubes/lib/glew"]
+	path = Code/Marching_Cubes/lib/glew
+	url = https://github.com/Perlmint/glew-cmake
+[submodule "Code/Marching_Cubes/lib/glfw"]
+	path = Code/Marching_Cubes/lib/glfw
+	url = https://github.com/glfw/glfw
+[submodule "Code/Marching_Cubes/lib/glm"]
+	path = Code/Marching_Cubes/lib/glm
+	url = https://github.com/g-truc/glm

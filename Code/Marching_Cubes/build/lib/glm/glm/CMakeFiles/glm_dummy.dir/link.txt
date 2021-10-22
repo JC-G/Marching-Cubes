@@ -1,3 +1,0 @@
-"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\glm_dummy.dir/objects.a
-C:\MinGW\bin\ar.exe qc CMakeFiles\glm_dummy.dir/objects.a @CMakeFiles\glm_dummy.dir\objects1.rsp
-C:\MinGW\bin\mingw32-g++.exe -g -Wl,--whole-archive CMakeFiles\glm_dummy.dir/objects.a -Wl,--no-whole-archive -o glm_dummy.exe -Wl,--out-implib,libglm_dummy.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\glm_dummy.dir\linklibs.rsp

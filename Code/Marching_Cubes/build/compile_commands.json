@@ -1,0 +1,542 @@
+[
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\main.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\main.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/main.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\Config.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\Config.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/Config.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\Octree.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\Octree.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/Octree.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\Engine\\Camera.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\Engine\\Camera.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/Engine/Camera.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\Engine\\Shader.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\Engine\\Shader.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/Engine/Shader.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\Engine\\Window.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\Engine\\Window.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/Engine/Window.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\Geometry\\CPUMarchingCubesGenerator.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\Geometry\\CPUMarchingCubesGenerator.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/Geometry/CPUMarchingCubesGenerator.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\Geometry\\CubeGeometryGenerator.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\Geometry\\CubeGeometryGenerator.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/Geometry/CubeGeometryGenerator.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\Geometry\\GeometryGenerator.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\Geometry\\GeometryGenerator.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/Geometry/GeometryGenerator.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\Geometry\\GPUMarchingCubesGenerator.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\Geometry\\GPUMarchingCubesGenerator.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/Geometry/GPUMarchingCubesGenerator.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\Geometry\\MarchingChunk.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\Geometry\\MarchingChunk.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/Geometry/MarchingChunk.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\Geometry\\TransvoxelGenerator.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\Geometry\\TransvoxelGenerator.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/Geometry/TransvoxelGenerator.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\SDF\\NoiseTerrain.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\SDF\\NoiseTerrain.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/SDF/NoiseTerrain.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\SDF\\planesdf.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\SDF\\planesdf.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/SDF/planesdf.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\SDF\\SDF.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\SDF\\SDF.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/SDF/SDF.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\SDF\\SinTerrain.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\SDF\\SinTerrain.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/SDF/SinTerrain.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\SDF\\Sphere.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\SDF\\Sphere.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/SDF/Sphere.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC @CMakeFiles/MarchingCubes.dir/includes_CXX.rsp -g -Wall -std=gnu++11 -o CMakeFiles\\MarchingCubes.dir\\src\\SDF\\TestSDF.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\src\\SDF\\TestSDF.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/src/SDF/TestSDF.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\context.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\context.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/context.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\init.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\init.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/init.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\input.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\input.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/input.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\monitor.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\monitor.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/monitor.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\vulkan.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\vulkan.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/vulkan.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\window.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\window.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/window.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\win32_init.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\win32_init.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/win32_init.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\win32_joystick.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\win32_joystick.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/win32_joystick.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\win32_monitor.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\win32_monitor.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/win32_monitor.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\win32_time.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\win32_time.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/win32_time.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\win32_thread.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\win32_thread.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/win32_thread.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\win32_window.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\win32_window.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/win32_window.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\wgl_context.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\wgl_context.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/wgl_context.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\egl_context.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\egl_context.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/egl_context.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/src",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DUNICODE -DWINVER=0x0501 -D_GLFW_USE_CONFIG_H @CMakeFiles/glfw.dir/includes_C.rsp -g -Wall -Wdeclaration-after-statement -o CMakeFiles\\glfw.dir\\osmesa_context.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\src\\osmesa_context.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/src/osmesa_context.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/boing.dir/includes_C.rsp -g -o CMakeFiles\\boing.dir\\boing.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\examples\\boing.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/examples/boing.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/boing.dir/includes_C.rsp -g -o CMakeFiles\\boing.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/gears.dir/includes_C.rsp -g -o CMakeFiles\\gears.dir\\gears.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\examples\\gears.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/examples/gears.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/gears.dir/includes_C.rsp -g -o CMakeFiles\\gears.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/heightmap.dir/includes_C.rsp -g -o CMakeFiles\\heightmap.dir\\heightmap.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\examples\\heightmap.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/examples/heightmap.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/heightmap.dir/includes_C.rsp -g -o CMakeFiles\\heightmap.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/offscreen.dir/includes_C.rsp -g -o CMakeFiles\\offscreen.dir\\offscreen.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\examples\\offscreen.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/examples/offscreen.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/offscreen.dir/includes_C.rsp -g -o CMakeFiles\\offscreen.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/particles.dir/includes_C.rsp -g -o CMakeFiles\\particles.dir\\particles.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\examples\\particles.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/examples/particles.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/particles.dir/includes_C.rsp -g -o CMakeFiles\\particles.dir\\__\\deps\\tinycthread.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\tinycthread.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/tinycthread.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/particles.dir/includes_C.rsp -g -o CMakeFiles\\particles.dir\\__\\deps\\getopt.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\getopt.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/getopt.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/particles.dir/includes_C.rsp -g -o CMakeFiles\\particles.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/sharing.dir/includes_C.rsp -g -o CMakeFiles\\sharing.dir\\sharing.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\examples\\sharing.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/examples/sharing.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/sharing.dir/includes_C.rsp -g -o CMakeFiles\\sharing.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/simple.dir/includes_C.rsp -g -o CMakeFiles\\simple.dir\\simple.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\examples\\simple.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/examples/simple.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/simple.dir/includes_C.rsp -g -o CMakeFiles\\simple.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/splitview.dir/includes_C.rsp -g -o CMakeFiles\\splitview.dir\\splitview.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\examples\\splitview.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/examples/splitview.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/splitview.dir/includes_C.rsp -g -o CMakeFiles\\splitview.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/wave.dir/includes_C.rsp -g -o CMakeFiles\\wave.dir\\wave.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\examples\\wave.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/examples/wave.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/examples",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/wave.dir/includes_C.rsp -g -o CMakeFiles\\wave.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/clipboard.dir/includes_C.rsp -g -o CMakeFiles\\clipboard.dir\\clipboard.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\clipboard.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/clipboard.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/clipboard.dir/includes_C.rsp -g -o CMakeFiles\\clipboard.dir\\__\\deps\\getopt.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\getopt.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/getopt.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/clipboard.dir/includes_C.rsp -g -o CMakeFiles\\clipboard.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/events.dir/includes_C.rsp -g -o CMakeFiles\\events.dir\\events.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\events.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/events.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/events.dir/includes_C.rsp -g -o CMakeFiles\\events.dir\\__\\deps\\getopt.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\getopt.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/getopt.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/events.dir/includes_C.rsp -g -o CMakeFiles\\events.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/msaa.dir/includes_C.rsp -g -o CMakeFiles\\msaa.dir\\msaa.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\msaa.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/msaa.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/msaa.dir/includes_C.rsp -g -o CMakeFiles\\msaa.dir\\__\\deps\\getopt.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\getopt.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/getopt.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/msaa.dir/includes_C.rsp -g -o CMakeFiles\\msaa.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/glfwinfo.dir/includes_C.rsp -g -o CMakeFiles\\glfwinfo.dir\\glfwinfo.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\glfwinfo.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/glfwinfo.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/glfwinfo.dir/includes_C.rsp -g -o CMakeFiles\\glfwinfo.dir\\__\\deps\\getopt.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\getopt.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/getopt.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/glfwinfo.dir/includes_C.rsp -g -o CMakeFiles\\glfwinfo.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/iconify.dir/includes_C.rsp -g -o CMakeFiles\\iconify.dir\\iconify.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\iconify.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/iconify.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/iconify.dir/includes_C.rsp -g -o CMakeFiles\\iconify.dir\\__\\deps\\getopt.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\getopt.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/getopt.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/iconify.dir/includes_C.rsp -g -o CMakeFiles\\iconify.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/monitors.dir/includes_C.rsp -g -o CMakeFiles\\monitors.dir\\monitors.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\monitors.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/monitors.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/monitors.dir/includes_C.rsp -g -o CMakeFiles\\monitors.dir\\__\\deps\\getopt.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\getopt.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/getopt.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/monitors.dir/includes_C.rsp -g -o CMakeFiles\\monitors.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/reopen.dir/includes_C.rsp -g -o CMakeFiles\\reopen.dir\\reopen.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\reopen.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/reopen.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/reopen.dir/includes_C.rsp -g -o CMakeFiles\\reopen.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/cursor.dir/includes_C.rsp -g -o CMakeFiles\\cursor.dir\\cursor.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\cursor.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/cursor.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/cursor.dir/includes_C.rsp -g -o CMakeFiles\\cursor.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/empty.dir/includes_C.rsp -g -o CMakeFiles\\empty.dir\\empty.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\empty.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/empty.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/empty.dir/includes_C.rsp -g -o CMakeFiles\\empty.dir\\__\\deps\\tinycthread.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\tinycthread.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/tinycthread.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/empty.dir/includes_C.rsp -g -o CMakeFiles\\empty.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/gamma.dir/includes_C.rsp -g -o CMakeFiles\\gamma.dir\\gamma.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\gamma.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/gamma.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/gamma.dir/includes_C.rsp -g -o CMakeFiles\\gamma.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/icon.dir/includes_C.rsp -g -o CMakeFiles\\icon.dir\\icon.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\icon.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/icon.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/icon.dir/includes_C.rsp -g -o CMakeFiles\\icon.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/inputlag.dir/includes_C.rsp -g -o CMakeFiles\\inputlag.dir\\inputlag.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\inputlag.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/inputlag.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/inputlag.dir/includes_C.rsp -g -o CMakeFiles\\inputlag.dir\\__\\deps\\getopt.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\getopt.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/getopt.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/inputlag.dir/includes_C.rsp -g -o CMakeFiles\\inputlag.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/joysticks.dir/includes_C.rsp -g -o CMakeFiles\\joysticks.dir\\joysticks.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\joysticks.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/joysticks.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/joysticks.dir/includes_C.rsp -g -o CMakeFiles\\joysticks.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/opacity.dir/includes_C.rsp -g -o CMakeFiles\\opacity.dir\\opacity.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\opacity.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/opacity.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/opacity.dir/includes_C.rsp -g -o CMakeFiles\\opacity.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/tearing.dir/includes_C.rsp -g -o CMakeFiles\\tearing.dir\\tearing.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\tearing.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/tearing.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/tearing.dir/includes_C.rsp -g -o CMakeFiles\\tearing.dir\\__\\deps\\getopt.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\getopt.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/getopt.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/tearing.dir/includes_C.rsp -g -o CMakeFiles\\tearing.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/threads.dir/includes_C.rsp -g -o CMakeFiles\\threads.dir\\threads.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\threads.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/threads.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/threads.dir/includes_C.rsp -g -o CMakeFiles\\threads.dir\\__\\deps\\tinycthread.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\tinycthread.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/tinycthread.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/threads.dir/includes_C.rsp -g -o CMakeFiles\\threads.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/timeout.dir/includes_C.rsp -g -o CMakeFiles\\timeout.dir\\timeout.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\timeout.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/timeout.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/timeout.dir/includes_C.rsp -g -o CMakeFiles\\timeout.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/title.dir/includes_C.rsp -g -o CMakeFiles\\title.dir\\title.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\title.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/title.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/title.dir/includes_C.rsp -g -o CMakeFiles\\title.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/windows.dir/includes_C.rsp -g -o CMakeFiles\\windows.dir\\windows.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\tests\\windows.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/tests/windows.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/windows.dir/includes_C.rsp -g -o CMakeFiles\\windows.dir\\__\\deps\\getopt.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\getopt.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/getopt.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glfw/tests",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe  @CMakeFiles/windows.dir/includes_C.rsp -g -o CMakeFiles\\windows.dir\\__\\deps\\glad.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glfw\\deps\\glad.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glfw/deps/glad.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glew",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DGLEW_BUILD -DGLEW_NO_GLU -DGLEW_STATIC -DVC_EXTRALEAN -DWIN32_MEAN_AND_LEAN -D_CRT_SECURE_NO_WARNINGS @CMakeFiles/libglew_static.dir/includes_C.rsp -g -o CMakeFiles\\libglew_static.dir\\src\\glew.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glew\\src\\glew.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glew/src/glew.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glew",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DGLEW_BUILD -DGLEW_NO_GLU -DGLEW_STATIC -DVC_EXTRALEAN -DWIN32_MEAN_AND_LEAN -D_CRT_SECURE_NO_WARNINGS @CMakeFiles/libglewmx_static.dir/includes_C.rsp -g -o CMakeFiles\\libglewmx_static.dir\\src\\glew.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glew\\src\\glew.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glew/src/glew.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glew",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DGLEW_BUILD -DGLEW_NO_GLU -DGLEW_STATIC -DVC_EXTRALEAN -DWIN32_MEAN_AND_LEAN -D_CRT_SECURE_NO_WARNINGS -Dlibglew_shared_EXPORTS @CMakeFiles/libglew_shared.dir/includes_C.rsp -g -o CMakeFiles\\libglew_shared.dir\\src\\glew.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glew\\src\\glew.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glew/src/glew.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glew",
+  "command": "C:\\MinGW\\bin\\mingw32-gcc.exe -DGLEW_BUILD -DGLEW_NO_GLU -DGLEW_STATIC -DVC_EXTRALEAN -DWIN32_MEAN_AND_LEAN -D_CRT_SECURE_NO_WARNINGS -Dlibglewmx_shared_EXPORTS @CMakeFiles/libglewmx_shared.dir/includes_C.rsp -g -o CMakeFiles\\libglewmx_shared.dir\\src\\glew.c.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glew\\src\\glew.c",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glew/src/glew.c"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glm/glm",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC -D_CRT_SECURE_NO_WARNINGS @CMakeFiles/glm_dummy.dir/includes_CXX.rsp -g   -pedantic -O2 -o CMakeFiles\\glm_dummy.dir\\detail\\dummy.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glm\\glm\\detail\\dummy.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glm/glm/detail/dummy.cpp"
+},
+{
+  "directory": "D:/Marching_Cubes/Code/Marching_Cubes/build/lib/glm/glm",
+  "command": "C:\\MinGW\\bin\\mingw32-g++.exe -DGLEW_STATIC -D_CRT_SECURE_NO_WARNINGS @CMakeFiles/glm_dummy.dir/includes_CXX.rsp -g   -pedantic -O2 -o CMakeFiles\\glm_dummy.dir\\detail\\glm.cpp.obj -c D:\\Marching_Cubes\\Code\\Marching_Cubes\\lib\\glm\\glm\\detail\\glm.cpp",
+  "file": "D:/Marching_Cubes/Code/Marching_Cubes/lib/glm/glm/detail/glm.cpp"
+}
+]

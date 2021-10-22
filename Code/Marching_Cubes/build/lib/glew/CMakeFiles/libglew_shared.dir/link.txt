@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\libglew_shared.dir/objects.a
+C:\MinGW\bin\ar.exe qc CMakeFiles\libglew_shared.dir/objects.a @CMakeFiles\libglew_shared.dir\objects1.rsp
+C:\MinGW\bin\mingw32-gcc.exe -g -shared -o ..\..\bin\libglewd.dll -Wl,--out-implib,..\liblibglew_sharedd.dll.a -Wl,--major-image-version,0,--minor-image-version,0 -Wl,--whole-archive CMakeFiles\libglew_shared.dir/objects.a -Wl,--no-whole-archive @CMakeFiles\libglew_shared.dir\linklibs.rsp

@@ -130,7 +130,7 @@ void AppMain() {
     LoadObjects();
 
     // load the (test) shader
-    Shader shader = Shader::ShaderFromFiles("Shaders/vert.txt","Shaders/frag.txt");
+    Shader shader = Shader::ShaderFromFiles("Shaders/vert.glsl","Shaders/frag.glsl");
     glUseProgram(shader.getID());
 
     glm::mat4 VM = glm::lookAt(glm::vec3(2.0,3.0,4.0),glm::vec3(0.0),glm::vec3(0.0,1.0,0.0));

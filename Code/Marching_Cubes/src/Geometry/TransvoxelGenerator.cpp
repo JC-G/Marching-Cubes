@@ -148,9 +148,29 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER,3,pointCounter);
     glBufferData(GL_ATOMIC_COUNTER_BUFFER,sizeof(GLuint),&zero,GL_DYNAMIC_READ);
 
-    //TODO - the size will increase based on edges - calculate this when we come to transition cells
+    GLuint maxMarchableSize = chunkSize.x * chunkSize.y * chunkSize.z;
+    if (edgeIndex & 1) { //-x
+        maxMarchableSize += (1+chunkSize.y) * (1+chunkSize.z);
+    }
+    if (edgeIndex & 2) { //+x
+        maxMarchableSize += (1+chunkSize.y) * (1+chunkSize.z);
+    }
+    if (edgeIndex & 4) { //-y
+        maxMarchableSize += (1+chunkSize.x) * (1+chunkSize.z);
+    }
+    if (edgeIndex & 8) { //+y
+        maxMarchableSize += (1+chunkSize.x) * (1+chunkSize.z);
+    }
+    if (edgeIndex & 16) { //-z
+        maxMarchableSize += (1+chunkSize.x) * (1+chunkSize.y);
+    }
+    if (edgeIndex & 32) { //+z
+        maxMarchableSize += (1+chunkSize.x) * (1+chunkSize.y);
+    }
+    maxMarchableSize *= sizeof(glm::uvec4);
+    
     glBindBuffer(GL_SHADER_STORAGE_BUFFER,marchableList);
-    glBufferData(GL_SHADER_STORAGE_BUFFER,chunkSize.x * chunkSize.y * chunkSize.z * sizeof(glm::uvec4),NULL,GL_DYNAMIC_READ);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,maxMarchableSize,NULL,GL_DYNAMIC_READ);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,4,marchableList);
 
     glUniform3uiv(countShader.getUniform("chunkSize"),1,&chunkSize[0]);

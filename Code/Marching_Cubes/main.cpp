@@ -37,9 +37,6 @@ static void LoadObjects()
     glGenVertexArrays(1, &gVAO);
     glBindVertexArray(gVAO);
 
-    //GeometryGenerator* G = new TransvoxelGenerator(new Sphere(glm::vec3(0.0),1.3));
-    //GeometryGenerator* G = new GPUMarchingCubesGenerator(new NoiseTerrain());
-    //GeometryGenerator* G = new TransvoxelGenerator(new NoiseTerrain());
     std::string terrainMode = Config::get<std::string>("terrain_mode");
     SDF* usedSDF;
     if (terrainMode == "plane") {
@@ -62,7 +59,6 @@ static void LoadObjects()
     }
     if (Config::get<bool>("single_chunk_mode")) {
         //test code to generate a single chunk
-        int testEdgeIndex = 1;
         loadedChunks.push_back(new MarchingChunk(glm::vec3(-1,-1,-1),glm::vec3(4),glm::vec3(0.5),G,0b000011));
 
         loadedChunks.push_back(new MarchingChunk(glm::vec3(-1,-1,1),glm::vec3(4),glm::vec3(0.5),G,0b000000));
@@ -139,7 +135,7 @@ void AppMain() {
 
 
     // run while the window is open and focused
-    while(true){
+    while(!glfwWindowShouldClose(Window::window)){
     // process pending events
         glfwPollEvents();
         Window::handleInput();

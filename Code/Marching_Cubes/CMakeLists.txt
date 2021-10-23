@@ -77,24 +77,8 @@ target_link_libraries(MarchingCubes PRIVATE libglew_static)
 add_subdirectory(lib/glm EXCLUDE_FROM_ALL)
 target_link_libraries(MarchingCubes PRIVATE glm)
 
-# include shader files in output directory
+# include shader files and config in output directory
 
-configure_file(Shaders/vert.txt Shaders/vert.txt COPYONLY)
-configure_file(Shaders/frag.txt Shaders/frag.txt COPYONLY)
-
-configure_file(Shaders/Compute/shadertop.txt Shaders/Compute/shadertop.txt COPYONLY)
-
-configure_file(Shaders/Compute/common.txt Shaders/Compute/common.txt COPYONLY)
-configure_file(Shaders/Compute/countpolygons.txt Shaders/Compute/countpolygons.txt COPYONLY)
-configure_file(Shaders/Compute/generatedensity.txt Shaders/Compute/generatedensity.txt COPYONLY)
-configure_file(Shaders/Compute/polygonize.txt Shaders/Compute/polygonize.txt COPYONLY)
-
-configure_file(Shaders/Compute/transvoxel_common.txt Shaders/Compute/transvoxel_common.txt COPYONLY)
-configure_file(Shaders/Compute/transvoxel_count.txt Shaders/Compute/transvoxel_count.txt COPYONLY)
-configure_file(Shaders/Compute/transvoxel_generate.txt Shaders/Compute/transvoxel_generate.txt COPYONLY)
-configure_file(Shaders/Compute/transvoxel_polygonize.txt Shaders/Compute/transvoxel_polygonize.txt COPYONLY)
-
-#include config file
-
-configure_file(config.json config.json COPYONLY)
+add_custom_command(TARGET MarchingCubes POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Shaders $<TARGET_FILE_DIR:MarchingCubes>/Shaders)
+add_custom_command(TARGET MarchingCubes POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/config.json $<TARGET_FILE_DIR:MarchingCubes>/config.json)
 

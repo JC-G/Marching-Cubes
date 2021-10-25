@@ -13,8 +13,8 @@ class Octree
         void update(glm::vec3 inPos);
         void draw(GLuint VAO);
 
-        unsigned int getEdgeCode();
-        void generateAllChunks();
+        unsigned int getEdgeIndex();
+        void generateAllChunks(bool force = false);
     protected:
 
     private:
@@ -41,14 +41,14 @@ class Octree
         glm::vec3 getCenter();
 
 
-        void generateMarchingChunk(int edgeCode);
+        void generateMarchingChunk(int edgeIndex);
         void deleteChildren();
 
         //relativePosition - if -1 then in negative direction, if 1 then in positive direction
         //only one of the components should be non-zero
         Octree* getNeighbor(glm::ivec3 relativePosition);
 
-        unsigned int edgeCode = 0;
+        unsigned int edgeIndex = 0;
 };
 
 #endif // OCTREE_H

@@ -4,7 +4,6 @@ uniform uvec3 chunkSize;
 uniform vec3 chunkStride;
 uniform vec3 chunkPosition;
 uniform int edgeIndex; //where are extra values needed
-uniform float transitionWidth; //how wide are the transition cells, as a proportion of the normal cells
 
 //Debug generation options
 uniform bool generateTransitionCells;

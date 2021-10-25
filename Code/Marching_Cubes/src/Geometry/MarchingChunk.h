@@ -22,6 +22,7 @@ class MarchingChunk
         MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex = 0);
         virtual ~MarchingChunk();
         void draw(GLuint VAO);
+        bool hasGeometry();
 
     protected:
 

@@ -107,10 +107,10 @@ bool Octree::shouldChop(glm::vec3 inPos)
 }
 
 
-void Octree::generateMarchingChunk(int edgeCode)
+void Octree::generateMarchingChunk(int edgeIndex)
 {
     float stride = Config::get<float>("chunk_size");
-    myChunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(myPosition,glm::vec3(stride),mySize/stride,myGenerator,edgeCode));
+    myChunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(myPosition,glm::vec3(stride),mySize/stride,myGenerator,edgeIndex));
     hasChunk = true;
 }
 
@@ -138,50 +138,51 @@ glm::vec3 Octree::getCenter()
 }
 
 
-unsigned int Octree::getEdgeCode()
+unsigned int Octree::getEdgeIndex()
 {
-    unsigned int edgeCode = 0;
+    unsigned int E = 0;
     Octree* neighbor;
     //+z
     neighbor = getNeighbor(glm::ivec3(0,0,1));
     if (neighbor && !neighbor->isLeaf) {
-        edgeCode++;
+        E++;
     }
-    edgeCode = edgeCode << 1;
+    E = E << 1;
     //-z
     neighbor = getNeighbor(glm::ivec3(0,0,-1));
     if (neighbor && !neighbor->isLeaf) {
-        edgeCode++;
+        E++;
     }
-    edgeCode = edgeCode << 1;
+    E = E << 1;
     //+y
     neighbor = getNeighbor(glm::ivec3(0,1,0));
     if (neighbor && !neighbor->isLeaf) {
-        edgeCode++;
+        E++;
     }
-    edgeCode = edgeCode << 1;
+    E = E << 1;
     //-y
     neighbor = getNeighbor(glm::ivec3(0,-1,0));
     if (neighbor && !neighbor->isLeaf) {
-        edgeCode++;
+        E++;
     }
-    edgeCode = edgeCode << 1;
+    E = E << 1;
     //+x
     neighbor = getNeighbor(glm::ivec3(1,0,0));
     if (neighbor && !neighbor->isLeaf) {
-        edgeCode++;
+        E++;
     }
-    edgeCode = edgeCode << 1;
+    E = E << 1;
     //-x
     neighbor = getNeighbor(glm::ivec3(-1,0,0));
     if (neighbor && !neighbor->isLeaf) {
-        edgeCode++;
+        E++;
     }
-    //edgeCode = edgeCode << 1;
-    return edgeCode;
+    //E = E << 1;
+    return E;
 }
 
-//return the neighbor if it is at the same or greater LOD, or NULL
+//return the neighbor at the same LOD if one exists, or NULL if none exists
+//whether this is a leaf or not determines the edge code
 Octree* Octree::getNeighbor(glm::ivec3 relativePosition)
 {
     if (!myParent) {
@@ -253,16 +254,18 @@ Octree* Octree::getNeighbor(glm::ivec3 relativePosition)
     }
 }
 
-void Octree::generateAllChunks()
+void Octree::generateAllChunks(bool force)
 {
     //needed so we have the shape of the octree before generating chunks that rely on it
-
-    unsigned int E = getEdgeCode();
+    unsigned int E = getEdgeIndex();
 
     if (isLeaf) {
-        if (!hasChunk || E != edgeCode) {
-            edgeCode = E;
-            generateMarchingChunk(E);
+        if (!hasChunk || E != edgeIndex || force) {
+            edgeIndex = E;
+            generateMarchingChunk(edgeIndex);
+            // if (Config::get<bool>("debug") && edgeIndex != 0 && myChunk->hasGeometry()) {
+            //     std::cout << "Chunk Status: " << myPosition.x << ", " << myPosition.y << ", " << myPosition.z << ": Edge Code: " << edgeIndex <<std::endl;
+            // }
         }
     } else {
         for(int i = 0; i <= 1; i++) {

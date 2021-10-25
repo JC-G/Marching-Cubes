@@ -17,6 +17,7 @@ layout(binding = 7) uniform atomic_uint triCount;
 layout(local_size_x=256,local_size_y=1,local_size_z=1) in;
 
 uniform bool interpolate;
+uniform float transitionWidth; //how wide are the transition cells, as a proportion of the normal cells
 
 vec3 VertexInterp(vec3 p1, vec3 p2, float valp1, float valp2) {
     float mu;

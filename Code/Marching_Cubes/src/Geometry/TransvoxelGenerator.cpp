@@ -247,18 +247,20 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     *geometrySize = pointCount;
 
     //BEGIN DEBUG REGION
-//    if (pointCount > 0) {
-//        std::cout << "Total points in mesh: " << pointCount << std::endl;
-//    }
-//
-//
-//    glBindBuffer(GL_SHADER_STORAGE_BUFFER,*vertexBuffer);
-//    glm::vec4* mappedVertices;
-//    mappedVertices = (glm::vec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,pointCount,GL_MAP_READ_BIT);
-//    for (int i = 0; i < pointCount; i++) {
-//        std::cout << mappedVertices[i].x << ", " << mappedVertices[i].y << ", " << mappedVertices[i].z << std::endl;
-//    }
-//    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    // if (pointCount > 0) {
+    //     std::cout << "Total points in mesh: " << pointCount << std::endl;
+    // }
+
+    // if (chunkLocation == glm::vec3(1,0,1)) {
+    //     glBindBuffer(GL_SHADER_STORAGE_BUFFER,*vertexBuffer);
+    //     glm::vec4* mappedVertices;
+    //     mappedVertices = (glm::vec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,pointCount,GL_MAP_READ_BIT);
+    //     for (int i = 0; i < pointCount; i++) {
+
+    //         std::cout << mappedVertices[i].x << ", " << mappedVertices[i].y << ", " << mappedVertices[i].z << " : " << std::bitset<16>(mappedVertices[i].w)  << std::endl;
+    //     }
+    //     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    // }
     //END DEBUG REGION
 
 }

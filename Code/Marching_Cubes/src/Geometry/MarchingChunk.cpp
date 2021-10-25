@@ -31,4 +31,7 @@ void MarchingChunk::draw(GLuint VAO) {
     glDrawArrays(GL_TRIANGLES, 0, myGeometrySize);
 }
 
+bool MarchingChunk::hasGeometry() {
+    return myGeometrySize > 0;
+}
 

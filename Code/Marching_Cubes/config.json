@@ -12,7 +12,7 @@
     "camera_move_speed": 1.0,
     "camera_start_position": [0.0,1.0,0.0],
 
-    "draw_lines": true,
+    "draw_lines": false,
     "backface_culling": true,
 
     "transition_width": 0.5,
@@ -25,7 +25,7 @@
 
     "show_test_cube": true,
 
-    "terrain_mode": "terrain",
+    "terrain_mode": "plane",
     "generator_mode": "transvoxel",
 
     "debug": true

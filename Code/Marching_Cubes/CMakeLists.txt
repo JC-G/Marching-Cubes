@@ -46,6 +46,23 @@ add_executable(MarchingCubes
     src/SDF/Sphere.h
     src/SDF/TestSDF.cpp
     src/SDF/TestSDF.h
+
+    # These are not compiled - but adding them here means the project is rebuild (and hence the modifications are reflected in the output directory)
+    config.json
+
+    Shaders/frag.glsl
+    Shaders/vert.glsl
+
+    Shaders/Compute/common.glsl
+    Shaders/Compute/countpolygons.glsl
+    Shaders/Compute/generatedensity.glsl
+    Shaders/Compute/polygonize.glsl
+    Shaders/Compute/shadertop.glsl
+    Shaders/Compute/transvoxel_common.glsl
+    Shaders/Compute/transvoxel_count.glsl
+    Shaders/Compute/transvoxel_generate.glsl
+    Shaders/Compute/transvoxel_polygonize.glsl
+
 )
 
 

@@ -34,14 +34,9 @@ void main () {
 		uvec3 gridPos[8];
 
 		//assigned as per Figure 3.7 in transvoxel paper - note this is DIFFERENT to the previous marching cubes algorithm
-		gridPos[0] = gid;
-		gridPos[1] = gid+uvec3(1,0,0);
-		gridPos[2] = gid+uvec3(0,1,0);
-		gridPos[3] = gid+uvec3(1,1,0);
-		gridPos[4] = gid+uvec3(0,0,1);
-		gridPos[5] = gid+uvec3(1,0,1);
-		gridPos[6] = gid+uvec3(0,1,1);
-		gridPos[7] = gid+uvec3(1,1,1);
+		for (int i = 0; i < 8; i++) {
+			gridPos[i] = ivec3(gid) + gridOffset[i];
+		}
 
 		for (int i = 0; i < 8; i++)
 		{
@@ -50,14 +45,11 @@ void main () {
 
 		int cellIndex = 0;
 
-		if (gridCells[0] < 0) cellIndex |= 1;
-		if (gridCells[1] < 0) cellIndex |= 2;
-		if (gridCells[2] < 0) cellIndex |= 4;
-		if (gridCells[3] < 0) cellIndex |= 8;
-		if (gridCells[4] < 0) cellIndex |= 16;
-		if (gridCells[5] < 0) cellIndex |= 32;
-		if (gridCells[6] < 0) cellIndex |= 64;
-		if (gridCells[7] < 0) cellIndex |= 128;
+		int cellMask = 1;
+		for (int i = 0; i < 8; i++) {
+			if (gridCells[i] < 0) cellIndex |= cellMask;
+			cellMask = cellMask << 1;
+		}
 
 		if (cellIndex != 0 && cellIndex != 255)
 		{
@@ -108,21 +100,18 @@ void main () {
 
 				//Note the obscure order of this - see Figure 4.17
 				//order is 0,1,2,5,8,7,6,3,4
-				if (transitionGridCells[0] < 0) transitionCellIndex |= 1;
-				if (transitionGridCells[1] < 0) transitionCellIndex |= 2;
-				if (transitionGridCells[2] < 0) transitionCellIndex |= 4;
-				if (transitionGridCells[5] < 0) transitionCellIndex |= 8;
-				if (transitionGridCells[8] < 0) transitionCellIndex |= 16;
-				if (transitionGridCells[7] < 0) transitionCellIndex |= 32;
-				if (transitionGridCells[6] < 0) transitionCellIndex |= 64;
-				if (transitionGridCells[3] < 0) transitionCellIndex |= 128;
-				if (transitionGridCells[4] < 0) transitionCellIndex |= 256;
+				int transitionFaceOrder[9] = int[](0,1,2,5,8,7,6,3,4);
+				int transitionCellMask = 1;
+				for (int i = 0; i < 9; i++) {
+					if (transitionGridCells[transitionFaceOrder[i]] < 0) transitionCellIndex |= transitionCellMask;
+					transitionCellMask = transitionCellMask << 1;
+				}
 
 				//cell is a transition cell:
 				int paddedTransitionCellIndex = transitionCellIndex;
 				paddedTransitionCellIndex |= (1<<9);
 
-				//cell is a -x oriented cell:
+				//store cell orientation:
 				paddedTransitionCellIndex |= (mask<<10);
 
 				//do not march if all inside or all outside

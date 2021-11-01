@@ -130,14 +130,9 @@ void generateCell() {
     ivec3 gridPos[8];
 
     //assigned as per Figure 3.7 in transvoxel paper - note this is DIFFERENT to the previous marching cubes algorithm
-    gridPos[0] = ivec3(gid);
-    gridPos[1] = ivec3(gid)+ivec3(1,0,0);
-	gridPos[2] = ivec3(gid)+ivec3(0,1,0);
-	gridPos[3] = ivec3(gid)+ivec3(1,1,0);
-	gridPos[4] = ivec3(gid)+ivec3(0,0,1);
-	gridPos[5] = ivec3(gid)+ivec3(1,0,1);
-	gridPos[6] = ivec3(gid)+ivec3(0,1,1);
-	gridPos[7] = ivec3(gid)+ivec3(1,1,1);
+    for (int i = 0; i < 8; i++) {
+        gridPos[i] = ivec3(gid) + gridOffset[i];
+    }
 
     //transitionGridPos is the grid positions including the offset from the transition cells
     vec3 transitionGridPos[8];

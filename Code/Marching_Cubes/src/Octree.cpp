@@ -142,42 +142,23 @@ unsigned int Octree::getEdgeIndex()
 {
     unsigned int E = 0;
     Octree* neighbor;
-    //+z
-    neighbor = getNeighbor(glm::ivec3(0,0,1));
-    if (neighbor && !neighbor->isLeaf) {
-        E++;
+
+    //Note the order is +-z, +-y, +-x - this is reversed to make use of bit shifting
+    glm::ivec3 edgeNeighbors[6] = {
+        glm::ivec3(0,0,1),
+        glm::ivec3(0,0,-1),
+        glm::ivec3(0,1,0),
+        glm::ivec3(0,-1,0),
+        glm::ivec3(1,0,0),
+        glm::ivec3(-1,0,0)
+    };
+    for (int i = 0; i < 6; i++) {
+        neighbor = getNeighbor(edgeNeighbors[i]);
+        if (neighbor && !neighbor->isLeaf) {
+            E++;
+        }
+        if (i != 5) E = E << 1;
     }
-    E = E << 1;
-    //-z
-    neighbor = getNeighbor(glm::ivec3(0,0,-1));
-    if (neighbor && !neighbor->isLeaf) {
-        E++;
-    }
-    E = E << 1;
-    //+y
-    neighbor = getNeighbor(glm::ivec3(0,1,0));
-    if (neighbor && !neighbor->isLeaf) {
-        E++;
-    }
-    E = E << 1;
-    //-y
-    neighbor = getNeighbor(glm::ivec3(0,-1,0));
-    if (neighbor && !neighbor->isLeaf) {
-        E++;
-    }
-    E = E << 1;
-    //+x
-    neighbor = getNeighbor(glm::ivec3(1,0,0));
-    if (neighbor && !neighbor->isLeaf) {
-        E++;
-    }
-    E = E << 1;
-    //-x
-    neighbor = getNeighbor(glm::ivec3(-1,0,0));
-    if (neighbor && !neighbor->isLeaf) {
-        E++;
-    }
-    //E = E << 1;
     return E;
 }
 

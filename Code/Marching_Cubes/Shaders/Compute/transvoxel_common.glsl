@@ -20,6 +20,17 @@ layout(binding = 13) buffer tcd {int transitionCellData[];};
 layout(binding = 14) buffer tvd {int transitionVertexData[];}; //number of triangles within cube with given cubeIndex;
 layout(binding = 15) buffer ttt {int transitionTotalTable[];};
 
+const ivec3 gridOffset[8] = ivec3[](
+    ivec3(0,0,0),
+    ivec3(1,0,0),
+    ivec3(0,1,0),
+    ivec3(1,1,0),
+    ivec3(0,0,1),
+    ivec3(1,0,1),
+    ivec3(0,1,1),
+    ivec3(1,1,1)
+);
+
 //should be as close to a bijection as possible - minimise the values that need to be generated twice
 //gid is between 0 and chunkSize inclusive
 //halfXYZ is 0 or 1 for half values

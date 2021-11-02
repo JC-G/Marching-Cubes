@@ -9,7 +9,7 @@ layout(local_size_x=8,local_size_y=8,local_size_z=8) in;
 
 void generate(uvec3 gid, uvec3 halfXYZ) {
     uint arrID = getArrID(gid, halfXYZ);
-    densityValues[arrID] = density((gid + 0.5 * vec3(halfXYZ)) * chunkStride + chunkPosition);
+    densityValues[arrID] = modified_density((gid + 0.5 * vec3(halfXYZ)) * chunkStride + chunkPosition);
 }
 
 void main() {

@@ -25,7 +25,7 @@
 
     "show_test_cube": true,
 
-    "terrain_mode": "plane",
+    "terrain_mode": "terrain",
     "generator_mode": "transvoxel",
 
     "debug": true

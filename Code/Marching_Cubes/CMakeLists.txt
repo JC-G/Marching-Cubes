@@ -57,11 +57,16 @@ add_executable(MarchingCubes
     Shaders/Compute/countpolygons.glsl
     Shaders/Compute/generatedensity.glsl
     Shaders/Compute/polygonize.glsl
+
     Shaders/Compute/shadertop.glsl
+
     Shaders/Compute/transvoxel_common.glsl
     Shaders/Compute/transvoxel_count.glsl
     Shaders/Compute/transvoxel_generate.glsl
     Shaders/Compute/transvoxel_polygonize.glsl
+
+    Shaders/Compute/terrain_modification.glsl
+    Shaders/Compute/brush_functions.glsl
 
 )
 

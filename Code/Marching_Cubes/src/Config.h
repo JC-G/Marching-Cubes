@@ -7,6 +7,10 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+
+//Change this before compiling - this is where we look for the shader files before falling back to the current working directory
+#define WORKING_DIRECTORY "D:\\Marching_Cubes\\Code\\Marching_Cubes"
+
 class Config
 {
     public:

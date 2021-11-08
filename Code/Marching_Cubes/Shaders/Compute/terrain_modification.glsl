@@ -8,8 +8,8 @@ struct BrushParams {
 
     int type;
     int mode;
-    int param1;
-    int param2;
+    float param1;
+    float param2;
 };
 // bindings 0-15 are used by the standard transvoxel algorithm, including constant tables
 layout (std140, binding = 16) buffer BrushList {
@@ -23,13 +23,14 @@ float modified_density(vec3 inPos) {
     float resultDensity = terrainDensity;
     for (int i = 0; i < brushCount; i++) {
         BrushParams b = brushInstances[i];
-        float testSphere = ellipsoid_density(inPos,b.location,b.size);
-        resultDensity = min(resultDensity,testSphere);
+        float testDensity = 0.0;
+        if (b.type == 1) {
+            testDensity = ellipsoid_density(inPos,b.location,b.size);
+        } else if (b.type == 2) {
+            testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
+        }
+        resultDensity = min(resultDensity,testDensity);
     }
-    // for (int i = 0; i < 50; i++) {
-    //     float testSphere = ellipsoid_density(inPos,vec4(i,10,1,0),vec4(i/10.0,i/3.0,i/10.0,0));
-    //     resultDensity = min(resultDensity,testSphere);
-    // }
     return resultDensity;
 }
 
@@ -39,22 +40,29 @@ vec3 modified_normal(vec3 inPos) {
 
     for (int i = 0; i < brushCount; i++) {
         BrushParams b = brushInstances[i];
-        float testSphere = ellipsoid_density(inPos,b.location,b.size);
-        if (testSphere < bestDensity) {
-            bestDensity = testSphere;
+        float testDensity = 0.0;
+        if (b.type == 1) {
+            testDensity = ellipsoid_density(inPos,b.location,b.size);
+        }
+        else if (b.type == 2) {
+            testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
+        }
+        if (testDensity < bestDensity) {
+            bestDensity = testDensity;
             bestI = i;
         }
     }
-    // for (int i = 0; i < 50; i++) {
-    //     float testSphere = ellipsoid_density(inPos,vec4(i,10,1,0),vec4(i/10.0,i/3.0,i/10.0,0));
-    //     if (testSphere < bestDensity) {
-    //         bestDensity = testSphere;
-    //         bestI = i;
-    //     }
-    // }
 
     if (bestI != -1) {
-        return ellipsoid_normal(inPos,brushInstances[bestI].location,brushInstances[bestI].size);
+        BrushParams b = brushInstances[bestI];        
+        vec3 testNormal = vec3(0.0);
+        if (b.type == 1) {
+            testNormal = ellipsoid_normal(inPos,b.location,b.size);
+        }
+        else if (b.type == 2) {
+            testNormal = cylinder_normal(inPos,b.location,b.size,b.param1);
+        }
+        return testNormal;
     }
     return normal(inPos);
 }

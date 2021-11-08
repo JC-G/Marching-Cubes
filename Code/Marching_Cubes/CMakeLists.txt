@@ -47,6 +47,15 @@ add_executable(MarchingCubes
     src/SDF/TestSDF.cpp
     src/SDF/TestSDF.h
 
+    src/Editing/Brush.cpp
+    src/Editing/Brush.h
+    src/Editing/BrushBoundingBox.cpp
+    src/Editing/BrushBoundingBox.h
+    src/Editing/EllipsoidBrush.cpp
+    src/Editing/EllipsoidBrush.h
+    src/Editing/TestBrushes.cpp
+    src/Editing/TestBrushes.h
+
     # These are not compiled - but adding them here means the project is rebuild (and hence the modifications are reflected in the output directory)
     config.json
 
@@ -75,6 +84,7 @@ include_directories("src")
 include_directories("src/Engine")
 include_directories("src/Geometry")
 include_directories("src/SDF")
+include_directories("src/Editing")
 
 # set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 # set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

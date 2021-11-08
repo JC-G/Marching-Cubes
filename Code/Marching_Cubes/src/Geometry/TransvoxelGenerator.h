@@ -5,7 +5,13 @@
 #include "SDF.h"
 #include "Shader.h"
 
+#include "Brush.h"
+#include "EllipsoidBrush.h"
+#include "TestBrushes.h"
+
 #include "TransvoxelTables.h"
+#include <bitset>
+#include <vector>
 
 class TransvoxelGenerator : public GeometryGenerator
 {

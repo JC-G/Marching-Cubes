@@ -8,6 +8,7 @@
 #include "Brush.h"
 #include "EllipsoidBrush.h"
 #include "TestBrushes.h"
+#include "Editing.h"
 
 #include "TransvoxelTables.h"
 #include <bitset>

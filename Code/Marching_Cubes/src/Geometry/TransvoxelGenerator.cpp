@@ -120,12 +120,18 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     BrushBoundingBox myBox = BrushBoundingBox::getChunkBox(chunkLocation,chunkSize,chunkStride);
 
     std::vector<BrushParams> brushList;
-    for (Brush* b : TestBrushes::randomSpheres) {
-        if (b->getBoundingBox().intersects(myBox)) {
-            brushList.push_back(b->getBrushParams());
-        }
-    }
-    for (Brush* b : TestBrushes::randomCylinders) {
+    // for (Brush* b : TestBrushes::randomSpheres) {
+    //     if (b->getBoundingBox().intersects(myBox)) {
+    //         brushList.push_back(b->getBrushParams());
+    //     }
+    // }
+    // for (Brush* b : TestBrushes::randomCylinders) {
+    //     if (b->getBoundingBox().intersects(myBox)) {
+    //         brushList.push_back(b->getBrushParams());
+    //     }
+    // }
+
+    for (Brush* b : Editing::allBrushes) {
         if (b->getBoundingBox().intersects(myBox)) {
             brushList.push_back(b->getBrushParams());
         }

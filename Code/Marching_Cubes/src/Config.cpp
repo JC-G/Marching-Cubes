@@ -1,12 +1,16 @@
 #include "Config.h"
 nlohmann::json Config::configJson;
 bool Config::isInit = false;
+bool Config::wireframe = false;
+
 void Config::initConfig()
 {
     if (isInit) return;
     std::ifstream configFile("config.json");
     configFile >> configJson;
     isInit = true;
+
+    Config::wireframe = get<bool>("wireframe");
 }
 
 

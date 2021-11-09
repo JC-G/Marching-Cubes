@@ -5,6 +5,7 @@
 #include "MarchingChunk.h"
 #include "Config.h"
 #include <memory>
+#include "Editing.h"
 class Octree
 {
     public:
@@ -15,6 +16,8 @@ class Octree
 
         unsigned int getEdgeIndex();
         void generateAllChunks(bool force = false);
+
+        BrushBoundingBox getBoundingBox();
     protected:
 
     private:
@@ -49,6 +52,8 @@ class Octree
         Octree* getNeighbor(glm::ivec3 relativePosition);
 
         unsigned int edgeIndex = 0;
+
+        bool needsRegen = false;
 };
 
 #endif // OCTREE_H

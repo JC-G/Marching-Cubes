@@ -15,7 +15,9 @@ Octree::Octree(glm::vec3 size, glm::vec3 position, int detailLevel, GeometryGene
 {
     isLeaf = true;
 }
-
+BrushBoundingBox Octree::getBoundingBox() {
+    return BrushBoundingBox(myPosition,myPosition+mySize);
+}
 void Octree::update(glm::vec3 inPos)
 {
     //std::cout << "inPos: " << glm::to_string(inPos) << std::endl;
@@ -24,7 +26,17 @@ void Octree::update(glm::vec3 inPos)
     } else if (shouldSplit(inPos)) {
         split(inPos);
     }
-    if (!isLeaf) {
+    if (isLeaf) {
+        //Check if this leaf node needs a new marching chunk because of editing
+        if (Editing::newBrushes.size() > 0) {
+            BrushBoundingBox myBB = getBoundingBox();
+            for (Brush* b : Editing::newBrushes) {
+                if (b->getBoundingBox().intersects(myBB)) {
+                    needsRegen = true;
+                }
+            }
+        }
+    } else {
         //std::cout << "Updating Children" << std::endl;
         updateChildren(inPos);
     }
@@ -112,6 +124,7 @@ void Octree::generateMarchingChunk(int edgeIndex)
     float stride = Config::get<float>("chunk_size");
     myChunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(myPosition,glm::vec3(stride),mySize/stride,myGenerator,edgeIndex));
     hasChunk = true;
+    needsRegen = false;
 }
 
 
@@ -260,7 +273,7 @@ void Octree::generateAllChunks(bool force)
     unsigned int E = getEdgeIndex();
 
     if (isLeaf) {
-        if (!hasChunk || E != edgeIndex || force) {
+        if (!hasChunk || E != edgeIndex || force || needsRegen) {
             edgeIndex = E;
             generateMarchingChunk(edgeIndex);
             // if (Config::get<bool>("debug") && edgeIndex != 0 && myChunk->hasGeometry()) {

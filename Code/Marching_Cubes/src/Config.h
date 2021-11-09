@@ -18,6 +18,9 @@ class Config
 
         template<class T> static T get(std::string configName);
         static glm::vec3 getVec3(std::string vecName);
+        
+        //Options that can be changed during runtime
+        static bool wireframe;
     protected:
 
     private:

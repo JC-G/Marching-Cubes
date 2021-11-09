@@ -53,6 +53,8 @@ add_executable(MarchingCubes
     src/Editing/BrushBoundingBox.h
     src/Editing/CylinderBrush.cpp
     src/Editing/CylinderBrush.h
+    src/Editing/Editing.cpp
+    src/Editing/Editing.h
     src/Editing/EllipsoidBrush.cpp
     src/Editing/EllipsoidBrush.h
     src/Editing/TestBrushes.cpp

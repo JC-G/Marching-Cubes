@@ -113,6 +113,8 @@ target_link_libraries(MarchingCubes PRIVATE libglew_static)
 add_subdirectory(lib/glm EXCLUDE_FROM_ALL)
 target_link_libraries(MarchingCubes PRIVATE glm)
 
+target_link_options(MarchingCubes PRIVATE -static-libgcc -static-libstdc++)
+
 # include shader files and config in output directory
 
 add_custom_command(TARGET MarchingCubes POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Shaders $<TARGET_FILE_DIR:MarchingCubes>/Shaders)

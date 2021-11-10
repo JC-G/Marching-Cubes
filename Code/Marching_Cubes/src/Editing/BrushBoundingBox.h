@@ -10,6 +10,7 @@ class BrushBoundingBox {
         static BrushBoundingBox getChunkBox(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride);
 
         bool intersects(BrushBoundingBox other);
+        bool intersectsRay(glm::vec3 origin, glm::vec3 direction);
     private:
 
 };

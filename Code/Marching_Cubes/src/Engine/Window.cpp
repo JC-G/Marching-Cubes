@@ -5,6 +5,7 @@ GLFWwindow* Window::window = NULL;
 Camera* Window::activeCamera;
 int Window::width;
 int Window::height;
+Octree* Window::mainOctree;
 Window::Window()
 {
     //ctor
@@ -148,24 +149,25 @@ void Window::handleInput()
         movement.y-=1.0f;
     }
 
+    glm::vec3 placePos;
     Editing::newBrushes.clear();
     if (glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_LEFT)) {
         //Place a sphere 1 unit away, with radius 0.1
-        glm::vec3 pos = activeCamera->getDirection() + activeCamera->position;
-        Editing::placeSphere(pos,0.1);
+        placePos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
+        Editing::placeSphere(placePos,1);
     }
 
-    if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-        glm::vec3 pos = activeCamera->getDirection() + activeCamera->position;
-        Editing::beginCylinder(pos,0.1);
-    }
-    if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
-        glm::vec3 pos = activeCamera->getDirection() + activeCamera->position;
-        Editing::endCylinder(pos);
-    }
+    // if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+    //     placePos = Editing::rayCast(activeCamera->getDirection(), activeCamera->position,Window::mainOctree);
+    //     Editing::beginCylinder(placePos,0.1);
+    // }
+    // if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+    //     placePos = Editing::rayCast(activeCamera->getDirection(), activeCamera->position,Window::mainOctree);
+    //     Editing::endCylinder(placePos);
+    // }
 
     if (glfwGetKey(window,GLFW_KEY_T)) {
-        Editing::sphereRing(activeCamera->position,10,1000,1);
+        Editing::sphereRing(activeCamera->position,1,50,.1);
     }
     if (glfwGetKey(window,GLFW_KEY_F) == GLFW_PRESS) {
         Config::wireframe = !Config::wireframe;

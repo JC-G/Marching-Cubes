@@ -19,3 +19,23 @@ bool BrushBoundingBox::intersects(BrushBoundingBox other) {
            (other.bottom.z <= bottom.z && bottom.z <= other.top.z));
 
 }
+
+bool BrushBoundingBox::intersectsRay(glm::vec3 origin, glm::vec3 direction) {
+
+    float tMin = 0;
+    float tMax = std::numeric_limits<float>::max();
+
+    for (int dim = 0; dim < 3; dim++) {
+        float t1 = (bottom[dim] - origin[dim])/direction[dim];
+        float t2 = (top[dim] - origin[dim])/direction[dim];
+        
+        tMin = glm::max(tMin,glm::min(t1,t2));
+        tMax = glm::min(tMax,glm::min(t1,t2));
+
+        if (tMin > tMax) {
+            return false;
+        }
+    }
+
+    return true;
+}

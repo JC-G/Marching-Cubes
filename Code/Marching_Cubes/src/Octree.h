@@ -6,6 +6,7 @@
 #include "Config.h"
 #include <memory>
 #include "Editing.h"
+#include "BrushBoundingBox.h"
 class Octree
 {
     public:
@@ -19,6 +20,8 @@ class Octree
         void generateAllChunks(bool force = false);
 
         BrushBoundingBox getBoundingBox();
+
+        float getIntersectionPoint(glm::vec3 origin, glm::vec3 direction);
     protected:
 
     private:
@@ -27,9 +30,9 @@ class Octree
         int myDetailLevel;
         std::shared_ptr<MarchingChunk> myChunk;
         Octree* myChildren[2][2][2];
+        GeometryGenerator* myGenerator;
         Octree* myParent;
         glm::uvec3 myPositionInParent;
-        GeometryGenerator* myGenerator;
 
         bool isLeaf;
         bool hasChunk = false;

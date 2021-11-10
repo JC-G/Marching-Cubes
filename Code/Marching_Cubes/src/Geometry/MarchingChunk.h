@@ -15,6 +15,7 @@ it obtains its geometry from a GeometryGenerator, written into vertexBuffer and 
 
 #include "GeometryGenerator.h"
 #include "Config.h"
+#include <glm/gtx/intersect.hpp>
 
 class MarchingChunk
 {
@@ -26,6 +27,8 @@ class MarchingChunk
         void drawBoundary(GLuint VAO);
 
         void generateBoundary();
+
+        float getIntersectionPoint(glm::vec3 origin, glm::vec3 direction);
 
     protected:
 

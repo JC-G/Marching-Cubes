@@ -6,6 +6,9 @@
 #include "GL_headers.h"
 #include "EllipsoidBrush.h"
 #include "CylinderBrush.h"
+#include "Octree.h"
+//forward declaration of octree to defeat circular reference
+class Octree;
 class Editing {
     public:
         static std::vector<Brush*> allBrushes;
@@ -16,6 +19,8 @@ class Editing {
         static void endCylinder(glm::vec3 pos);
 
         static void sphereRing(glm::vec3 pos, float ringR, int ringN, float r);
+
+        static glm::vec3 rayCast(glm::vec3 pos, glm::vec3 direction, Octree* O);
     private:
         
         static bool placing;

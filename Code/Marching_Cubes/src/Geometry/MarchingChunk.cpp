@@ -97,3 +97,36 @@ void MarchingChunk::generateBoundary() {
     glBindBuffer(GL_ARRAY_BUFFER,boundaryBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData),vertexData,GL_STATIC_DRAW);
 }
+
+float MarchingChunk::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction){
+    //TODO - do this with a shader rather than mapping?
+    float tMin = std::numeric_limits<float>::max();
+    if (!hasGeometry()) {
+        return tMin;
+    }
+    //return 1;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexBuffer);
+    glm::vec4* mappedTriangles;
+    mappedTriangles = (glm::vec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,myGeometrySize,GL_MAP_READ_BIT);
+    
+    for (int i = 0; i < myGeometrySize; i+=3) {        //for each triangle
+        //test intersection
+        glm::vec2 bary;
+        float distance;
+        if(glm::intersectRayTriangle(origin, direction, glm::vec3(mappedTriangles[i]), glm::vec3(mappedTriangles[i+1]), glm::vec3(mappedTriangles[i+2]),bary,distance)) {
+      
+            // glm::vec3 worldPos = pos.x * mappedTriangles[i] + pos.y * mappedTriangles[i+1] + pos.z * mappedTriangles[i+2];
+            float t = distance; //(worldPos.x-origin.x)/direction.x; //TODO - this will break if direction == 0
+            std::cout << t << std::endl;
+            if (t >= 0 && t < tMin) {
+                tMin = t;
+
+            }
+        }
+
+    }
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    return tMin;
+
+}
+

@@ -7,6 +7,10 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+
+//Change this before compiling - this is where we look for the shader files before falling back to the current working directory
+#define WORKING_DIRECTORY "D:\\Marching_Cubes\\Code\\Marching_Cubes"
+
 class Config
 {
     public:
@@ -14,6 +18,9 @@ class Config
 
         template<class T> static T get(std::string configName);
         static glm::vec3 getVec3(std::string vecName);
+        
+        //Options that can be changed during runtime
+        static bool wireframe;
     protected:
 
     private:

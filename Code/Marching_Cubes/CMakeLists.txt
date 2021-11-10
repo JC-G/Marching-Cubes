@@ -47,6 +47,19 @@ add_executable(MarchingCubes
     src/SDF/TestSDF.cpp
     src/SDF/TestSDF.h
 
+    src/Editing/Brush.cpp
+    src/Editing/Brush.h
+    src/Editing/BrushBoundingBox.cpp
+    src/Editing/BrushBoundingBox.h
+    src/Editing/CylinderBrush.cpp
+    src/Editing/CylinderBrush.h
+    src/Editing/Editing.cpp
+    src/Editing/Editing.h
+    src/Editing/EllipsoidBrush.cpp
+    src/Editing/EllipsoidBrush.h
+    src/Editing/TestBrushes.cpp
+    src/Editing/TestBrushes.h
+
     # These are not compiled - but adding them here means the project is rebuild (and hence the modifications are reflected in the output directory)
     config.json
 
@@ -57,11 +70,16 @@ add_executable(MarchingCubes
     Shaders/Compute/countpolygons.glsl
     Shaders/Compute/generatedensity.glsl
     Shaders/Compute/polygonize.glsl
+
     Shaders/Compute/shadertop.glsl
+
     Shaders/Compute/transvoxel_common.glsl
     Shaders/Compute/transvoxel_count.glsl
     Shaders/Compute/transvoxel_generate.glsl
     Shaders/Compute/transvoxel_polygonize.glsl
+
+    Shaders/Compute/terrain_modification.glsl
+    Shaders/Compute/brush_functions.glsl
 
 )
 
@@ -70,6 +88,7 @@ include_directories("src")
 include_directories("src/Engine")
 include_directories("src/Geometry")
 include_directories("src/SDF")
+include_directories("src/Editing")
 
 # set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 # set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
@@ -93,6 +112,8 @@ target_link_libraries(MarchingCubes PRIVATE libglew_static)
 # glm
 add_subdirectory(lib/glm EXCLUDE_FROM_ALL)
 target_link_libraries(MarchingCubes PRIVATE glm)
+
+target_link_options(MarchingCubes PRIVATE -static-libgcc -static-libstdc++)
 
 # include shader files and config in output directory
 

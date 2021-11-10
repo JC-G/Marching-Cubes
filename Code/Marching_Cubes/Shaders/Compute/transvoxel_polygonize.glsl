@@ -174,7 +174,7 @@ void generateCell() {
             //where the vertex would have been
             vec3 vp2 = VertexInterp(gridPos[v1Index],gridPos[v2Index],gridCells[v1Index], gridCells[v2Index]);
             //normal at this position - in world space
-            vec3 n = normal(vp2 * chunkStride + chunkPosition);
+            vec3 n = modified_normal(vp2 * chunkStride + chunkPosition);
 
             vec3 dv = vertPos - vp2;
             vertPos -= (dot(n,dv)) * n;
@@ -183,7 +183,7 @@ void generateCell() {
         vertPos = vertPos * chunkStride + chunkPosition;
 
         vertices[vertexIndex] = vec4(vertPos,1);
-        normals[vertexIndex] = vec4(normal(vertPos),0);
+        normals[vertexIndex] = vec4(modified_normal(vertPos),0);
     }
 }
 
@@ -317,7 +317,7 @@ void generateTransitionCell() {
                 //where the vertex would have been
                 vec3 vp2 = VertexInterp(gridPos[v1Index],gridPos[v2Index],transitionGridCells[v1Index], transitionGridCells[v2Index]);
                 //normal at this position - in world space
-                vec3 n = normal(vp2 * chunkStride + chunkPosition);
+                vec3 n = modified_normal(vp2 * chunkStride + chunkPosition);
 
                 vec3 dv = vertPos - vp2;
                 vertPos -= (dot(n,dv)) * n;
@@ -326,7 +326,7 @@ void generateTransitionCell() {
             vertPos = vertPos * chunkStride + chunkPosition;
 
             vertices[vertexIndex] = vec4(vertPos,1);
-            normals[vertexIndex] = vec4(normal(vertPos),0);
+            normals[vertexIndex] = vec4(modified_normal(vertPos),0);
         }
 
 	}

@@ -4,6 +4,8 @@
 #include <cassert>
 #include <iostream>
 #include <stdexcept>
+#include <unistd.h>
+#include <sys/param.h>
 
 #include "GL_headers.h"
 
@@ -163,6 +165,13 @@ void AppMain() {
 }
 int main(int argc, char *argv[]) {
 
+    char buffer[MAXPATHLEN];
+    //Set the working directory - if possible
+    if (chdir(WORKING_DIRECTORY) == 0) {
+        std::cout << "Working directory found - using " << getcwd(buffer,MAXPATHLEN);
+    } else {
+        std::cout << "Working directory not found - using " << getcwd(buffer,MAXPATHLEN);
+    }
     try {
         AppMain();
 

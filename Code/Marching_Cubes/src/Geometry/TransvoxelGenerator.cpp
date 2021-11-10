@@ -1,23 +1,28 @@
 #include "TransvoxelGenerator.h"
 
-    #include <bitset>
 TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
     :densityFunction(densityFunction),
     generateShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         densityFunction->getShaderCode(),
+        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_common.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_generate.glsl")})
     ),
     countShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         densityFunction->getShaderCode(),
+        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_common.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_count.glsl")})
     ),
     polygonizeShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         densityFunction->getShaderCode(),
+        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_common.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_polygonize.glsl")})
     )
@@ -105,6 +110,36 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,15,transitionTotalTableBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,56*sizeof(int),TransvoxelTables::transitionTotalTable,GL_DYNAMIC_DRAW);
 
+    //Terrain Modification buffer
+
+    //Temporary test objects:
+    TestBrushes::generateRandomSpheres();
+    TestBrushes::generateRandomCylinders();
+    GLuint brushBuffer;
+
+    BrushBoundingBox myBox = BrushBoundingBox::getChunkBox(chunkLocation,chunkSize,chunkStride);
+
+    std::vector<BrushParams> brushList;
+    // for (Brush* b : TestBrushes::randomSpheres) {
+    //     if (b->getBoundingBox().intersects(myBox)) {
+    //         brushList.push_back(b->getBrushParams());
+    //     }
+    // }
+    // for (Brush* b : TestBrushes::randomCylinders) {
+    //     if (b->getBoundingBox().intersects(myBox)) {
+    //         brushList.push_back(b->getBrushParams());
+    //     }
+    // }
+
+    for (Brush* b : Editing::allBrushes) {
+        if (b->getBoundingBox().intersects(myBox)) {
+            brushList.push_back(b->getBrushParams());
+        }
+    }
+    glGenBuffers(1,&brushBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,16,brushBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,brushList.size() * sizeof(BrushParams),&brushList[0],GL_DYNAMIC_DRAW);
+
     //Stage 1
 
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -117,6 +152,8 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     glUniform3fv(generateShader.getUniform("chunkStride"),1,&chunkStride[0]);
     glUniform3uiv(generateShader.getUniform("chunkSize"),1,&chunkSize[0]);
     glUniform1i(generateShader.getUniform("edgeIndex"),edgeIndex);
+
+    glUniform1i(generateShader.getUniform("brushCount"),brushList.size());
 
     glDispatchCompute(1+chunkSize.x/8, 1+chunkSize.y/8, 1+chunkSize.z/8);
 
@@ -240,6 +277,8 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     glUniform1i(polygonizeShader.getUniform("generateTransitionCells"),Config::get<bool>("generate_transition_cells"));
     glUniform1i(polygonizeShader.getUniform("generateRegularCells"),Config::get<bool>("generate_regular_cells"));
     glUniform1i(polygonizeShader.getUniform("interpolate"), Config::get<bool>("interpolate"));
+
+    glUniform1i(polygonizeShader.getUniform("brushCount"),brushList.size());
 
     glDispatchCompute(jobCount,1,1);
 

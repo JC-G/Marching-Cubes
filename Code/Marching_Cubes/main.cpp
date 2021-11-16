@@ -26,6 +26,7 @@
 
 GLuint gVAO = 0;
 GLuint gVBO = 0;
+GLuint lVAO = 0;
 GLuint programId;
 GLFWmonitor* monitor = NULL;
 
@@ -37,7 +38,7 @@ static void LoadObjects()
 
     // make and bind the VAO
     glGenVertexArrays(1, &gVAO);
-    glBindVertexArray(gVAO);
+    glGenVertexArrays(1, &lVAO);
 
     std::string terrainMode = Config::get<std::string>("terrain_mode");
     SDF* usedSDF;
@@ -94,8 +95,19 @@ static void Render() {
     }
 
     // swap the display buffers (displays what was just drawn)
-    glfwSwapBuffers(Window::window);
 
+}
+
+//Draw the chunk boundaries
+
+static void RenderChunkBoundaries() {
+    for (auto C : loadedChunks) {
+        C->drawBoundary(lVAO);
+    }
+    if (Config::get<bool>("load_octree")) {
+        O->drawBoundary(lVAO);
+    }
+    glfwSwapBuffers(Window::window);
 }
 
 
@@ -129,11 +141,18 @@ void AppMain() {
 
     // load the (test) shader
     Shader shader = Shader::ShaderFromFiles("Shaders/vert.glsl","Shaders/frag.glsl");
+
     glUseProgram(shader.getID());
 
     glm::mat4 VM = glm::lookAt(glm::vec3(2.0,3.0,4.0),glm::vec3(0.0),glm::vec3(0.0,1.0,0.0));
     glm::mat4 PM = Window::getProjectionMatrix();
     glUniformMatrix4fv(shader.getUniform("P"),1,GL_FALSE,&PM[0][0]);
+
+    
+    Shader lineShader = Shader::ShaderFromFiles("Shaders/line_vert.glsl","Shaders/line_frag.glsl");
+
+    glUseProgram(lineShader.getID());
+    glUniformMatrix4fv(lineShader.getUniform("P"),1,GL_FALSE,&PM[0][0]);
 
 
     // run while the window is open and focused
@@ -158,6 +177,12 @@ void AppMain() {
 
        // draw one frame
         Render();
+
+        if (Config::get<bool>("draw_chunk_boundaries")) {
+            glUseProgram(lineShader.getID());
+            glUniformMatrix4fv(lineShader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
+            RenderChunkBoundaries();
+        }
     }
    // clean up and exit
    glfwTerminate();

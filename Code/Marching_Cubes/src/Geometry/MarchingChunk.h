@@ -23,6 +23,9 @@ class MarchingChunk
         virtual ~MarchingChunk();
         void draw(GLuint VAO);
         bool hasGeometry();
+        void drawBoundary(GLuint VAO);
+
+        void generateBoundary();
 
     protected:
 
@@ -35,6 +38,7 @@ class MarchingChunk
 
         GLuint vertexBuffer;
         GLuint normalBuffer;
+        GLuint boundaryBuffer;
 };
 
 #endif // MARCHINGCHUNK_H

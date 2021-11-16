@@ -23,10 +23,12 @@
     "single_chunk_mode": false,
     "load_octree": true,
 
-    "show_test_cube": true,
+    "show_test_cube": false,
+    "draw_chunk_boundaries": true,
 
     "terrain_mode": "terrain",
     "generator_mode": "transvoxel",
 
-    "debug": true
+    "shader_debug": false,
+    "opengl_debug": true
 }

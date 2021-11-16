@@ -145,6 +145,23 @@ void Octree::draw(GLuint VAO)
     }
 }
 
+void Octree::drawBoundary(GLuint VAO)
+{
+    if (isLeaf) {
+        if (hasChunk) {
+            myChunk->drawBoundary(VAO);
+        }
+    } else {
+        for(int i = 0; i <= 1; i++) {
+            for(int j = 0; j <= 1; j++) {
+                for(int k = 0; k <= 1; k++) {
+                    myChildren[i][j][k]->drawBoundary(VAO);
+                }
+            }
+        }
+    }
+}
+
 glm::vec3 Octree::getCenter()
 {
     return myPosition + mySize*0.5f;

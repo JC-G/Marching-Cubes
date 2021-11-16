@@ -183,7 +183,7 @@ Shader Shader::ComputeShaderFromVector(std::vector<std::string> shaderParts)
     for (std::string str : shaderParts) {
         shaderText += str + "\n";
     }
-    if (Config::get<bool>("debug")) {
+    if (Config::get<bool>("shader_debug")) {
         std::cout << "Shader Text" << std::endl << shaderText << std::endl;
     }
     GLuint shaderID = LoadComputeShader(shaderText,shaderUniforms);

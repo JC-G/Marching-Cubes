@@ -13,6 +13,7 @@ class Octree
         virtual ~Octree();
         void update(glm::vec3 inPos);
         void draw(GLuint VAO);
+        void drawBoundary(GLuint VAO);
 
         unsigned int getEdgeIndex();
         void generateAllChunks(bool force = false);

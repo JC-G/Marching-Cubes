@@ -14,8 +14,10 @@ MarchingChunk::~MarchingChunk() {
     //dtor
     glDeleteBuffers(1,&vertexBuffer);
     glDeleteBuffers(1,&normalBuffer);
+    if (Config::get<bool>("draw_chunk_boundaries")) {
+        glDeleteBuffers(1,&boundaryBuffer);
 
-    glDeleteBuffers(1,&boundaryBuffer);
+    }
 }
 
 void MarchingChunk::draw(GLuint VAO) {

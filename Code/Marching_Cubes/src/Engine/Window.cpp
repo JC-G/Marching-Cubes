@@ -151,7 +151,7 @@ void Window::handleInput()
 
     glm::vec3 placePos;
     Editing::newBrushes.clear();
-    if (Controller::getKeyState(window,GLFW_KEY_P)) {
+    if (Controller::keyPressed(window,GLFW_KEY_P)) {
         Editing::allBrushes.clear();
     }
     if (Controller::getMouseState(window,GLFW_MOUSE_BUTTON_LEFT)) {

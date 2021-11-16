@@ -7,6 +7,7 @@
 #include "EllipsoidBrush.h"
 #include "CylinderBrush.h"
 #include "Octree.h"
+#include "Shader.h"
 //forward declaration of octree to defeat circular reference
 class Octree;
 class Editing {
@@ -27,6 +28,8 @@ class Editing {
         static glm::vec3 cp1;
         static glm::vec3 cp2;
         static float cr;
+
+        static Shader* raycastShader;
 };
 
 #endif

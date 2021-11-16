@@ -42,6 +42,9 @@ class MarchingChunk
         GLuint vertexBuffer;
         GLuint normalBuffer;
         GLuint boundaryBuffer;
+
+        std::vector<glm::vec4> mappedTriangles;
+        bool isMapped = false;
 };
 
 #endif // MARCHINGCHUNK_H

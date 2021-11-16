@@ -161,11 +161,11 @@ void Window::handleInput()
     }
 
     if(Controller::mousePressed(window,GLFW_MOUSE_BUTTON_RIGHT)) {
-        glm::vec3 pos = activeCamera->getDirection() + activeCamera->position;
+        glm::vec3 pos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
         Editing::beginCylinder(pos,0.1);
     }
     if(Controller::mouseReleased(window,GLFW_MOUSE_BUTTON_RIGHT)) {
-        glm::vec3 pos = activeCamera->getDirection() + activeCamera->position;
+        glm::vec3 pos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
         Editing::endCylinder(pos);
     }
 

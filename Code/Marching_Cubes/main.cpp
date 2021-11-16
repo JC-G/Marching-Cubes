@@ -112,7 +112,6 @@ static void RenderChunkBoundaries() {
     if (Config::get<bool>("load_octree")) {
         O->drawBoundary(lVAO);
     }
-    glfwSwapBuffers(Window::window);
 }
 
 
@@ -188,6 +187,7 @@ void AppMain() {
             glUniformMatrix4fv(lineShader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
             RenderChunkBoundaries();
         }
+        glfwSwapBuffers(Window::window);
     }
    // clean up and exit
    glfwTerminate();

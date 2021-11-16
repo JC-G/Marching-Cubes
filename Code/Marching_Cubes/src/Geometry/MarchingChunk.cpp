@@ -105,10 +105,14 @@ float MarchingChunk::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction)
         return tMin;
     }
     //return 1;
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexBuffer);
-    glm::vec4* mappedTriangles;
-    mappedTriangles = (glm::vec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,myGeometrySize,GL_MAP_READ_BIT);
-    
+    if (!isMapped) {
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexBuffer);
+        mappedTriangles.resize(myGeometrySize);
+        glGetBufferSubData(GL_SHADER_STORAGE_BUFFER,0,myGeometrySize * sizeof(glm::vec4),mappedTriangles.data());
+        //mappedTriangles = (glm::vec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,myGeometrySize,GL_MAP_READ_BIT);
+        isMapped = true;
+    }
+
     for (int i = 0; i < myGeometrySize; i+=3) {        //for each triangle
         //test intersection
         glm::vec2 bary;
@@ -121,8 +125,7 @@ float MarchingChunk::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction)
             }
         }
 
-    }
-    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    }    
     return tMin;
 
 }

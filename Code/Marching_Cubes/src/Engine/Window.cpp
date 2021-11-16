@@ -124,52 +124,53 @@ void Window::handleInput()
     //movement
     // vec3(fwd/back, up/down, left/right)
     glm::vec3 movement(0.0f);
-    if (glfwGetKey(window,GLFW_KEY_W)) {
+    if (Controller::getKeyState(window,GLFW_KEY_W)) {
         movement.x+=1.0f;
     }
 
-    if (glfwGetKey(window,GLFW_KEY_S)) {
+    if (Controller::getKeyState(window,GLFW_KEY_S)) {
         movement.x-=1.0f;
     }
 
-    if (glfwGetKey(window,GLFW_KEY_D)) {
+    if (Controller::getKeyState(window,GLFW_KEY_D)) {
         movement.z+=1.0f;
     }
 
-    if (glfwGetKey(window,GLFW_KEY_A)) {
+    if (Controller::getKeyState(window,GLFW_KEY_A)) {
         movement.z-=1.0f;
     }
 
-    if (glfwGetKey(window,GLFW_KEY_SPACE)) {
+    if (Controller::getKeyState(window,GLFW_KEY_SPACE)) {
         movement.y+=1.0f;
     }
 
-    if (glfwGetKey(window,GLFW_KEY_LEFT_SHIFT)) {
+    if (Controller::getKeyState(window,GLFW_KEY_LEFT_SHIFT)) {
         movement.y-=1.0f;
     }
 
     Editing::newBrushes.clear();
-    if (glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_LEFT)) {
+    if (Controller::getMouseState(window,GLFW_MOUSE_BUTTON_LEFT)) {
         //Place a sphere 1 unit away, with radius 0.1
         glm::vec3 pos = activeCamera->getDirection() + activeCamera->position;
         Editing::placeSphere(pos,0.1);
     }
 
-    if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+    if(Controller::mousePressed(window,GLFW_MOUSE_BUTTON_RIGHT)) {
         glm::vec3 pos = activeCamera->getDirection() + activeCamera->position;
         Editing::beginCylinder(pos,0.1);
     }
-    if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+    if(Controller::mouseReleased(window,GLFW_MOUSE_BUTTON_RIGHT)) {
         glm::vec3 pos = activeCamera->getDirection() + activeCamera->position;
         Editing::endCylinder(pos);
     }
 
-    if (glfwGetKey(window,GLFW_KEY_T)) {
+    if (Controller::keyPressed(window,GLFW_KEY_T)) {
         Editing::sphereRing(activeCamera->position,10,1000,1);
     }
-    if (glfwGetKey(window,GLFW_KEY_F) == GLFW_PRESS) {
+    if (Controller::keyPressed(window,GLFW_KEY_F)) {
         Config::wireframe = !Config::wireframe;
     }
+
 
     activeCamera->moveFromVec3(movement,dt);
 }

@@ -15,6 +15,7 @@ Static class - there is only one window
 
 #include "Engine/Camera.h"
 #include "Editing.h"
+#include "Controller.h"
 
 class Window
 {

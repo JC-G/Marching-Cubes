@@ -114,10 +114,7 @@ float MarchingChunk::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction)
         glm::vec2 bary;
         float distance;
         if(glm::intersectRayTriangle(origin, direction, glm::vec3(mappedTriangles[i]), glm::vec3(mappedTriangles[i+1]), glm::vec3(mappedTriangles[i+2]),bary,distance)) {
-      
-            // glm::vec3 worldPos = pos.x * mappedTriangles[i] + pos.y * mappedTriangles[i+1] + pos.z * mappedTriangles[i+2];
-            float t = distance; //(worldPos.x-origin.x)/direction.x; //TODO - this will break if direction == 0
-            std::cout << t << std::endl;
+            float t = distance;
             if (t >= 0 && t < tMin) {
                 tMin = t;
 

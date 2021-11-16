@@ -49,7 +49,6 @@ void Editing::sphereRing(glm::vec3 pos, float ringR, int ringN, float r) {
 
 glm::vec3 Editing::rayCast(glm::vec3 pos, glm::vec3 direction, Octree* O) {
     glm::vec3 p = pos + direction * O->getIntersectionPoint(pos,direction);
-    std::cout << p.x << ", " << p.y << ", " << p.z << std::endl;
     return p;
 }
 

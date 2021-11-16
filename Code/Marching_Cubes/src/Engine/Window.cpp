@@ -151,10 +151,13 @@ void Window::handleInput()
 
     glm::vec3 placePos;
     Editing::newBrushes.clear();
+    if (glfwGetKey(window,GLFW_KEY_P)) {
+        Editing::allBrushes.clear();
+    }
     if (glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_LEFT)) {
         //Place a sphere 1 unit away, with radius 0.1
         placePos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
-        Editing::placeSphere(placePos,1);
+        Editing::placeSphere(placePos,.1);
     }
 
     // if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
@@ -167,7 +170,7 @@ void Window::handleInput()
     // }
 
     if (glfwGetKey(window,GLFW_KEY_T)) {
-        Editing::sphereRing(activeCamera->position,1,50,.1);
+        Editing::sphereRing(activeCamera->position,1,20,.1);
     }
     if (glfwGetKey(window,GLFW_KEY_F) == GLFW_PRESS) {
         Config::wireframe = !Config::wireframe;

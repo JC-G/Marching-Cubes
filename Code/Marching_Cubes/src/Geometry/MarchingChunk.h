@@ -29,6 +29,8 @@ class MarchingChunk
         void generateBoundary();
 
         float getIntersectionPoint(glm::vec3 origin, glm::vec3 direction);
+        
+        static std::vector<MarchingChunk*> loadedChunks;
 
     protected:
 

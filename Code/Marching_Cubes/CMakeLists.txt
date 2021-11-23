@@ -17,6 +17,8 @@ add_executable(MarchingCubes
     src/Engine/Camera.h
     src/Engine/Controller.cpp
     src/Engine/Controller.h
+    src/Engine/Drawing.cpp
+    src/Engine/Drawing.h
     src/Engine/Shader.cpp
     src/Engine/Shader.h
     src/Engine/Window.cpp

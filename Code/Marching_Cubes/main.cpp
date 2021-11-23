@@ -68,12 +68,17 @@ static void LoadObjects()
     }
     if (Config::get<bool>("load_octree")) {
         O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);
+        Window::mainOctree = O;
         O->update(glm::vec3(0));
 
     }
     if (Config::get<bool>("show_test_cube")) {
         GeometryGenerator* C = new CubeGeometryGenerator();
         loadedChunks.push_back(new MarchingChunk(glm::vec3(0),glm::vec3(0),glm::vec3(0),C,0));
+    }
+    if (Config::get<bool>("place_test_objects")) {
+        Editing::placeSphere(glm::vec3(1,0,0),1.0);
+        Editing::placeSphere(glm::vec3(-1,0,0),1.0);
     }
 }
 
@@ -107,7 +112,6 @@ static void RenderChunkBoundaries() {
     if (Config::get<bool>("load_octree")) {
         O->drawBoundary(lVAO);
     }
-    glfwSwapBuffers(Window::window);
 }
 
 
@@ -183,6 +187,7 @@ void AppMain() {
             glUniformMatrix4fv(lineShader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
             RenderChunkBoundaries();
         }
+        glfwSwapBuffers(Window::window);
     }
    // clean up and exit
    glfwTerminate();

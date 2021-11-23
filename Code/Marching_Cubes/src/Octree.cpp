@@ -15,9 +15,11 @@ Octree::Octree(glm::vec3 size, glm::vec3 position, int detailLevel, GeometryGene
 {
     isLeaf = true;
 }
+
 BrushBoundingBox Octree::getBoundingBox() {
     return BrushBoundingBox(myPosition,myPosition+mySize);
 }
+
 void Octree::update(glm::vec3 inPos)
 {
     //std::cout << "inPos: " << glm::to_string(inPos) << std::endl;
@@ -289,4 +291,29 @@ void Octree::generateAllChunks(bool force)
     }
 }
 
-
+float Octree::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction) {
+    //get minimum t-value such that the ray starting at origin, travelling in direction, intersects with a triangle in the octree
+    
+    float minT = std::numeric_limits<float>::max();
+    if (!getBoundingBox().intersectsRay(origin,direction)) {
+        return minT;
+    }
+    if (!isLeaf) {
+        for(int i = 0; i <= 1; i++) {
+            for(int j = 0; j <= 1; j++) {
+                for(int k = 0; k <= 1; k++) {
+                    minT = glm::min(minT,myChildren[i][j][k]->getIntersectionPoint(origin,direction));
+                }
+            }
+        }
+        return minT;
+    }
+    if (!myChunk) {
+        return std::numeric_limits<float>::max();
+    }
+    if (!myChunk->hasGeometry()) {
+        return std::numeric_limits<float>::max();
+    }
+    return myChunk->getIntersectionPoint(origin,direction);
+    //chunk intersection point
+}

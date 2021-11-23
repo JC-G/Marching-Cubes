@@ -5,6 +5,7 @@ GLFWwindow* Window::window = NULL;
 Camera* Window::activeCamera;
 int Window::width;
 int Window::height;
+Octree* Window::mainOctree;
 Window::Window()
 {
     //ctor
@@ -148,19 +149,24 @@ void Window::handleInput()
         movement.y-=1.0f;
     }
 
+    glm::vec3 placePos;
     Editing::newBrushes.clear();
+    if (Controller::keyPressed(window,GLFW_KEY_P)) {
+        Editing::allBrushes.clear();
+    }
     if (Controller::getMouseState(window,GLFW_MOUSE_BUTTON_LEFT)) {
         //Place a sphere 1 unit away, with radius 0.1
-        glm::vec3 pos = activeCamera->getDirection() + activeCamera->position;
-        Editing::placeSphere(pos,0.1);
+        placePos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
+        Editing::placeSphere(placePos,.1);
     }
 
     if(Controller::mousePressed(window,GLFW_MOUSE_BUTTON_RIGHT)) {
-        glm::vec3 pos = activeCamera->getDirection() + activeCamera->position;
+        glm::vec3 pos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
         Editing::beginCylinder(pos,0.1);
     }
+
     if(Controller::mouseReleased(window,GLFW_MOUSE_BUTTON_RIGHT)) {
-        glm::vec3 pos = activeCamera->getDirection() + activeCamera->position;
+        glm::vec3 pos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
         Editing::endCylinder(pos);
     }
 

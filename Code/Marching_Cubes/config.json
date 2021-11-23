@@ -4,10 +4,10 @@
 
     "octree_size": 1024.0,
     "octree_max_depth": 10,
-    "octree_lod_scale": 2048.0,
+    "octree_lod_scale": 1500.0,
     "update_octree": true,
 
-    "chunk_size": 32,
+    "chunk_size": 64,
 
     "camera_move_speed": 1.0,
     "camera_start_position": [0.0,1.0,0.0],
@@ -24,11 +24,14 @@
     "load_octree": true,
 
     "show_test_cube": false,
-    "draw_chunk_boundaries": true,
+    "draw_chunk_boundaries": false,
+    "place_test_objects": true,
 
     "terrain_mode": "terrain",
     "generator_mode": "transvoxel",
 
-    "shader_debug": false,
-    "opengl_debug": true
+    "raycast_mode": "mesh",
+
+    "shader_debug": true,
+    "opengl_debug": false
 }

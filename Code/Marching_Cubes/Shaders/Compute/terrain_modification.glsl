@@ -6,6 +6,9 @@ struct BrushParams {
     vec4 location;
     vec4 size;
 
+    vec4 bottom;
+    vec4 top;
+
     int type;
     int mode;
     float param1;
@@ -18,17 +21,27 @@ layout (std140, binding = 16) buffer BrushList {
 
 uniform int brushCount;
 
+bool inBox(vec4 bottom, vec4 top, vec3 inPos) {
+    return all(lessThanEqual(bottom.xyz,inPos)) && all(lessThanEqual(inPos,top.xyz));
+}
+
+const float F_MAX = 1e20;
+
 float modified_density(vec3 inPos) {
     float terrainDensity = density(inPos);
     float resultDensity = terrainDensity;
     for (int i = 0; i < brushCount; i++) {
         BrushParams b = brushInstances[i];
-        float testDensity = 0.0;
-        if (b.type == 1) {
-            testDensity = ellipsoid_density(inPos,b.location,b.size);
-        } else if (b.type == 2) {
-            testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
+        float testDensity = F_MAX;
+
+        if (inBox(b.bottom,b.top,inPos)) {
+            if (b.type == 1) {
+                testDensity = ellipsoid_density(inPos,b.location,b.size);
+            } else if (b.type == 2) {
+                testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
+            }
         }
+        
         resultDensity = min(resultDensity,testDensity);
     }
     return resultDensity;
@@ -40,12 +53,15 @@ vec3 modified_normal(vec3 inPos) {
 
     for (int i = 0; i < brushCount; i++) {
         BrushParams b = brushInstances[i];
-        float testDensity = 0.0;
-        if (b.type == 1) {
-            testDensity = ellipsoid_density(inPos,b.location,b.size);
-        }
-        else if (b.type == 2) {
-            testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
+        float testDensity = F_MAX;
+
+        if (inBox(b.bottom,b.top,inPos)) {
+            if (b.type == 1) {
+                testDensity = ellipsoid_density(inPos,b.location,b.size);
+            }
+            else if (b.type == 2) {
+                testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
+            }
         }
         if (testDensity < bestDensity) {
             bestDensity = testDensity;

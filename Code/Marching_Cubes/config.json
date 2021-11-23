@@ -7,7 +7,7 @@
     "octree_lod_scale": 1500.0,
     "update_octree": true,
 
-    "chunk_size": 4,
+    "chunk_size": 64,
 
     "camera_move_speed": 1.0,
     "camera_start_position": [0.0,1.0,0.0],
@@ -32,6 +32,6 @@
 
     "raycast_mode": "mesh",
 
-    "shader_debug": false,
-    "opengl_debug": true
+    "shader_debug": true,
+    "opengl_debug": false
 }

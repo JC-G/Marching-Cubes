@@ -15,9 +15,11 @@ Octree::Octree(glm::vec3 size, glm::vec3 position, int detailLevel, GeometryGene
 {
     isLeaf = true;
 }
+
 BrushBoundingBox Octree::getBoundingBox() {
     return BrushBoundingBox(myPosition,myPosition+mySize);
 }
+
 void Octree::update(glm::vec3 inPos)
 {
     //std::cout << "inPos: " << glm::to_string(inPos) << std::endl;

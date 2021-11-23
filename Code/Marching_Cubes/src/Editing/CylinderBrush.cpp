@@ -14,6 +14,10 @@ BrushParams CylinderBrush::getBrushParams() {
     return {
         glm::vec4(a,0),
         glm::vec4(b,0),
+
+        glm::vec4(getBoundingBox().bottom,0),
+        glm::vec4(getBoundingBox().top,0),
+
         CYLINDER_BRUSH,
         0,
         r,

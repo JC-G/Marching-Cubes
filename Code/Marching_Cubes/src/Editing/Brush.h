@@ -16,8 +16,17 @@ struct BrushParams { //size is a multiple of glm::vec4 for shader padding purpos
     //similarly, size is not guaranteed to define the bounding box of the area affected by the SDF
     //it is assumed that any bounding-box based culling is performed elsewhere, facilitated by getBoundingBox()
 
+    //it is also assumed that the SDF of the brush will have NO AFFECT on the underlying terrain function outside of the bounding box
+    //this is enforced in terrain_modification.glsl
+    //In the case where a bounding box is exact, this means a small amount of padding should be used since the SDF has an effect on the boundary of the box
+    //See ellipsoid brush, which has a simple bounding box
+
+  
     glm::vec4 location; //these are vec4 for padding reasons - the 4th component need not be used
     glm::vec4 size;
+
+    glm::vec4 bottom;
+    glm::vec4 top;
     
     BrushType type; //type of brush
     int mode; //eg - add, subtract, etc

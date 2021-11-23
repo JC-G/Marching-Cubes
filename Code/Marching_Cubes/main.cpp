@@ -93,7 +93,10 @@ void AppMain() {
 
     Window::attachCamera(new Camera);
 
-    Drawing::init();
+    if (!Drawing::init()) {
+        printf("Error initializing framebuffer");
+        return;
+    }
     
     LoadObjects();
 

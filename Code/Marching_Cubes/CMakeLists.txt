@@ -69,6 +69,10 @@ add_executable(MarchingCubes
 
     Shaders/frag.glsl
     Shaders/vert.glsl
+    Shaders/line_frag.glsl
+    Shaders/line_vert.glsl
+    Shaders/screen_frag.glsl
+    Shaders/screen_vert.glsl
 
     Shaders/Compute/common.glsl
     Shaders/Compute/countpolygons.glsl

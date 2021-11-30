@@ -33,7 +33,6 @@ float modified_density(vec3 inPos) {
     for (int i = 0; i < brushCount; i++) {
         BrushParams b = brushInstances[i];
         float testDensity = F_MAX;
-
         if (inBox(b.bottom,b.top,inPos)) {
             if (b.type == 1) {
                 testDensity = ellipsoid_density(inPos,b.location,b.size);
@@ -41,12 +40,14 @@ float modified_density(vec3 inPos) {
                 testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
             }
         }
-        
-        resultDensity = min(resultDensity,testDensity);
+        if (b.mode == 0) {
+            resultDensity = min(resultDensity,testDensity);
+        } else if (b.mode == 1) {
+            resultDensity = max(resultDensity, -testDensity);
+        }
     }
     return resultDensity;
 }
-
 vec3 modified_normal(vec3 inPos) {
     int bestI = -1;
     float bestDensity = density(inPos);
@@ -63,8 +64,11 @@ vec3 modified_normal(vec3 inPos) {
                 testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
             }
         }
-        if (testDensity < bestDensity) {
+        if (testDensity < bestDensity && b.mode == 0) {
             bestDensity = testDensity;
+            bestI = i;
+        } else if(-testDensity > bestDensity && b.mode == 1) {
+            bestDensity = -testDensity;
             bestI = i;
         }
     }
@@ -77,6 +81,9 @@ vec3 modified_normal(vec3 inPos) {
         }
         else if (b.type == 2) {
             testNormal = cylinder_normal(inPos,b.location,b.size,b.param1);
+        }
+        if (b.mode == 1) {
+            testNormal *= -1.0;
         }
         return testNormal;
     }

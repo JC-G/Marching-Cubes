@@ -1,7 +1,7 @@
 #include "EllipsoidBrush.h"
 
-EllipsoidBrush::EllipsoidBrush(glm::vec3 center, glm::vec3 radius)
-:center(center),radius(radius) {
+EllipsoidBrush::EllipsoidBrush(glm::vec3 center, glm::vec3 radius,BrushMode mode)
+:center(center),radius(radius),mode(mode) {
 
 }
 
@@ -21,7 +21,7 @@ BrushParams EllipsoidBrush::getBrushParams() {
         glm::vec4(getBoundingBox().top,0),
 
         ELLIPSOID_BRUSH,
-        0, //unimplemented
+        mode,
         0,
         0
     };

@@ -13,6 +13,13 @@ void Editing::placeSphere(glm::vec3 pos, float r) {
     newBrushes.push_back(b);
 }
 
+void Editing::digSphere(glm::vec3 pos, float r){
+    
+    Brush* b = new EllipsoidBrush(pos,glm::vec3(r),1);
+    allBrushes.push_back(b);
+    newBrushes.push_back(b);
+}
+
 
 void Editing::beginCylinder(glm::vec3 pos, float r) {
     if (placing) {

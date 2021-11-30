@@ -13,7 +13,7 @@
     "camera_start_position": [0.0,1.0,0.0],
 
     "wireframe": false,
-    "backface_culling": true,
+    "backface_culling": false,
 
     "transition_width": 0.5,
     "generate_transition_cells": true,

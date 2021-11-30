@@ -15,6 +15,7 @@ class Editing {
         static std::vector<Brush*> allBrushes;
         static std::vector<Brush*> newBrushes;
         static void placeSphere(glm::vec3 pos, float r);
+        static void digSphere(glm::vec3 pos, float r);
 
         static void beginCylinder(glm::vec3 pos, float r);
         static void endCylinder(glm::vec3 pos);

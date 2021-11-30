@@ -157,18 +157,24 @@ void Window::handleInput()
     if (Controller::getMouseState(window,GLFW_MOUSE_BUTTON_LEFT)) {
         //Place a sphere 1 unit away, with radius 0.1
         placePos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
+        Editing::digSphere(placePos,1.5);
+    }
+    
+    if (Controller::getMouseState(window,GLFW_MOUSE_BUTTON_RIGHT)) {
+        //Place a sphere 1 unit away, with radius 0.1
+        placePos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
         Editing::placeSphere(placePos,.1);
     }
 
-    if(Controller::mousePressed(window,GLFW_MOUSE_BUTTON_RIGHT)) {
-        glm::vec3 pos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
-        Editing::beginCylinder(pos,0.1);
-    }
+    // if(Controller::mousePressed(window,GLFW_MOUSE_BUTTON_RIGHT)) {
+    //     glm::vec3 pos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
+    //     Editing::beginCylinder(pos,0.1);
+    // }
 
-    if(Controller::mouseReleased(window,GLFW_MOUSE_BUTTON_RIGHT)) {
-        glm::vec3 pos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
-        Editing::endCylinder(pos);
-    }
+    // if(Controller::mouseReleased(window,GLFW_MOUSE_BUTTON_RIGHT)) {
+    //     glm::vec3 pos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
+    //     Editing::endCylinder(pos);
+    // }
 
     if (Controller::keyPressed(window,GLFW_KEY_T)) {
         Editing::sphereRing(activeCamera->position,10,1000,1);

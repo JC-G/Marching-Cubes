@@ -83,6 +83,9 @@ add_executable(MarchingCubes
     Shaders/Compute/terrain_modification.glsl
     Shaders/Compute/brush_functions.glsl
 
+    #compile CImg
+    lib/CImg/CImg.h
+
 )
 
 
@@ -114,6 +117,10 @@ target_link_libraries(MarchingCubes PRIVATE libglew_static)
 # glm
 add_subdirectory(lib/glm EXCLUDE_FROM_ALL)
 target_link_libraries(MarchingCubes PRIVATE glm)
+
+#CImg
+
+include_directories("lib/CImg")
 
 target_link_options(MarchingCubes PRIVATE -static-libgcc -static-libstdc++)
 

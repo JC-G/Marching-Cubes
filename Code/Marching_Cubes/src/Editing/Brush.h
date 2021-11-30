@@ -9,6 +9,12 @@ typedef int BrushType;
 const BrushType ELLIPSOID_BRUSH = 1;
 const BrushType CYLINDER_BRUSH = 2;
 
+typedef int BrushMode;
+
+const BrushMode MODE_ADD = 0;
+const BrushMode MODE_DELETE = 1;
+
+
 struct BrushParams { //size is a multiple of glm::vec4 for shader padding purposes
 
     //location may point to any place on the SDF, as is convenient
@@ -29,7 +35,7 @@ struct BrushParams { //size is a multiple of glm::vec4 for shader padding purpos
     glm::vec4 top;
     
     BrushType type; //type of brush
-    int mode; //eg - add, subtract, etc
+    BrushMode mode; //eg - add, subtract, etc
     float param1;
     float param2;
 };

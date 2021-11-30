@@ -7,3 +7,6 @@
 [submodule "Code/Marching_Cubes/lib/glm"]
 	path = Code/Marching_Cubes/lib/glm
 	url = https://github.com/g-truc/glm
+[submodule "Code/Marching_Cubes/lib/freetype"]
+	path = Code/Marching_Cubes/lib/freetype
+	url = https://github.com/freetype/freetype

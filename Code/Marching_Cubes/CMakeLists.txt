@@ -121,6 +121,10 @@ target_link_libraries(MarchingCubes PRIVATE libglew_static)
 add_subdirectory(lib/glm EXCLUDE_FROM_ALL)
 target_link_libraries(MarchingCubes PRIVATE glm)
 
+# freetype
+add_subdirectory(lib/freetype EXCLUDE_FROM_ALL)
+target_link_libraries(MarchingCubes PRIVATE freetype)
+
 target_link_options(MarchingCubes PRIVATE -static-libgcc -static-libstdc++)
 
 # include shader files and config in output directory

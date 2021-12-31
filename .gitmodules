@@ -13,3 +13,6 @@
 [submodule "Code/Marching_Cubes/lib/CImg"]
 	path = Code/Marching_Cubes/lib/CImg
 	url = https://github.com/dtschump/CImg
+[submodule "Code/Marching_Cubes/lib/gli"]
+	path = Code/Marching_Cubes/lib/gli
+	url = https://github.com/g-truc/gli

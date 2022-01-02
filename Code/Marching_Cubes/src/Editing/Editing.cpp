@@ -2,46 +2,12 @@
 
 std::vector<Brush*> Editing::allBrushes;
 std::vector<Brush*> Editing::newBrushes;
-float Editing::cr;
-glm::vec3 Editing::cp1;
-glm::vec3 Editing::cp2;
-bool Editing::placing = false;
-
-void Editing::placeSphere(glm::vec3 pos, float r) {
-    Brush* b = new EllipsoidBrush(pos,glm::vec3(r));
-    allBrushes.push_back(b);
-    newBrushes.push_back(b);
-}
-
-void Editing::digSphere(glm::vec3 pos, float r){
-    
-    Brush* b = new EllipsoidBrush(pos,glm::vec3(r),1);
-    allBrushes.push_back(b);
-    newBrushes.push_back(b);
-}
-
-
-void Editing::beginCylinder(glm::vec3 pos, float r) {
-    if (placing) {
-        return;
-    }
-    placing = true;
-    cp1 = pos;
-    cr = r;
-}
-
-void Editing::endCylinder(glm::vec3 pos) {
-    if (!placing) {
-        return;
-    }
-    cp2 = pos;
-
-    Brush* b = new CylinderBrush(cp1,cp2,cr);
-    allBrushes.push_back(b);
-    newBrushes.push_back(b);
-
-    placing = false;
-}  
+int Editing::actionIndex = 0;
+std::vector<Action*> Editing::allActions = {
+    new SphereAction(1.0),
+    new CylinderAction(1.0),
+    new DigSphereAction(1.0),
+};
 
 void Editing::sphereRing(glm::vec3 pos, float ringR, int ringN, float r) {
 
@@ -64,7 +30,7 @@ glm::vec3 Editing::rayCast(glm::vec3 pos, glm::vec3 direction, Octree* O) {
         return p;
     }
 
-    
+    return pos; //prevent compiler warning
 // //At the time of the first marching chunk creation, compile the raycasting shader for later use
 //     if (!raycastShader) {
 //         raycastShader = &(Shader::ComputeShaderFromVector(std::vector<std::string>{
@@ -78,4 +44,16 @@ glm::vec3 Editing::rayCast(glm::vec3 pos, glm::vec3 direction, Octree* O) {
 //     }
 }
 
+void Editing::incrementAction() {
+    //do not change from cylinder mid-place
+    currentAction()->onCancel();
+    actionIndex++;
+    if (actionIndex >= allActions.size()) {
+        actionIndex = 0;
+    }
+}
+
+Action* Editing::currentAction() {
+    return allActions[actionIndex];
+}
 

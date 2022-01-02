@@ -13,6 +13,8 @@ add_executable(MarchingCubes
     src/Octree.cpp
     src/Octree.h
 
+    src/Engine/Action.cpp
+    src/Engine/Action.h
     src/Engine/Camera.cpp
     src/Engine/Camera.h
     src/Engine/Controller.cpp
@@ -63,6 +65,13 @@ add_executable(MarchingCubes
     src/Editing/EllipsoidBrush.h
     src/Editing/TestBrushes.cpp
     src/Editing/TestBrushes.h
+    
+    src/Editing/Actions/CylinderAction.cpp
+    src/Editing/Actions/CylinderAction.h
+    src/Editing/Actions/SphereAction.cpp
+    src/Editing/Actions/SphereAction.h
+    src/Editing/Actions/DigSphereAction.cpp
+    src/Editing/Actions/DigSphereAction.h
 
     # These are not compiled - but adding them here means the project is rebuild (and hence the modifications are reflected in the output directory)
     config.json

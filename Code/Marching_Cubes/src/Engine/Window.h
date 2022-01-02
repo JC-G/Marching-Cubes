@@ -16,7 +16,7 @@ Static class - there is only one window
 #include "Engine/Camera.h"
 #include "Editing.h"
 #include "Controller.h"
-
+#include "Action.h"
 class Window
 {
     public:
@@ -36,6 +36,7 @@ class Window
         static void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, 
                              GLsizei length, const char *message, const void *userParam);
         static Octree* mainOctree;
+
     protected:
 
     private:

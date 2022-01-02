@@ -28,9 +28,6 @@ bool Controller::keyReleased(GLFWwindow* window, int key) {
 
 int Controller::getKeyState(GLFWwindow* window, int key) {
     int state = glfwGetKey(window, key);
-    // if (keyStates.find(key) == keyStates.end()) {
-    //     keyStates[key] = state;
-    // }
     return state;
 }
 

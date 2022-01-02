@@ -63,10 +63,6 @@ static void LoadObjects()
         GeometryGenerator* C = new CubeGeometryGenerator();
         MarchingChunk::loadedChunks.push_back(new MarchingChunk(glm::vec3(0),glm::vec3(0),glm::vec3(0),C,0));
     }
-    if (Config::get<bool>("place_test_objects")) {
-        Editing::placeSphere(glm::vec3(1,0,0),1.0);
-        Editing::placeSphere(glm::vec3(-1,0,0),1.0);
-    }
 }
 
 // the program starts here

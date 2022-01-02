@@ -20,3 +20,11 @@ void DigSphereAction::onCancel(){};
 std::string DigSphereAction::getDescription() {
     return "Dig Sphere, Radius " + std::to_string(radius);
 }
+
+
+void DigSphereAction::increaseSize() {
+    radius += 0.01;
+}
+void DigSphereAction::decreaseSize() {
+    radius -= 0.01;
+}

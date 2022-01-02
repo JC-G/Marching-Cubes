@@ -158,6 +158,13 @@ void Window::handleInput()
     if (Controller::keyPressed(window,GLFW_KEY_B)) {
         Editing::incrementAction();
     }
+    if (Controller::getKeyState(window,GLFW_KEY_LEFT_BRACKET)) {
+        Editing::currentAction()->decreaseSize();
+    }
+    if (Controller::getKeyState(window,GLFW_KEY_RIGHT_BRACKET)) {
+        Editing::currentAction()->increaseSize();
+    }
+
 
     if (Controller::mousePressed(window,GLFW_MOUSE_BUTTON_LEFT)) {
         Editing::currentAction()->onMouseDown(placePos);

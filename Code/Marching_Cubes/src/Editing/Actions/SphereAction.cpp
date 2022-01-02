@@ -20,3 +20,10 @@ void SphereAction::onCancel(){};
 std::string SphereAction::getDescription() {
     return "Sphere, Radius " + std::to_string(radius);
 }
+
+void SphereAction::increaseSize() {
+    radius += 0.01;
+}
+void SphereAction::decreaseSize() {
+    radius -= 0.01;
+}

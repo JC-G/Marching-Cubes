@@ -34,3 +34,16 @@ void CylinderAction::onCancel(){
 std::string CylinderAction::getDescription() {
     return "Cylinder, Radius " +  std::to_string(radius);
 }
+
+void CylinderAction::increaseSize() {
+    if (placing) {
+        return;
+    }
+    radius += 0.01;
+}
+void CylinderAction::decreaseSize() {
+    if (placing) {
+        return;
+    }
+    radius -= 0.01;
+}

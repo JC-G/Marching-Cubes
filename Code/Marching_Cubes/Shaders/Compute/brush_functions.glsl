@@ -25,7 +25,7 @@ float cylinder_density(vec3 inPos, vec4 a, vec4 b, float r) {
 
 vec3 cylinder_normal(vec3 inPos, vec4 a, vec4 b, float r) {
     //numerical normal - TODO get analytical normal 
-    float eps = 0.00001;
+    float eps = 0.001;
     vec3 dx = inPos + vec3(eps,0,0);
     vec3 dy = inPos + vec3(0,eps,0);
     vec3 dz = inPos + vec3(0,0,eps);

@@ -12,6 +12,8 @@ class SphereAction : public Action {
         void onMouseHold(glm::vec3 pos) override;
         void onCancel() override;
         std::string getDescription() override;
+        void increaseSize() override;
+        void decreaseSize() override;
 
         float radius;
 };

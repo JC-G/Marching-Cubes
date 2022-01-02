@@ -10,6 +10,8 @@ class Action {
         virtual void onMouseHold(glm::vec3 pos) = 0;
         virtual void onCancel() = 0;
         virtual std::string getDescription() = 0;
+        virtual void increaseSize() = 0;
+        virtual void decreaseSize() = 0;
 };
 
 #endif

@@ -7,6 +7,12 @@
 [submodule "Code/Marching_Cubes/lib/glm"]
 	path = Code/Marching_Cubes/lib/glm
 	url = https://github.com/g-truc/glm
+[submodule "Code/Marching_Cubes/lib/freetype"]
+	path = Code/Marching_Cubes/lib/freetype
+	url = https://github.com/freetype/freetype
 [submodule "Code/Marching_Cubes/lib/CImg"]
 	path = Code/Marching_Cubes/lib/CImg
 	url = https://github.com/dtschump/CImg
+[submodule "Code/Marching_Cubes/lib/gli"]
+	path = Code/Marching_Cubes/lib/gli
+	url = https://github.com/g-truc/gli

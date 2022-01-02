@@ -24,7 +24,7 @@
     "load_octree": true,
 
     "show_test_cube": false,
-    "draw_chunk_boundaries": false,
+    "draw_chunk_boundaries": true,
     "place_test_objects": true,
 
     "terrain_mode": "terrain",
@@ -32,6 +32,6 @@
 
     "raycast_mode": "mesh",
 
-    "shader_debug": true,
-    "opengl_debug": false
+    "shader_debug": false,
+    "opengl_debug": true
 }

@@ -17,6 +17,8 @@ add_executable(MarchingCubes
     src/Engine/Camera.h
     src/Engine/Controller.cpp
     src/Engine/Controller.h
+    src/Engine/Drawing.cpp
+    src/Engine/Drawing.h
     src/Engine/Shader.cpp
     src/Engine/Shader.h
     src/Engine/Window.cpp
@@ -67,6 +69,10 @@ add_executable(MarchingCubes
 
     Shaders/frag.glsl
     Shaders/vert.glsl
+    Shaders/line_frag.glsl
+    Shaders/line_vert.glsl
+    Shaders/screen_frag.glsl
+    Shaders/screen_vert.glsl
 
     Shaders/Compute/common.glsl
     Shaders/Compute/countpolygons.glsl
@@ -82,10 +88,6 @@ add_executable(MarchingCubes
 
     Shaders/Compute/terrain_modification.glsl
     Shaders/Compute/brush_functions.glsl
-
-    #compile CImg
-    lib/CImg/CImg.h
-
 )
 
 
@@ -118,9 +120,18 @@ target_link_libraries(MarchingCubes PRIVATE libglew_static)
 add_subdirectory(lib/glm EXCLUDE_FROM_ALL)
 target_link_libraries(MarchingCubes PRIVATE glm)
 
-#CImg
+# gli
+add_subdirectory(lib/gli EXCLUDE_FROM_ALL)
+target_link_libraries(MarchingCubes PRIVATE gli)
 
-include_directories("lib/CImg")
+#message(STATUS "csd: ${CMAKE_CURRENT_SOURCE_DIR}/lib")
+# freetype
+#target_include_directories(MarchingCubes PRIVATE ${FREETYPE_INCLUDE_DIRS})
+
+# target_link_libraries(MarchingCubes PRIVATE freetype)
+target_link_libraries(MarchingCubes PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/freetype/lib/libfreetype.a)
+include_directories("freetype/include/freetype2")
+
 
 target_link_options(MarchingCubes PRIVATE -static-libgcc -static-libstdc++)
 

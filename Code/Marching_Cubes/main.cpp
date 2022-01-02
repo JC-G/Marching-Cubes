@@ -21,25 +21,12 @@
 #include "SDF/PlaneSDF.h"
 #include "Octree.h"
 #include "Config.h"
+#include "Drawing.h"
 
-
-
-GLuint gVAO = 0;
-GLuint gVBO = 0;
-GLuint lVAO = 0;
-GLuint programId;
-GLFWmonitor* monitor = NULL;
-
-static std::vector<MarchingChunk*> loadedChunks;
 Octree* O;
 
 static void LoadObjects()
 {
-
-    // make and bind the VAO
-    glGenVertexArrays(1, &gVAO);
-    glGenVertexArrays(1, &lVAO);
-
     std::string terrainMode = Config::get<std::string>("terrain_mode");
     SDF* usedSDF;
     if (terrainMode == "plane") {
@@ -62,7 +49,7 @@ static void LoadObjects()
     }
     if (Config::get<bool>("single_chunk_mode")) {
         //test code to generate a single chunk
-        loadedChunks.push_back(new MarchingChunk(glm::vec3(1,0,1),glm::vec3(4),glm::vec3(0.25),G,0b010001));
+        MarchingChunk::loadedChunks.push_back(new MarchingChunk(glm::vec3(1,0,1),glm::vec3(4),glm::vec3(0.25),G,0b010001));
 
         // loadedChunks.push_back(new MarchingChunk(glm::vec3(-1,-1,1),glm::vec3(4),glm::vec3(0.5),G,0b000000));
     }
@@ -74,47 +61,13 @@ static void LoadObjects()
     }
     if (Config::get<bool>("show_test_cube")) {
         GeometryGenerator* C = new CubeGeometryGenerator();
-        loadedChunks.push_back(new MarchingChunk(glm::vec3(0),glm::vec3(0),glm::vec3(0),C,0));
+        MarchingChunk::loadedChunks.push_back(new MarchingChunk(glm::vec3(0),glm::vec3(0),glm::vec3(0),C,0));
     }
     if (Config::get<bool>("place_test_objects")) {
         Editing::placeSphere(glm::vec3(1,0,0),1.0);
         Editing::placeSphere(glm::vec3(-1,0,0),1.0);
     }
 }
-
-
-
-// draws a single frame
-
-static void Render() {
-
-    //Clear screen
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //draw the chunk
-    for (auto C : loadedChunks) {
-        C->draw(gVAO);
-    }
-    if (Config::get<bool>("load_octree")) {
-        O->draw(gVAO);
-    }
-
-    // swap the display buffers (displays what was just drawn)
-
-}
-
-//Draw the chunk boundaries
-
-static void RenderChunkBoundaries() {
-    for (auto C : loadedChunks) {
-        C->drawBoundary(lVAO);
-    }
-    if (Config::get<bool>("load_octree")) {
-        O->drawBoundary(lVAO);
-    }
-}
-
-
 
 // the program starts here
 
@@ -133,38 +86,27 @@ void AppMain() {
     std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
     // make sure OpenGL version 4.2 API is available
 
-    if(!GLEW_VERSION_4_2)
-
+    if(!GLEW_VERSION_4_2) {
         throw std::runtime_error("OpenGL 4.2 API is not available.");
+    }
 
-   // create buffer and fill it with the points of the triangle
 
     Window::attachCamera(new Camera);
 
+    if (!Drawing::init()) {
+        printf("Error initializing framebuffer");
+        return;
+    }
+    
     LoadObjects();
 
-    // load the (test) shader
-    Shader shader = Shader::ShaderFromFiles("Shaders/vert.glsl","Shaders/frag.glsl");
-
-    glUseProgram(shader.getID());
-
-    glm::mat4 VM = glm::lookAt(glm::vec3(2.0,3.0,4.0),glm::vec3(0.0),glm::vec3(0.0,1.0,0.0));
-    glm::mat4 PM = Window::getProjectionMatrix();
-    glUniformMatrix4fv(shader.getUniform("P"),1,GL_FALSE,&PM[0][0]);
-
-    
-    Shader lineShader = Shader::ShaderFromFiles("Shaders/line_vert.glsl","Shaders/line_frag.glsl");
-
-    glUseProgram(lineShader.getID());
-    glUniformMatrix4fv(lineShader.getUniform("P"),1,GL_FALSE,&PM[0][0]);
-
-
-    // run while the window is open and focused
+    // Main loop
     while(!glfwWindowShouldClose(Window::window)){
-    // process pending events
+        // process pending events
         glfwPollEvents();
         Window::handleInput();
 
+        //Update the octree
         if (Config::get<bool>("load_octree")) {
             if (Config::get<bool>("update_octree")) {
                 O->update(Window::activeCamera->position);
@@ -172,22 +114,8 @@ void AppMain() {
             O->generateAllChunks();
         }
 
-        glUseProgram(shader.getID());
-
-        //set the view matrix accordingly
-        VM = Window::activeCamera->getViewMatrix();
-        glUniformMatrix4fv(shader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
-        glUniform3fv(shader.getUniform("cameraPosition"),1,&(Window::activeCamera->position)[0]);
-
-       // draw one frame
-        Render();
-
-        if (Config::get<bool>("draw_chunk_boundaries")) {
-            glUseProgram(lineShader.getID());
-            glUniformMatrix4fv(lineShader.getUniform("V"),1,GL_FALSE,&VM[0][0]);
-            RenderChunkBoundaries();
-        }
-        glfwSwapBuffers(Window::window);
+        // draw one frame
+        Drawing::drawFrame();
     }
    // clean up and exit
    glfwTerminate();

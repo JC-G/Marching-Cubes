@@ -1,5 +1,8 @@
 #include "MarchingChunk.h"
 #include <iostream>
+
+std::vector<MarchingChunk*> MarchingChunk::loadedChunks;
+
 MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex)
    :myLocation(chunkLocation),mySize(chunkSize),myStride(chunkStride),Generator(Generator)
 {

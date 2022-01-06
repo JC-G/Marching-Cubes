@@ -28,3 +28,7 @@ void DigSphereAction::increaseSize() {
 void DigSphereAction::decreaseSize() {
     radius -= 0.01;
 }
+
+void DigSphereAction::drawPreview() {
+    Drawing::drawPreviewSphere(glm::vec3(radius),Window::placePos);
+}

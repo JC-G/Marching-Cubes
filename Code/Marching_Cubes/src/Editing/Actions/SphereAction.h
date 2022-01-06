@@ -3,6 +3,8 @@
 
 #include "Action.h"
 #include "Editing.h"
+#include "Drawing.h"
+
 class SphereAction : public Action {
     public:
         SphereAction(float r);
@@ -14,6 +16,7 @@ class SphereAction : public Action {
         std::string getDescription() override;
         void increaseSize() override;
         void decreaseSize() override;
+        void drawPreview() override;
 
         float radius;
 };

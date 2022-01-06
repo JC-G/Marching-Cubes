@@ -3,6 +3,8 @@
 
 #include "GL_headers.h"
 
+// #include "Window.h"
+
 class Action {
     public:
         virtual void onMouseDown(glm::vec3 pos) = 0;
@@ -12,6 +14,8 @@ class Action {
         virtual std::string getDescription() = 0;
         virtual void increaseSize() = 0;
         virtual void decreaseSize() = 0;
+
+        virtual void drawPreview() = 0;
 };
 
 #endif

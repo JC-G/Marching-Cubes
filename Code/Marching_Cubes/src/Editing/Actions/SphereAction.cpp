@@ -27,3 +27,7 @@ void SphereAction::increaseSize() {
 void SphereAction::decreaseSize() {
     radius -= 0.01;
 }
+
+void SphereAction::drawPreview() {
+    Drawing::drawPreviewSphere(glm::vec3(radius),Window::placePos);
+}

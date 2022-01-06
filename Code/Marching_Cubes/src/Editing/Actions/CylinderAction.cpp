@@ -47,3 +47,10 @@ void CylinderAction::decreaseSize() {
     }
     radius -= 0.01;
 }
+
+void CylinderAction::drawPreview() {
+    if (!placing) {
+        return;
+    }
+    Drawing::drawPreviewCylinder(radius,pos1,Window::placePos);
+}

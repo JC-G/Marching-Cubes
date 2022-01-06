@@ -13,7 +13,7 @@
     "camera_start_position": [0.0,1.0,0.0],
 
     "wireframe": false,
-    "backface_culling": false,
+    "backface_culling": true,
 
     "transition_width": 0.5,
     "generate_transition_cells": true,
@@ -24,7 +24,7 @@
     "load_octree": true,
 
     "show_test_cube": false,
-    "draw_chunk_boundaries": true,
+    "draw_chunk_boundaries": false,
 
     "terrain_mode": "terrain",
     "generator_mode": "transvoxel",

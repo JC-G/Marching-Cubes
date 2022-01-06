@@ -6,7 +6,7 @@ Camera* Window::activeCamera;
 int Window::width;
 int Window::height;
 Octree* Window::mainOctree;
-
+glm::vec3 Window::placePos;
 Window::Window()
 {
     //ctor
@@ -150,7 +150,7 @@ void Window::handleInput()
         movement.y-=1.0f;
     }
 
-    glm::vec3 placePos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
+    placePos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
     Editing::newBrushes.clear();
     if (Controller::keyPressed(window,GLFW_KEY_P)) {
         Editing::allBrushes.clear();

@@ -3,7 +3,6 @@
 
 #include "GL_headers.h"
 #include "Window.h"
-
 class Drawing {
 
     public:
@@ -18,6 +17,7 @@ class Drawing {
         static bool init();
         static bool drawFrame();
         static bool drawToScreen();
+        static bool initOBJ();
 
         static bool initText();
         static bool drawGUI();
@@ -40,7 +40,8 @@ class Drawing {
         };
         static std::map<GLchar, Character> Characters;
 
-
+        static void drawPreviewSphere(glm::vec3 radius, glm::vec3 position);
+        static void drawPreviewCylinder(float radius, glm::vec3 pos1, glm::vec3 pos2);
 
     private:
 
@@ -51,6 +52,7 @@ class Drawing {
         static Shader* screenShader;
         static Shader* boxShader;
         static Shader* textShader;
+        static Shader* spherePreviewShader;
 
         static GLuint crosshairTexture;
 
@@ -59,6 +61,14 @@ class Drawing {
 
         const static GLfloat screenQuadData[];
         
+	    static std::vector<glm::vec4> sphereVertexData;
+	    static std::vector<glm::vec4> sphereNormalData;
+        static std::vector<glm::vec4> cylinderVertexData;
+        
+        static GLuint previewVertexBuffer;
+        static GLuint previewNormalBuffer;
+
+        static bool parseOBJ(std::string path, std::vector<glm::vec4>& vertices);
 
 };
 

@@ -133,13 +133,13 @@ target_link_libraries(MarchingCubes PRIVATE glm)
 add_subdirectory(lib/gli EXCLUDE_FROM_ALL)
 target_link_libraries(MarchingCubes PRIVATE gli)
 
-#message(STATUS "csd: ${CMAKE_CURRENT_SOURCE_DIR}/lib")
 # freetype
-#target_include_directories(MarchingCubes PRIVATE ${FREETYPE_INCLUDE_DIRS})
-
-# target_link_libraries(MarchingCubes PRIVATE freetype)
 target_link_libraries(MarchingCubes PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/freetype/lib/libfreetype.a)
 include_directories("freetype/include/freetype2")
+
+#tinyobjloader
+add_subdirectory(lib/tinyobjloader EXCLUDE_FROM_ALL)
+target_link_libraries(MarchingCubes PRIVATE tinyobjloader)
 
 
 target_link_options(MarchingCubes PRIVATE -static-libgcc -static-libstdc++)

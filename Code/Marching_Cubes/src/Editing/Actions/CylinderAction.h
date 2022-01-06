@@ -3,6 +3,7 @@
 
 #include "Action.h"
 #include "Editing.h"
+
 class CylinderAction : public Action {
     public:
         CylinderAction(float r);
@@ -14,6 +15,7 @@ class CylinderAction : public Action {
         std::string getDescription() override;
         void increaseSize() override;
         void decreaseSize() override;
+        void drawPreview() override;
 
         float radius;
         bool placing = false;

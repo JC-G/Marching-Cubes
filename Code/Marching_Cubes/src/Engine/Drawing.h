@@ -41,7 +41,7 @@ class Drawing {
         static std::map<GLchar, Character> Characters;
 
         static void drawPreviewSphere(glm::vec3 radius, glm::vec3 position);
-        static void drawPreviewCylinder(float radius, glm::vec3 pos1, glm::vec3 pos2);
+        static void drawPreviewCylinder(float radius, glm::vec3 pos1, glm::vec3 pos2,glm::vec4 color = glm::vec4(1.0,0.2,0.2,.3));
         static void drawPreviewLine(glm::vec3 pos1, glm::vec3 pos2);
 
     private:

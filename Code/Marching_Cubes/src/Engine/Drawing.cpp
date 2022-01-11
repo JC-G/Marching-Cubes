@@ -50,7 +50,7 @@ bool Drawing::init() {
     screenShader = new Shader(Shader::ShaderFromFiles("Shaders/screen_vert.glsl","Shaders/screen_frag.glsl"));
     boxShader = new Shader(Shader::ShaderFromFiles("Shaders/box_vert.glsl","Shaders/box_frag.glsl"));
     textShader = new Shader(Shader::ShaderFromFiles("Shaders/text_vert.glsl","Shaders/text_frag.glsl"));
-	spherePreviewShader = new Shader(Shader::ShaderFromFiles("Shaders/sphere_preview_vert.glsl", "Shaders/sphere_preview_frag.glsl"));
+	spherePreviewShader = new Shader(Shader::ShaderFromFiles("Shaders/preview_vert.glsl", "Shaders/preview_frag.glsl"));
 
 
     //set uniforms that never change
@@ -543,6 +543,8 @@ void Drawing::drawPreviewSphere(glm::vec3 radius, glm::vec3 position) {
 	glUniformMatrix4fv(spherePreviewShader->getUniform("transform"),1,GL_FALSE,&transform[0][0]);
     glm::mat4 VM = Window::activeCamera->getViewMatrix();
 	glUniformMatrix4fv(spherePreviewShader->getUniform("V"),1,GL_FALSE,&VM[0][0]);
+	glm::vec4 color(1.0,0.2,0.2,.3);
+	glUniform4fv(spherePreviewShader->getUniform("color"),1,&color[0]);
 
 	glBindVertexArray(chunkVAO);
 	glBindBuffer(GL_ARRAY_BUFFER,previewVertexBuffer);
@@ -553,13 +555,14 @@ void Drawing::drawPreviewSphere(glm::vec3 radius, glm::vec3 position) {
 
 }
 
-void Drawing::drawPreviewCylinder(float radius, glm::vec3 pos1, glm::vec3 pos2) {
+void Drawing::drawPreviewCylinder(float radius, glm::vec3 pos1, glm::vec3 pos2,glm::vec4 color) {
 	glm::mat4 transform = glm::translate(pos1) * glm::orientation(glm::normalize(pos2-pos1), glm::vec3(0,1,0)) * glm::scale(glm::vec3(radius,length(pos2-pos1),radius));
 
 	glUseProgram(spherePreviewShader->getID());
 	glUniformMatrix4fv(spherePreviewShader->getUniform("transform"),1,GL_FALSE,&transform[0][0]);
     glm::mat4 VM = Window::activeCamera->getViewMatrix();
 	glUniformMatrix4fv(spherePreviewShader->getUniform("V"),1,GL_FALSE,&VM[0][0]);
+	glUniform4fv(spherePreviewShader->getUniform("color"),1,&color[0]);
 
 	glBindVertexArray(chunkVAO);
 	glBindBuffer(GL_ARRAY_BUFFER,previewVertexBuffer);
@@ -571,5 +574,5 @@ void Drawing::drawPreviewCylinder(float radius, glm::vec3 pos1, glm::vec3 pos2) 
 
 void Drawing::drawPreviewLine(glm::vec3 pos1, glm::vec3 pos2) {
 	//a cylinder is better than a line, which is 1 pixel wide...
-	drawPreviewCylinder(0.01,pos1,pos2);
+	drawPreviewCylinder(0.01,pos1,pos2,glm::vec4(1,0,0,1));
 }

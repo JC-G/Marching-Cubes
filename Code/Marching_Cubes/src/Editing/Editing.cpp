@@ -7,6 +7,7 @@ std::vector<Action*> Editing::allActions = {
     new SphereAction(1.0),
     new CylinderAction(1.0),
     new DigSphereAction(1.0),
+    new BezierAction(1.0),
 };
 
 void Editing::sphereRing(glm::vec3 pos, float ringR, int ringN, float r) {

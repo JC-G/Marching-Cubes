@@ -12,6 +12,8 @@
 #include "Actions/SphereAction.h"
 #include "Actions/CylinderAction.h"
 #include "Actions/DigSphereAction.h"
+#include "BezierBrush.h"
+#include "Actions/BezierAction.h"
 //forward declaration of octree to defeat circular reference
 class Octree;
 class Editing {

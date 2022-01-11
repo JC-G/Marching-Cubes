@@ -7,15 +7,15 @@
 
 class Action {
     public:
-        virtual void onMouseDown(glm::vec3 pos) = 0;
-        virtual void onMouseUp(glm::vec3 pos) = 0;
-        virtual void onMouseHold(glm::vec3 pos) = 0;
-        virtual void onCancel() = 0;
-        virtual std::string getDescription() = 0;
-        virtual void increaseSize() = 0;
-        virtual void decreaseSize() = 0;
+        virtual void onMouseDown(glm::vec3 pos) {};
+        virtual void onMouseUp(glm::vec3 pos) {};
+        virtual void onMouseHold(glm::vec3 pos) {};
+        virtual void onCancel() {};
+        virtual std::string getDescription() {};
+        virtual void increaseSize() {};
+        virtual void decreaseSize() {};
 
-        virtual void drawPreview() = 0;
+        virtual void drawPreview() {};
 };
 
 #endif

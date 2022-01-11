@@ -8,6 +8,8 @@ typedef int BrushType;
 
 const BrushType ELLIPSOID_BRUSH = 1;
 const BrushType CYLINDER_BRUSH = 2;
+const BrushType BEZIER_BRUSH = 3;
+
 
 typedef int BrushMode;
 
@@ -31,13 +33,15 @@ struct BrushParams { //size is a multiple of glm::vec4 for shader padding purpos
     glm::vec4 location; //these are vec4 for padding reasons - the 4th component need not be used
     glm::vec4 size;
 
-    glm::vec4 bottom;
+    glm::vec4 bottom; //for bounding box
     glm::vec4 top;
     
     BrushType type; //type of brush
     BrushMode mode; //eg - add, subtract, etc
     float param1;
     float param2;
+    glm::vec4 data1;
+    glm::vec4 data2;
 };
 class Brush {
     public:

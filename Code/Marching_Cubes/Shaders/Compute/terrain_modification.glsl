@@ -13,6 +13,8 @@ struct BrushParams {
     int mode;
     float param1;
     float param2;
+    vec4 data1;
+    vec4 data2;
 };
 // bindings 0-15 are used by the standard transvoxel algorithm, including constant tables
 layout (std140, binding = 16) buffer BrushList {
@@ -38,6 +40,8 @@ float modified_density(vec3 inPos) {
                 testDensity = ellipsoid_density(inPos,b.location,b.size);
             } else if (b.type == 2) {
                 testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
+            } else if (b.type == 3) {
+                testDensity = bezier_density(inPos,b.location,b.size, b.data1, b.param1);
             }
         }
         if (b.mode == 0) {
@@ -62,6 +66,8 @@ vec3 modified_normal(vec3 inPos) {
             }
             else if (b.type == 2) {
                 testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
+            } else if (b.type == 3) {
+                testDensity = bezier_density(inPos,b.location,b.size, b.data1, b.param1);
             }
         }
         if (testDensity < bestDensity && b.mode == 0) {
@@ -81,6 +87,9 @@ vec3 modified_normal(vec3 inPos) {
         }
         else if (b.type == 2) {
             testNormal = cylinder_normal(inPos,b.location,b.size,b.param1);
+        } 
+        else if (b.type == 3) {
+            testNormal = bezier_normal(inPos,b.location,b.size, b.data1, b.param1);
         }
         if (b.mode == 1) {
             testNormal *= -1.0;

@@ -53,6 +53,8 @@ add_executable(MarchingCubes
     src/SDF/TestSDF.cpp
     src/SDF/TestSDF.h
 
+    src/Editing/BezierBrush.cpp
+    src/Editing/BezierBrush.h
     src/Editing/Brush.cpp
     src/Editing/Brush.h
     src/Editing/BrushBoundingBox.cpp
@@ -65,7 +67,9 @@ add_executable(MarchingCubes
     src/Editing/EllipsoidBrush.h
     src/Editing/TestBrushes.cpp
     src/Editing/TestBrushes.h
-    
+
+    src/Editing/Actions/BezierAction.cpp
+    src/Editing/Actions/BezierAction.h
     src/Editing/Actions/CylinderAction.cpp
     src/Editing/Actions/CylinderAction.h
     src/Editing/Actions/SphereAction.cpp

@@ -45,6 +45,14 @@ void BezierAction::decreaseSize() {
 }
 
 void BezierAction::drawPreview() {
-    //TODO
+    if (placingStep == 0) {
+        return;
+    }
+    if (placingStep == 1) {
+        Drawing::drawPreviewLine(A,Window::placePos);
+    } else if (placingStep == 2) {
+        Drawing::drawPreviewLine(A,B);
+        Drawing::drawPreviewLine(B,Window::placePos);
+    }
 }
 

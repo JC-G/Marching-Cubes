@@ -11,7 +11,7 @@ class Action {
         virtual void onMouseUp(glm::vec3 pos) {};
         virtual void onMouseHold(glm::vec3 pos) {};
         virtual void onCancel() {};
-        virtual std::string getDescription() {};
+        virtual std::string getDescription() {return "";};
         virtual void increaseSize() {};
         virtual void decreaseSize() {};
 

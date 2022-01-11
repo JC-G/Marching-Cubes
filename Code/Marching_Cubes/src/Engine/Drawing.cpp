@@ -568,3 +568,8 @@ void Drawing::drawPreviewCylinder(float radius, glm::vec3 pos1, glm::vec3 pos2) 
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 	glDrawArrays(GL_TRIANGLES,0,cylinderVertexData.size());
 }
+
+void Drawing::drawPreviewLine(glm::vec3 pos1, glm::vec3 pos2) {
+	//a cylinder is better than a line, which is 1 pixel wide...
+	drawPreviewCylinder(0.01,pos1,pos2);
+}

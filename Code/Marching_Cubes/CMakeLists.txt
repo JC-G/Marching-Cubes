@@ -64,6 +64,8 @@ add_executable(MarchingCubes
     src/Editing/Brushes/Brush.h
     src/Editing/Brushes/BrushBoundingBox.cpp
     src/Editing/Brushes/BrushBoundingBox.h
+    src/Editing/Brushes/CubicBezierBrush.cpp
+    src/Editing/Brushes/CubicBezierBrush.h
     src/Editing/Brushes/CylinderBrush.cpp
     src/Editing/Brushes/CylinderBrush.h
     src/Editing/Brushes/EllipsoidBrush.cpp
@@ -77,6 +79,8 @@ add_executable(MarchingCubes
 
     src/Editing/Actions/BezierAction.cpp
     src/Editing/Actions/BezierAction.h
+    src/Editing/Actions/CubicBezierAction.cpp
+    src/Editing/Actions/CubicBezierAction.h
     src/Editing/Actions/CylinderAction.cpp
     src/Editing/Actions/CylinderAction.h
     src/Editing/Actions/SphereAction.cpp

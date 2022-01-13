@@ -53,18 +53,19 @@ add_executable(MarchingCubes
     src/SDF/TestSDF.cpp
     src/SDF/TestSDF.h
 
-    src/Editing/BezierBrush.cpp
-    src/Editing/BezierBrush.h
-    src/Editing/Brush.cpp
-    src/Editing/Brush.h
-    src/Editing/BrushBoundingBox.cpp
-    src/Editing/BrushBoundingBox.h
-    src/Editing/CylinderBrush.cpp
-    src/Editing/CylinderBrush.h
+    src/Editing/Brushes/BezierBrush.cpp
+    src/Editing/Brushes/BezierBrush.h
+    src/Editing/Brushes/Brush.cpp
+    src/Editing/Brushes/Brush.h
+    src/Editing/Brushes/BrushBoundingBox.cpp
+    src/Editing/Brushes/BrushBoundingBox.h
+    src/Editing/Brushes/CylinderBrush.cpp
+    src/Editing/Brushes/CylinderBrush.h
+    src/Editing/Brushes/EllipsoidBrush.cpp
+    src/Editing/Brushes/EllipsoidBrush.h
+
     src/Editing/Editing.cpp
     src/Editing/Editing.h
-    src/Editing/EllipsoidBrush.cpp
-    src/Editing/EllipsoidBrush.h
     src/Editing/TestBrushes.cpp
     src/Editing/TestBrushes.h
 
@@ -109,6 +110,7 @@ include_directories("src/Engine")
 include_directories("src/Geometry")
 include_directories("src/SDF")
 include_directories("src/Editing")
+include_directories("src/Editing/Brushes")
 
 # set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 # set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

@@ -29,5 +29,5 @@ void SphereAction::decreaseSize() {
 }
 
 void SphereAction::drawPreview() {
-    Drawing::drawPreviewSphere(glm::vec3(radius),Window::placePos);
+    Preview::drawPreviewSphere(glm::vec3(radius),Window::placePos);
 }

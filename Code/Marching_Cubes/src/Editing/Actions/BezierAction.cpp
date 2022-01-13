@@ -49,10 +49,10 @@ void BezierAction::drawPreview() {
         return;
     }
     if (placingStep == 1) {
-        Drawing::drawPreviewLine(A,Window::placePos);
+        Preview::drawPreviewLine(A,Window::placePos);
     } else if (placingStep == 2) {
-        Drawing::drawPreviewLine(A,B);
-        Drawing::drawPreviewLine(B,Window::placePos);
+        Preview::drawPreviewLine(A,B);
+        Preview::drawPreviewLine(B,Window::placePos);
     }
 }
 

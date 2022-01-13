@@ -52,5 +52,5 @@ void CylinderAction::drawPreview() {
     if (!placing) {
         return;
     }
-    Drawing::drawPreviewCylinder(radius,pos1,Window::placePos);
+    Preview::drawPreviewCylinder(radius,pos1,Window::placePos);
 }

@@ -19,14 +19,17 @@ add_executable(MarchingCubes
     src/Engine/Camera.h
     src/Engine/Controller.cpp
     src/Engine/Controller.h
-    src/Engine/Drawing.cpp
-    src/Engine/Drawing.h
     src/Engine/Shader.cpp
     src/Engine/Shader.h
-    src/Engine/Text.cpp
-    src/Engine/Text.h
     src/Engine/Window.cpp
     src/Engine/Window.h
+    
+    src/Engine/Drawing/Drawing.cpp
+    src/Engine/Drawing/Drawing.h
+    src/Engine/Drawing/Preview.cpp
+    src/Engine/Drawing/Preview.h
+    src/Engine/Drawing/Text.cpp
+    src/Engine/Drawing/Text.h
 
     src/Geometry/CPUMarchingCubesGenerator.cpp
     src/Geometry/CPUMarchingCubesGenerator.h
@@ -68,6 +71,7 @@ add_executable(MarchingCubes
 
     src/Editing/Editing.cpp
     src/Editing/Editing.h
+    src/Editing/EditingHeaders.h
     src/Editing/TestBrushes.cpp
     src/Editing/TestBrushes.h
 
@@ -109,9 +113,11 @@ add_executable(MarchingCubes
 
 include_directories("src")
 include_directories("src/Engine")
+include_directories("src/Engine/Drawing")
 include_directories("src/Geometry")
 include_directories("src/SDF")
 include_directories("src/Editing")
+include_directories("src/Editing/Actions")
 include_directories("src/Editing/Brushes")
 
 # set(CPACK_PROJECT_NAME ${PROJECT_NAME})

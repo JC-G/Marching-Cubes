@@ -9,4 +9,7 @@
 #include <gli/gli.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <tiny_obj_loader.h>
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #endif

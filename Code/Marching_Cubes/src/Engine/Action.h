@@ -2,7 +2,7 @@
 #define ACTION_H
 
 #include "GL_headers.h"
-
+//#include "Preview.h"
 // #include "Window.h"
 
 class Action {

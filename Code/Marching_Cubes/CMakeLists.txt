@@ -23,6 +23,8 @@ add_executable(MarchingCubes
     src/Engine/Drawing.h
     src/Engine/Shader.cpp
     src/Engine/Shader.h
+    src/Engine/Text.cpp
+    src/Engine/Text.h
     src/Engine/Window.cpp
     src/Engine/Window.h
 

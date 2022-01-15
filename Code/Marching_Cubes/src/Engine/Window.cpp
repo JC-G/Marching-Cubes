@@ -1,5 +1,10 @@
 #include "Window.h"
 
+#include "Config.h"
+#include "Editing.h"
+#include "Controller.h"
+// #include "Action.h"
+
 //initialise static members
 GLFWwindow* Window::window = NULL;
 Camera* Window::activeCamera;

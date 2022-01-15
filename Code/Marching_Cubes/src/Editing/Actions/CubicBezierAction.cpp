@@ -1,5 +1,10 @@
 #include "CubicBezierAction.h"
 
+#include "Editing.h"
+#include "Preview.h"
+#include "Window.h"
+#include "CubicBezierBrush.h"
+
 CubicBezierAction::CubicBezierAction(float r)
 :radius(r)
 {

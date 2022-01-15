@@ -1,5 +1,9 @@
 #include "BezierAction.h"
 
+#include "Editing.h"
+#include "Preview.h"
+#include "Window.h"
+#include "BezierBrush.h"
 BezierAction::BezierAction(float r)
 :radius(r)
 {

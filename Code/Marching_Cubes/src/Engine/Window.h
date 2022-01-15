@@ -11,12 +11,8 @@ Static class - there is only one window
 #include <glm/gtx/transform.hpp>
 
 #include <iostream>
-#include "Config.h"
 
-#include "Engine/Camera.h"
-#include "Editing.h"
-#include "Controller.h"
-#include "Action.h"
+#include "Camera.h"
 class Octree;
 class Window
 {

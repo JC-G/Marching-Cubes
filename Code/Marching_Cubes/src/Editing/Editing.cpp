@@ -1,4 +1,11 @@
 #include "Editing.h"
+#include "SphereAction.h"
+#include "CylinderAction.h"
+#include "DigSphereAction.h"
+#include "BezierAction.h"
+#include "CubicBezierAction.h"
+
+#include "EllipsoidBrush.h"
 
 std::vector<Brush*> Editing::allBrushes;
 std::vector<Brush*> Editing::newBrushes;

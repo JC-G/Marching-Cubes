@@ -2,7 +2,6 @@
 #define CAMERA_H
 
 #include "GL_headers.h"
-#include "Config.h"
 class Camera
 {
     public:

@@ -2,9 +2,7 @@
 #define DRAWING_H
 
 #include "GL_headers.h"
-#include "Window.h"
-#include "Text.h"
-#include "Preview.h"
+#include "Shader.h"
 class Drawing {
 
     public:

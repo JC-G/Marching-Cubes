@@ -1,5 +1,10 @@
 #include "SphereAction.h"
 
+#include "Editing.h"
+#include "Preview.h"
+#include "Window.h"
+#include "EllipsoidBrush.h"
+
 SphereAction::SphereAction(float r)
 :radius(r)
 {

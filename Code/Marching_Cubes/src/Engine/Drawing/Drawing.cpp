@@ -1,4 +1,12 @@
 #include "Drawing.h"
+
+#include "Window.h"
+#include "Text.h"
+#include "Preview.h"
+#include "Editing.h"
+#include "Window.h"
+#include "MarchingChunk.h"
+
 GLuint Drawing::chunkVAO = 0;
 GLuint Drawing::lineVAO = 0;
 GLuint Drawing::screenVAO = 0;

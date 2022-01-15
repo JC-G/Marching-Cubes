@@ -2,7 +2,6 @@
 #define CUBICBEZIERACTION_H
 
 #include "Action.h"
-#include "Editing.h"
 
 class CubicBezierAction : public Action {
     public:

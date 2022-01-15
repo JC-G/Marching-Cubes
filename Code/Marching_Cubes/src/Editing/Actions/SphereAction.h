@@ -2,8 +2,6 @@
 #define SPHEREACTION_H
 
 #include "Action.h"
-#include "Editing.h"
-#include "Drawing.h"
 
 class SphereAction : public Action {
     public:

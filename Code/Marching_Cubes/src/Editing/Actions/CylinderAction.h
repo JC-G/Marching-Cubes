@@ -2,7 +2,6 @@
 #define CYLINDERACTION_H
 
 #include "Action.h"
-#include "Editing.h"
 
 class CylinderAction : public Action {
     public:

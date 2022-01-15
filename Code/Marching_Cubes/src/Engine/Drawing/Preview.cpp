@@ -1,4 +1,7 @@
 #include "Preview.h"
+
+#include "Window.h"
+
 GLuint Preview::textVAO;
 GLuint Preview::previewVertexBuffer;
 GLuint Preview::previewNormalBuffer;

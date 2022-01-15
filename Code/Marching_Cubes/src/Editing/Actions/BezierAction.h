@@ -2,7 +2,6 @@
 #define BEZIERACTION_H
 
 #include "Action.h"
-#include "Editing.h"
 
 class BezierAction : public Action {
     public:

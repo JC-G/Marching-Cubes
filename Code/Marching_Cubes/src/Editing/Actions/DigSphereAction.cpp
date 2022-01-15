@@ -1,5 +1,10 @@
 #include "DigSphereAction.h"
 
+#include "Editing.h"
+#include "Preview.h"
+#include "Window.h"
+#include "EllipsoidBrush.h"
+
 DigSphereAction::DigSphereAction(float r)
 :radius(r)
 {

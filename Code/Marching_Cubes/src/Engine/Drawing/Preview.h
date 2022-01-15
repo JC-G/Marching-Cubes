@@ -1,7 +1,8 @@
 #ifndef PREVIEW_H
 #define PREVIEW_H
 #include "GL_headers.h"
-#include "Window.h"
+
+#include "Shader.h"
 class Preview {
     public:
         static bool initPreview();

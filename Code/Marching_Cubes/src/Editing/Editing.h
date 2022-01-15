@@ -2,10 +2,11 @@
 #define EDITING_H
 
 #include <vector>
-#include "GL_headers.h"
+
 #include "Octree.h"
+#include "Brush.h"
+#include "Action.h"
 #include "Shader.h"
-#include "EditingHeaders.h"
 //forward declaration of octree to defeat circular reference
 class Octree;
 class Editing {

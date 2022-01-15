@@ -1,5 +1,10 @@
 #include "CylinderAction.h"
 
+#include "Editing.h"
+#include "Preview.h"
+#include "Window.h"
+#include "CylinderBrush.h"
+
 CylinderAction::CylinderAction(float r)
 :radius(r)
 {

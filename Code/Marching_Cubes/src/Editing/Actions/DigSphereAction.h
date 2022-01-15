@@ -2,8 +2,6 @@
 #define DIGSPHEREACTION_H
 
 #include "Action.h"
-#include "Editing.h"
-#include "Brush.h"
 class DigSphereAction : public Action {
     public:
         DigSphereAction(float r);

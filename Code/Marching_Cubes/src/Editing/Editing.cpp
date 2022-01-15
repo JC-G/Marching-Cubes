@@ -4,6 +4,7 @@
 #include "DigSphereAction.h"
 #include "BezierAction.h"
 #include "CubicBezierAction.h"
+#include "InterpolationSplineAction.h"
 
 #include "EllipsoidBrush.h"
 
@@ -16,6 +17,7 @@ std::vector<Action*> Editing::allActions = {
     new DigSphereAction(1.0),
     new BezierAction(1.0),
     new CubicBezierAction(1.0),
+    new InterpolationSplineAction(1.0),
 };
 
 void Editing::sphereRing(glm::vec3 pos, float ringR, int ringN, float r) {

@@ -2,8 +2,7 @@
 #define ACTION_H
 
 #include "GL_headers.h"
-//#include "Preview.h"
-// #include "Window.h"
+#include "Controller.h"
 
 class Action {
     public:
@@ -16,6 +15,8 @@ class Action {
         virtual void decreaseSize() {};
 
         virtual void drawPreview() {};
+
+        virtual void handleInput(glm::vec3 placePos);
 };
 
 #endif

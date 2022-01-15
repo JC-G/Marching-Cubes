@@ -87,6 +87,8 @@ add_executable(MarchingCubes
     src/Editing/Actions/SphereAction.h
     src/Editing/Actions/DigSphereAction.cpp
     src/Editing/Actions/DigSphereAction.h
+    src/Editing/Actions/InterpolationSplineAction.cpp
+    src/Editing/Actions/InterpolationSplineAction.h
 
     # These are not compiled - but adding them here means the project is rebuild (and hence the modifications are reflected in the output directory)
     config.json

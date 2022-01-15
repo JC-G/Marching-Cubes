@@ -163,21 +163,9 @@ void Window::handleInput()
     if (Controller::keyPressed(window,GLFW_KEY_B)) {
         Editing::incrementAction();
     }
-    if (Controller::getKeyState(window,GLFW_KEY_LEFT_BRACKET)) {
-        Editing::currentAction()->decreaseSize();
-    }
-    if (Controller::getKeyState(window,GLFW_KEY_RIGHT_BRACKET)) {
-        Editing::currentAction()->increaseSize();
-    }
 
-
-    if (Controller::mousePressed(window,GLFW_MOUSE_BUTTON_LEFT)) {
-        Editing::currentAction()->onMouseDown(placePos);
-    } else if (Controller::getMouseState(window,GLFW_MOUSE_BUTTON_LEFT)) {
-        Editing::currentAction()->onMouseHold(placePos);
-    } else if (Controller::mouseReleased(window,GLFW_MOUSE_BUTTON_LEFT)) {
-        Editing::currentAction()->onMouseUp(placePos);
-    }
+    Editing::currentAction()->handleInput(placePos);
+    
 
     if (Controller::keyPressed(window,GLFW_KEY_T)) {
         Editing::sphereRing(activeCamera->position,10,1000,1);

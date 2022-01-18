@@ -10,6 +10,7 @@ const BrushType ELLIPSOID_BRUSH = 1;
 const BrushType CYLINDER_BRUSH = 2;
 const BrushType BEZIER_BRUSH = 3;
 const BrushType CUBIC_BEZIER_BRUSH = 4;
+const BrushType ROAD_BRUSH = 5;
 
 
 typedef int BrushMode;

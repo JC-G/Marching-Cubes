@@ -5,6 +5,7 @@
 #include "BezierAction.h"
 #include "CubicBezierAction.h"
 #include "InterpolationSplineAction.h"
+#include "RoadAction.h"
 
 #include "EllipsoidBrush.h"
 
@@ -18,6 +19,7 @@ std::vector<Action*> Editing::allActions = {
     new BezierAction(1.0),
     new CubicBezierAction(1.0),
     new InterpolationSplineAction(1.0),
+    new RoadAction(0.1),
 };
 
 void Editing::sphereRing(glm::vec3 pos, float ringR, int ringN, float r) {

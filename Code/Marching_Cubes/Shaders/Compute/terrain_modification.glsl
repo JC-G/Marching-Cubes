@@ -44,6 +44,8 @@ float modified_density(vec3 inPos) {
                 testDensity = bezier_density(inPos,b.location,b.size, b.data1, b.param1);
             } else if (b.type == 4) {
                 testDensity = cubic_bezier_density(inPos,b.location,b.size,b.data1,b.data2,b.param1);
+            } else if (b.type == 5) {
+                testDensity = road_density(inPos,b.location,b.size,b.data1,b.data2,b.param1);
             }
         }
         if (b.mode == 0) {
@@ -71,6 +73,8 @@ vec3 modified_normal(vec3 inPos) {
                 testDensity = bezier_density(inPos,b.location,b.size, b.data1, b.param1);
             } else if (b.type == 4) {
                 testDensity = cubic_bezier_density(inPos,b.location,b.size,b.data1,b.data2,b.param1);
+            } else if (b.type == 5) {
+                testDensity = road_density(inPos,b.location,b.size,b.data1,b.data2,b.param1);
             }
         }
         if (testDensity < bestDensity && b.mode == 0) {
@@ -96,6 +100,9 @@ vec3 modified_normal(vec3 inPos) {
         }
         else if (b.type == 4) {
             testNormal = cubic_bezier_normal(inPos,b.location,b.size, b.data1, b.data2, b.param1);
+        }
+         else if (b.type == 5) {
+            testNormal = road_normal(inPos,b.location,b.size,b.data1,b.data2,b.param1);
         }
         if (b.mode == 1) {
             testNormal *= -1.0;

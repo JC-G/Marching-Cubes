@@ -185,10 +185,13 @@ vec4 quartic_zeros(float a, float b, float cc, float d, float e) {
         quadratic_zeros(1.,-sqrt(2.*m),p/2.+m+q/(2.*sqrt(2.*m)))
     )-_b/4.;
 }
+//for returning the spline quintic zeros
+struct vec5 {
+    vec4 xyzw;
+    float t;
+};
+vec5 solveSplineQuintic(in vec3 x, in vec3 p0, in vec3 p1, in vec3 p2, in vec3 p3) {
 
-// minimum distance to a cubic spline with the following strategy:
-float dcubic_spline(in vec3 x, in vec3 p0, in vec3 p1, in vec3 p2, in vec3 p3)
-{
     // Use relative coordinates to eliminate all terms containing p0.
     x -= p0;
     p1 -= p0;
@@ -237,6 +240,16 @@ float dcubic_spline(in vec3 x, in vec3 p0, in vec3 p1, in vec3 p2, in vec3 p3)
         _e = a1+_d*tmin;
         
     vec4 t = clamp(quartic_zeros(_a,_b,_c,_d,_e),0.,1.);
+    return vec5(t,tmin);
+
+}
+// minimum distance to a cubic spline with the following strategy:
+float dcubic_spline(in vec3 x, in vec3 p0, in vec3 p1, in vec3 p2, in vec3 p3)
+{
+    vec5 result = solveSplineQuintic(x,p0,p1,p2,p3);
+    float tmin = result.t;
+    vec4 t=result.xyzw;
+
     tmin = clamp(tmin, 0.,1.);
     
     return min(
@@ -254,8 +267,26 @@ float dcubic_spline(in vec3 x, in vec3 p0, in vec3 p1, in vec3 p2, in vec3 p3)
     );
 }
 
+vec3 d3cubic_spline(in vec3 x, in vec3 p0, in vec3 p1, in vec3 p2, in vec3 p3) {
+    vec5 result = solveSplineQuintic(x,p0,p1,p2,p3);
+    float tmin = result.t;
+    vec4 t=result.xyzw;
+    if (tmin > 1.0 || tmin < 0.0) {
+        tmin = t.x;
+    }
+
+    float lMin = length(x-B3(tmin,p0,p1,p2,p3));
+    vec3 vMin = x-B3(tmin,p0,p1,p2,p3);
+    for (int i = 0; i < 4; i++) {
+        if (length(x-B3(t[i],p0,p1,p2,p3)) < lMin) {
+            vMin = x-B3(t[i],p0,p1,p2,p3);
+            lMin = length(x-B3(t[i],p0,p1,p2,p3));
+        }
+    }
+    return vMin;
+}
 float cubic_bezier_density(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
-    return dcubic_spline(inPos, A.xyz,B.xyz,C.xyz,D.xyz) - r;
+    return dcubic_spline(inPos, A.xyz,B.xyz,C.xyz,D.xyz)-r;
 }
 
 vec3 cubic_bezier_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
@@ -268,5 +299,26 @@ vec3 cubic_bezier_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
     float fx = cubic_bezier_density(dx,A,B,C,D,r);
     float fy = cubic_bezier_density(dy,A,B,C,D,r);
     float fz = cubic_bezier_density(dz,A,B,C,D,r);
+    return normalize(vec3((fx-f)/eps, (fy-f)/eps, (fz-f)/eps));
+}
+
+float road_density(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
+    vec3 d3 = d3cubic_spline(inPos, A.xyz,B.xyz,C.xyz,D.xyz);
+    float dist = length(d3.xz);
+    float f = min(0,r-dist) + 0.4 * (0.1 - d3.y); //inverse distance function
+    float g = min(0,r-dist) - 4.0 * (-1.0 - d3.y);
+    return max(-f,-g);
+
+}
+vec3 road_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
+    float eps = 0.001;
+    vec3 dx = inPos + vec3(eps,0,0);
+    vec3 dy = inPos + vec3(0,eps,0);
+    vec3 dz = inPos + vec3(0,0,eps);
+
+    float f  = road_density(inPos,A,B,C,D,r);
+    float fx = road_density(dx,A,B,C,D,r);
+    float fy = road_density(dy,A,B,C,D,r);
+    float fz = road_density(dz,A,B,C,D,r);
     return normalize(vec3((fx-f)/eps, (fy-f)/eps, (fz-f)/eps));
 }

@@ -31,6 +31,6 @@
 
     "raycast_mode": "mesh",
 
-    "shader_debug": false,
+    "shader_debug": true,
     "opengl_debug": false
 }

@@ -1,23 +1,23 @@
-#include "InterpolationSplineAction.h"
+#include "RoadAction.h"
 
 #include "Editing.h"
 #include "Preview.h"
 #include "Window.h"
-#include "CubicBezierBrush.h"
+#include "RoadBrush.h"
 
-InterpolationSplineAction::InterpolationSplineAction(float r)
+RoadAction::RoadAction(float r)
 :radius(r)
 {
 
 }
 
-void InterpolationSplineAction::handleInput(glm::vec3 inPos) {
+void RoadAction::handleInput(glm::vec3 inPos) {
     Action::handleInput(inPos);
     if (Controller::keyPressed(Window::window,GLFW_KEY_X)) {
         finishSpline();
     }
 }
-void InterpolationSplineAction::finishSpline() {
+void RoadAction::finishSpline() {
     if (points.size() < 3) {
         points.clear();
         return;
@@ -56,40 +56,40 @@ void InterpolationSplineAction::finishSpline() {
     }
     B[points.size() - 2] = 0.5f * (A[points.size() - 2] + points[points.size() - 1]);
     for (int i = 0; i < points.size() - 1; i++) {
-        Brush* b = new CubicBezierBrush(points[i],A[i],B[i],points[i+1],radius);
+        Brush* b = new RoadBrush(points[i],A[i],B[i],points[i+1],radius);
         Editing::newBrushes.push_back(b);
         Editing::allBrushes.push_back(b);
     }
     points.clear();
 }
 
-void InterpolationSplineAction::onCancel() {
+void RoadAction::onCancel() {
     points.clear();
 }
 
-std::string InterpolationSplineAction::getDescription() {
-    return "Interpolation Spline, radius " + std::to_string(radius) +", Points: " + std::to_string(points.size());
+std::string RoadAction::getDescription() {
+    return "Road, radius " + std::to_string(radius) +", Points: " + std::to_string(points.size());
 }
 
-void InterpolationSplineAction::increaseSize() {
+void RoadAction::increaseSize() {
     if (points.size() > 0) {
         return;
     }
     radius += 0.01;
 }
 
-void InterpolationSplineAction::decreaseSize() {
+void RoadAction::decreaseSize() {
     if (points.size() > 0) {
         return;
     }
     radius -= 0.01;
 }
 
-void InterpolationSplineAction::onMouseDown(glm::vec3 inPos) {
+void RoadAction::onMouseDown(glm::vec3 inPos) {
     points.push_back(inPos);
 }
 
-void InterpolationSplineAction::drawPreview() {
+void RoadAction::drawPreview() {
     if (points.size() == 0) {
         return;
     }

@@ -70,6 +70,8 @@ add_executable(MarchingCubes
     src/Editing/Brushes/CylinderBrush.h
     src/Editing/Brushes/EllipsoidBrush.cpp
     src/Editing/Brushes/EllipsoidBrush.h
+    src/Editing/Brushes/RoadBrush.cpp
+    src/Editing/Brushes/RoadBrush.h
 
     src/Editing/Editing.cpp
     src/Editing/Editing.h
@@ -89,7 +91,8 @@ add_executable(MarchingCubes
     src/Editing/Actions/DigSphereAction.h
     src/Editing/Actions/InterpolationSplineAction.cpp
     src/Editing/Actions/InterpolationSplineAction.h
-
+    src/Editing/Actions/RoadAction.cpp
+    src/Editing/Actions/RoadAction.h
     # These are not compiled - but adding them here means the project is rebuild (and hence the modifications are reflected in the output directory)
     config.json
 

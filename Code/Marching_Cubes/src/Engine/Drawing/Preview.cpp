@@ -1,6 +1,7 @@
 #include "Preview.h"
 
 #include "Window.h"
+#include "BezierHelperFunctions.h"
 
 GLuint Preview::textVAO;
 GLuint Preview::previewVertexBuffer;
@@ -129,4 +130,16 @@ void Preview::drawPreviewCylinder(float radius, glm::vec3 pos1, glm::vec3 pos2,g
 void Preview::drawPreviewLine(glm::vec3 pos1, glm::vec3 pos2) {
 	//a cylinder is better than a line, which is 1 pixel wide...
 	drawPreviewCylinder(0.01,pos1,pos2,glm::vec4(1,0,0,1));
+}
+
+void Preview::drawBezierCurve(glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 D, int resolution) {
+	for (int i = 0; i < resolution; i++) {
+		float rf = float(resolution);
+		float t = i / rf;
+		float t1 = (i+1.0f) / rf;
+		drawPreviewLine(
+			BezierHelperFunctions::cubicBezier(A,B,C,D,t),
+			BezierHelperFunctions::cubicBezier(A,B,C,D,t1)
+		);
+	}
 }

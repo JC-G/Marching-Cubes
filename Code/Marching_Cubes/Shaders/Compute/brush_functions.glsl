@@ -190,8 +190,9 @@ struct vec5 {
     vec4 xyzw;
     float t;
 };
-vec5 solveSplineQuintic(in vec3 x, in vec3 p0, in vec3 p1, in vec3 p2, in vec3 p3) {
 
+vec5 solveSplineQuintic(in vec3 x, in vec3 p0, in vec3 p1, in vec3 p2, in vec3 p3) {
+    //TODO - maybe obsolete this?
     // Use relative coordinates to eliminate all terms containing p0.
     x -= p0;
     p1 -= p0;
@@ -243,6 +244,7 @@ vec5 solveSplineQuintic(in vec3 x, in vec3 p0, in vec3 p1, in vec3 p2, in vec3 p
     return vec5(t,tmin);
 
 }
+
 // minimum distance to a cubic spline with the following strategy:
 float dcubic_spline(in vec3 x, in vec3 p0, in vec3 p1, in vec3 p2, in vec3 p3)
 {
@@ -302,23 +304,175 @@ vec3 cubic_bezier_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
     return normalize(vec3((fx-f)/eps, (fy-f)/eps, (fz-f)/eps));
 }
 
-float road_density(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
-    vec3 d3 = d3cubic_spline(inPos, A.xyz,B.xyz,C.xyz,D.xyz);
-    float dist = length(d3.xz);
-    float f = min(0,r-dist) + 0.4 * (0.1 - d3.y); //inverse distance function
-    float g = min(0,r-dist) - 4.0 * (-1.0 - d3.y);
-    return max(-f,-g);
-
+float sdCapsule( vec3 p, vec3 a, vec3 b, float r )
+{
+  vec3 pa = p - a, ba = b - a;
+  float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
+  return length( pa - ba*h ) - r;
 }
-vec3 road_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
-    float eps = 0.001;
-    vec3 dx = inPos + vec3(eps,0,0);
-    vec3 dy = inPos + vec3(0,eps,0);
-    vec3 dz = inPos + vec3(0,0,eps);
 
-    float f  = road_density(inPos,A,B,C,D,r);
-    float fx = road_density(dx,A,B,C,D,r);
-    float fy = road_density(dy,A,B,C,D,r);
-    float fz = road_density(dz,A,B,C,D,r);
-    return normalize(vec3((fx-f)/eps, (fy-f)/eps, (fz-f)/eps));
+vec3 capsuleDerivative(vec3 p, vec3 a, vec3 b, float r) {
+    vec3 pa = p - a, ba = b - a;
+    float h = clamp(dot(pa,ba)/dot(ba,ba),0.0, 1.0);
+    return normalize(pa - ba*h);
+}
+
+float road_density(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
+
+    //Approximation - use capsules for now
+    //TODO - find a nicer distance function - maybe a straight version of the cross-section we already have from the attempts at the analytic version
+    float dMin = 1e4;
+    for (int i = 0; i < 100; i++) {
+        float nt = i/100.;
+        float nt1 = (i+1.)/100.;
+        vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
+        vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
+        vec4 bottom = min(a,b).xyzz - vec4(r * 1.1);
+        vec4 top = max(a,b).xyzz + vec4(r * 1.1);
+        if (all(lessThanEqual(bottom.xyz,inPos)) && all(lessThanEqual(inPos,top.xyz))) {
+            dMin = min(dMin,sdCapsule(inPos,a,b,r));
+
+        }
+    }
+    return dMin;
+/*
+    //The old, analytic approach to this - broken and overcomplicated...
+    // // return evaluate_road_d2(inPos, 0 ,A.xyz,B.xyz,C.xyz,D.xyz,r);
+    // // vec3 d3 = d3cubic_spline(inPos, A.xyz,B.xyz,C.xyz,D.xyz);
+    // // float dist = length(d3.xz);
+    // // float f = min(0,r-dist) + 0.4 * (0.1 - d3.y); //inverse distance function
+    // // float g = min(0,r-dist) - 4.0 * (-1.0 - d3.y);
+    // // return max(-f,-g);
+
+    // 
+    // "radius" of the road wrt y is defined as the minimum of:
+    //  -K1(y-H1) + R
+    //  -K2(y-H2) + R
+    // where y is relative to the curve
+    // crossover point occurs at (k1h1-k2h2)/(k1-k2)
+    // 
+
+
+    // //coefficients of the bezier curve
+    // vec3 t3 = -A.xyz + 3.0 * B.xyz - 3.0 * C.xyz + D.xyz;
+    // vec3 t2 = 3.0 * A.xyz - 6.0 * B.xyz + 3.0 * C.xyz;
+    // vec3 t1 = -3.0 * A.xyz + 3.0 * B.xyz;
+    // vec3 t0 = A.xyz;
+
+    // //coefficients of derivative of bezier curve
+    // vec3 d2 = 3.0 * t3,
+    //      d1 = 2.0 * t2,
+    //      d0 = t1;
+    
+    // //multiply the y components by K1
+    // vec3 Kvec = vec3(1.0,K1,1.0);
+    // vec3 t3k = t3 * Kvec;
+    // vec3 t2k = t2 * Kvec;
+    // vec3 t1k = t1 * Kvec;
+    // vec3 t0k = t0 * Kvec;
+    
+    // //coefficients of first quintic
+    
+    // float a5 = dot(t3k, d2);
+    // float a4 = dot(t3k, d1) + dot(t2k, d2);
+    // float a3 = dot(t3k, d0) + dot(t2k, d1) + dot(t1k, d2);
+    // float a2 = dot(t2k, d0) + dot(t1k, d1) + dot(t0k, d2) -
+    //            dot(Kvec * inPos, d2) + (r - H1) * d2.y;
+    // float a1 = dot(t1k, d0) + dot(t0k, d1) -
+    //            dot(Kvec * inPos, d1) + (r - H1) * d1.y;
+    // float a0 = dot(t0k, d0) - 
+    //            dot(Kvec * inPos, d0) + (r - H1) * d0.y;
+               
+    // //K1zeros represents the t points where we are closest to r1 of the bezier curve
+    // vec5 K1zeros = solveQuintic(a5,a4,a3,a2,a1,a0);
+
+    // //repeat the same process for K2...
+
+    // //multiply the y components by K2
+    // Kvec = vec3(1.0,K2,1.0);
+    // t3k = t3 * Kvec;
+    // t2k = t2 * Kvec;
+    // t1k = t1 * Kvec;
+    // t0k = t0 * Kvec;
+    
+    // //coefficients of first quintic
+    
+    // a5 = dot(t3k, d2);
+    // a4 = dot(t3k, d1) + dot(t2k, d2);
+    // a3 = dot(t3k, d0) + dot(t2k, d1) + dot(t1k, d2);
+    // a2 = dot(t2k, d0) + dot(t1k, d1) + dot(t0k, d2) -
+    //      dot(Kvec * inPos, d2) + (r - H1) * d2.y;
+    // a1 = dot(t1k, d0) + dot(t0k, d1) -
+    //      dot(Kvec * inPos, d1) + (r - H1) * d1.y;
+    // a0 = dot(t0k, d0) - 
+    //            dot(Kvec * inPos, d0) + (r - H1) * d0.y;
+
+    // vec5 K2zeros = solveQuintic(a5,a4,a3,a2,a1,a0);
+
+    // //Old method - greatly simplified...
+    // // float a5 = t3.x * d2.x + 
+    // //            t3.z * d2.z + 
+    // //            K1 * t3.y * d2.y; 
+    // // float a4 = t3.x * d1.x + t2.x * d2.x + 
+    // //            t3.z * d1.z + t2.z * d2.z + 
+    // //            K1 * (t3.y * d1.y + t2.y * d2.y);
+    // // float a3 = t3.x * d0.x + t2.x * d1.x + t1.x * d2.x + 
+    // //            t3.z * d0.z + t2.z * d1.z + t1.z * d2.z +
+    // //            K1 * (t3.y * d0.y + t2.y * d1.y + t1.y * d2.y);
+    // // float a2 = t2.x * d0.x + t1.x * d1.x + (t0.x - inPos.x) * d2.x + 
+    // //            t2.z * d0.z + t1.z * d1.z + (t0.z - inPos.z) * d2.z + 
+    // //            K1 * (t2.y * d0.y + t1.y * d1.y + (t0.z - inPos.z) * d2.y) + 
+    // //            (r - H1) * d2.y;
+    // // float a1 = t1.x * d0.x + (t0.x - inPos.x) * d1.x +
+    // //            t1.z * d0.z + (t0.z - inPos.z) * d1.z +
+    // //            K1 * (t1.y * d0.y + (t0.y - inPos.y) * d1.y) + 
+    // //            (r - H1) * d1.y;
+    // // float a0 = (t0.x - inPos.x) * d0.x + 
+    // //            (t0.z - inPos.z) * d0.z + 
+    // //            K1 * ((t0.y - inPos.y) * d0.z) +
+    // //            (r - H1) * d0.y;
+
+    // //now we have all of the points where the distance *could* be minimized, work out which is actually the minimum
+    // clamp(K1zeros.t,0.,1.);
+    // clamp(K2zeros.t,0.,1.);
+    // clamp(K1zeros.xyzw,0.,1.);
+    // clamp(K2zeros.xyzw,0.,1.);
+    // float lMin = min(
+    //     evaluate_road_d2(inPos, K1zeros.t,A.xyz,B.xyz,C.xyz,D.xyz,r),
+    //     evaluate_road_d2(inPos, K2zeros.t,A.xyz,B.xyz,C.xyz,D.xyz,r)
+    // );
+    // for (int i = 0; i < 4; i++) {
+    //     lMin = min(lMin,evaluate_road_d2(inPos, K1zeros.xyzw[i],A.xyz,B.xyz,C.xyz,D.xyz,r));
+    //     lMin = min(lMin,evaluate_road_d2(inPos, K2zeros.xyzw[i],A.xyz,B.xyz,C.xyz,D.xyz,r));
+    // }
+    // return lMin;
+
+*/
+}
+
+vec3 road_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
+    float dMin = 1e4;
+    int bestI = 0;
+    for (int i = 0; i < 100; i++) {
+        float nt = i/100.;
+        float nt1 = (i+1.)/100.;
+        vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
+        vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
+        vec4 bottom = min(a,b).xyzz - vec4(r * 1.1);
+        vec4 top = max(a,b).xyzz + vec4(r * 1.1);
+
+        
+        if (all(lessThanEqual(bottom.xyz,inPos)) && all(lessThanEqual(inPos,top.xyz))) {
+            float dNew = sdCapsule(inPos,a,b,r);
+            if (dNew < dMin) {
+                dMin = dNew;
+                bestI = i;
+            }
+        }
+    }
+    float nt = bestI/100.;
+    float nt1 = (bestI+1.)/100.;
+    vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
+    vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
+    return capsuleDerivative(inPos,a,b,r);
 }

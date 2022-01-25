@@ -81,6 +81,8 @@ add_executable(MarchingCubes
 
     src/Editing/Actions/BezierAction.cpp
     src/Editing/Actions/BezierAction.h
+    src/Editing/Actions/BezierHelperFunctions.cpp
+    src/Editing/Actions/BezierHelperFunctions.h
     src/Editing/Actions/CubicBezierAction.cpp
     src/Editing/Actions/CubicBezierAction.h
     src/Editing/Actions/CylinderAction.cpp

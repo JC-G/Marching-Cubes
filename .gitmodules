@@ -23,3 +23,7 @@
 [submodule "Code/Marching_Cubes/lib/tinyobjloader"]
 	path = Code/Marching_Cubes/lib/tinyobjloader
 	url = https://github.com/tinyobjloader/tinyobjloader
+[submodule "Code/Marching_Cubes/lib/bullet3"]
+	path = Code/Marching_Cubes/lib/bullet3
+	url = https://github.com/bulletphysics/bullet3
+	ignore = dirty

@@ -10,6 +10,7 @@
 [submodule "Code/Marching_Cubes/lib/freetype"]
 	path = Code/Marching_Cubes/lib/freetype
 	url = https://github.com/freetype/freetype
+	ignore = dirty
 [submodule "Code/Marching_Cubes/lib/CImg"]
 	path = Code/Marching_Cubes/lib/CImg
 	url = https://github.com/dtschump/CImg

@@ -119,6 +119,8 @@ add_executable(MarchingCubes
 
     Shaders/Compute/terrain_modification.glsl
     Shaders/Compute/brush_functions.glsl
+
+    src/BulletTest.h
 )
 
 
@@ -165,6 +167,15 @@ include_directories("freetype/include/freetype2")
 #tinyobjloader
 add_subdirectory(lib/tinyobjloader EXCLUDE_FROM_ALL)
 target_link_libraries(MarchingCubes PRIVATE tinyobjloader)
+
+#bullet3
+# include_directories(${BULLET_INCLUDE_DIR})
+# target_link_libraries(MarchingCubes PRIVATE ${BULLET_LIBRARIES})
+include_directories("lib/bullet3/src")
+target_link_libraries(MarchingCubes PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/bullet3/lib/libBulletSoftBody_Debug.a)
+target_link_libraries(MarchingCubes PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/bullet3/lib/libBulletDynamics_Debug.a)
+target_link_libraries(MarchingCubes PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/bullet3/lib/libBulletCollision_Debug.a)
+target_link_libraries(MarchingCubes PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/bullet3/lib/libLinearMath_Debug.a)
 
 
 target_link_options(MarchingCubes PRIVATE -static-libgcc -static-libstdc++)

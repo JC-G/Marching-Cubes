@@ -28,6 +28,8 @@
 #include <tiny_obj_loader.h>
 #undef TINYOBJLOADER_IMPLEMENTATION
 
+#include "BulletTest.h"
+
 Octree* O;
 
 static void LoadObjects()
@@ -124,6 +126,7 @@ void AppMain() {
 }
 int main(int argc, char *argv[]) {
 
+BulletTest::test();
     char buffer[MAXPATHLEN];
     //Set the working directory - if possible
     if (chdir(WORKING_DIRECTORY) == 0) {

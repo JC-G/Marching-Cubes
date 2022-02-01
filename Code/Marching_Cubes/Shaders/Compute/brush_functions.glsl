@@ -306,25 +306,29 @@ vec3 cubic_bezier_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
 
 float sdCapsule( vec3 p, vec3 a, vec3 b, float r )
 {
-  vec3 pa = p - a, ba = b - a;
-  float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
+    vec3 pa = p - a, ba = b - a;
+    pa *= vec3(1.,5.,1.); ba *=vec3(1.,5.,1.);
+    float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
   return length( pa - ba*h ) - r;
 }
 
 vec3 capsuleDerivative(vec3 p, vec3 a, vec3 b, float r) {
     vec3 pa = p - a, ba = b - a;
+    pa *= vec3(1.,5.,1.); ba *=vec3(1.,5.,1.);
     float h = clamp(dot(pa,ba)/dot(ba,ba),0.0, 1.0);
-    return normalize(pa - ba*h);
+    return normalize((pa - ba*h) * vec3(1.,5.,1.));
 }
 
+
+int roadResolution = 16;
 float road_density(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
 
     //Approximation - use capsules for now
     //TODO - find a nicer distance function - maybe a straight version of the cross-section we already have from the attempts at the analytic version
     float dMin = 1e4;
-    for (int i = 0; i < 100; i++) {
-        float nt = i/100.;
-        float nt1 = (i+1.)/100.;
+    for (int i = 0; i < roadResolution; i++) {
+        float nt = i/float(roadResolution);
+        float nt1 = (i+1.)/float(roadResolution);
         vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
         vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
         vec4 bottom = min(a,b).xyzz - vec4(r * 1.1);
@@ -453,9 +457,9 @@ float road_density(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
 vec3 road_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
     float dMin = 1e4;
     int bestI = 0;
-    for (int i = 0; i < 100; i++) {
-        float nt = i/100.;
-        float nt1 = (i+1.)/100.;
+    for (int i = 0; i < roadResolution; i++) {
+        float nt = i/float(roadResolution);
+        float nt1 = (i+1.)/float(roadResolution);
         vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
         vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
         vec4 bottom = min(a,b).xyzz - vec4(r * 1.1);
@@ -470,8 +474,8 @@ vec3 road_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
             }
         }
     }
-    float nt = bestI/100.;
-    float nt1 = (bestI+1.)/100.;
+    float nt = bestI/float(roadResolution);
+    float nt1 = (bestI+1.)/float(roadResolution);
     vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
     vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
     return capsuleDerivative(inPos,a,b,r);

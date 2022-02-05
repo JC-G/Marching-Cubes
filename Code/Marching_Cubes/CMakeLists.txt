@@ -95,6 +95,13 @@ add_executable(MarchingCubes
     src/Editing/Actions/InterpolationSplineAction.h
     src/Editing/Actions/RoadAction.cpp
     src/Editing/Actions/RoadAction.h
+
+    src/Physics/BulletTest.h
+    src/Physics/DebugDraw.cpp
+    src/Physics/DebugDraw.h
+    src/Physics/PhysicsWorld.cpp
+    src/Physics/PhysicsWorld.h
+    
     # These are not compiled - but adding them here means the project is rebuild (and hence the modifications are reflected in the output directory)
     config.json
 
@@ -120,7 +127,6 @@ add_executable(MarchingCubes
     Shaders/Compute/terrain_modification.glsl
     Shaders/Compute/brush_functions.glsl
 
-    src/BulletTest.h
 )
 
 
@@ -132,6 +138,7 @@ include_directories("src/SDF")
 include_directories("src/Editing")
 include_directories("src/Editing/Actions")
 include_directories("src/Editing/Brushes")
+include_directories("src/Physics")
 
 # set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 # set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

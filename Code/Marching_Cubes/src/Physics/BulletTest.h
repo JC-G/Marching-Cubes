@@ -1,7 +1,7 @@
 #ifndef BULLETTEST_H
 #define BULLETTEST_H
 
-#include "btBulletDynamicsCommon.h"
+#include <btBulletDynamicsCommon.h>
 
 class BulletTest {
     public:

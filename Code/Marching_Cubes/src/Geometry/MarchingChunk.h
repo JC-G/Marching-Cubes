@@ -15,8 +15,9 @@ it obtains its geometry from a GeometryGenerator, written into vertexBuffer and 
 
 #include "GeometryGenerator.h"
 #include "Config.h"
+#include "ChunkMesh.h"
 #include <glm/gtx/intersect.hpp>
-
+class ChunkMesh;
 class MarchingChunk
 {
     public:
@@ -29,9 +30,11 @@ class MarchingChunk
         void generateBoundary();
 
         float getIntersectionPoint(glm::vec3 origin, glm::vec3 direction);
+        void mapGeometry();
+        std::vector<glm::vec4>* getGeometryPointer();
+        int getGeometrySize();
         
         static std::vector<MarchingChunk*> loadedChunks;
-
     protected:
 
     private:
@@ -47,6 +50,7 @@ class MarchingChunk
 
         std::vector<glm::vec4> mappedTriangles;
         bool isMapped = false;
+        ChunkMesh* myMesh;
 };
 
 #endif // MARCHINGCHUNK_H

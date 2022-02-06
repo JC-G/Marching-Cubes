@@ -28,6 +28,8 @@ class Drawing {
         static GLuint depthBuffer;
         static GLuint frameBufferTexture;
 
+        static void drawGLLine(glm::vec3 pos1, glm::vec3 pos2);
+
     private:
 
         static bool drawChunks();

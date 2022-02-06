@@ -97,11 +97,13 @@ add_executable(MarchingCubes
     src/Editing/Actions/RoadAction.h
 
     src/Physics/BulletTest.h
+    src/Physics/ChunkMesh.cpp
+    src/Physics/ChunkMesh.h
     src/Physics/DebugDraw.cpp
     src/Physics/DebugDraw.h
     src/Physics/PhysicsWorld.cpp
     src/Physics/PhysicsWorld.h
-    
+
     # These are not compiled - but adding them here means the project is rebuild (and hence the modifications are reflected in the output directory)
     config.json
 

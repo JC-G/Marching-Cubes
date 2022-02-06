@@ -6,6 +6,7 @@
 #include "Editing.h"
 #include "Window.h"
 #include "MarchingChunk.h"
+#include "PhysicsWorld.h"
 
 GLuint Drawing::chunkVAO = 0;
 GLuint Drawing::lineVAO = 0;
@@ -305,6 +306,8 @@ bool Drawing::drawGUI() {
 	//this must be drawn before the actual GUI, because of transparency...
 	Editing::currentAction()->drawPreview();
 
+	PhysicsWorld::debugDraw();
+
 	//now draw the actual GUI
 	drawGUIBox(glm::vec2(Window::width/2, Window::height/2)-glm::vec2(16),glm::vec2(32),crosshairTexture);
 	Text::renderText(Editing::currentAction()->getDescription(), 25.0f, 25.0f, 0.5, glm::vec3(0.0));
@@ -405,3 +408,19 @@ void Drawing::drawGUIBox(glm::vec2 position, glm::vec2 size, GLuint texture){
 // 	return true;
 	
 // }
+
+
+
+void Drawing::drawGLLine(glm::vec3 pos1, glm::vec3 pos2) {
+	
+    // glm::mat4 VM = Window::activeCamera->getViewMatrix();
+	// glUseProgram(lineShader->getID());
+	// glUniformMatrix4fv(lineShader->getUniform("V"),1,GL_FALSE,&VM[0][0]);
+
+	// glBegin(GL_LINES);
+	// glVertex4f(pos1.x,pos1.y,pos1.z,1);
+	// glVertex4f(pos2.x,pos2.y,pos2.z,1);
+	// glEnd();
+
+
+}

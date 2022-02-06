@@ -3,17 +3,20 @@
 
 std::vector<MarchingChunk*> MarchingChunk::loadedChunks;
 
-MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex)
-   :myLocation(chunkLocation),mySize(chunkSize),myStride(chunkStride),Generator(Generator)
+MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex, int detailLevel)
+   :myLocation(chunkLocation),mySize(chunkSize),myStride(chunkStride),Generator(Generator), myDetailLevel(detailLevel)
 {
     //ctor
     Generator->GenerateGeometry(myLocation,mySize,myStride,&vertexBuffer,&normalBuffer, &myGeometrySize, edgeIndex);
     if (Config::get<bool>("draw_chunk_boundaries")) {
         generateBoundary();
     }
-    if (hasGeometry()) {
+    if (hasGeometry() && myDetailLevel > 8) {
 
         myMesh = new ChunkMesh(this);
+        hasPhysicsMesh = true;
+    } else {
+        hasPhysicsMesh = false;
     }
 
 }
@@ -26,7 +29,7 @@ MarchingChunk::~MarchingChunk() {
         glDeleteBuffers(1,&boundaryBuffer);
 
     }
-    if (hasGeometry()) {
+    if (hasPhysicsMesh) {
         delete myMesh;
     }
 }

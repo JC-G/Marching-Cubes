@@ -22,6 +22,7 @@
 #include "Octree.h"
 #include "Config.h"
 #include "Drawing.h"
+#include "PhysicsWorld.h"
 
 
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -102,6 +103,9 @@ void AppMain() {
     }
     
     LoadObjects();
+
+    PhysicsWorld::init();
+    std::cout << "Physics Initialized" << std::endl;
 
     // Main loop
     while(!glfwWindowShouldClose(Window::window)){

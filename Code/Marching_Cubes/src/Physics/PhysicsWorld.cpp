@@ -3,6 +3,7 @@
 #include <btBulletDynamicsCommon.h>
 
 #include "DebugDraw.h"
+#include <iostream>
 
 btAlignedObjectArray<btCollisionShape*> PhysicsWorld::collisionShapes;
 btDiscreteDynamicsWorld* PhysicsWorld::dynamicsWorld;
@@ -24,16 +25,29 @@ bool PhysicsWorld::init() {
     btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
 
     dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-
     //set the gravity
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    return true;
+    //setDebug(true);
 }
 
 void PhysicsWorld::setDebug(bool value) {
     if (!debugDrawer) {
         debugDrawer = new DebugDraw();
+        dynamicsWorld->setDebugDrawer(debugDrawer);
     }
     if (value) {
         dynamicsWorld->getDebugDrawer()->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
     }
+}
+
+void PhysicsWorld::addRigidBody(btRigidBody* body) {
+    dynamicsWorld->addRigidBody(body);
+}
+void PhysicsWorld::removeRigidBody(btRigidBody* body) {
+    dynamicsWorld->removeCollisionObject(body);
+}
+
+void PhysicsWorld::debugDraw() {
+    dynamicsWorld->debugDrawWorld();
 }

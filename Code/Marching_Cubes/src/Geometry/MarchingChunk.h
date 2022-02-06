@@ -21,7 +21,7 @@ class ChunkMesh;
 class MarchingChunk
 {
     public:
-        MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex = 0);
+        MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex = 0, int detailLevel = 0);
         virtual ~MarchingChunk();
         void draw(GLuint VAO);
         bool hasGeometry();
@@ -35,6 +35,7 @@ class MarchingChunk
         int getGeometrySize();
         
         static std::vector<MarchingChunk*> loadedChunks;
+        bool hasPhysicsMesh;
     protected:
 
     private:
@@ -43,6 +44,7 @@ class MarchingChunk
         glm::vec3 myStride;
         GeometryGenerator* Generator;
         GLuint myGeometrySize;
+        int myDetailLevel;
 
         GLuint vertexBuffer;
         GLuint normalBuffer;

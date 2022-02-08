@@ -30,6 +30,7 @@
 #undef TINYOBJLOADER_IMPLEMENTATION
 
 #include "BulletTest.h"
+#include "PhysicsWorld.h"
 
 Octree* O;
 
@@ -105,6 +106,8 @@ void AppMain() {
     LoadObjects();
 
     PhysicsWorld::init();
+    //test only
+    PhysicsWorld::loadTestObject();
     std::cout << "Physics Initialized" << std::endl;
 
     // Main loop
@@ -120,7 +123,7 @@ void AppMain() {
             }
             O->generateAllChunks();
         }
-
+        PhysicsWorld::step();
         // draw one frame
         Drawing::drawFrame();
     }

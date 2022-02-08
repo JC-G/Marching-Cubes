@@ -115,6 +115,7 @@ bool Drawing::drawFrame() {
     drawChunks();
 
     drawGUI();
+	PhysicsWorld::drawTestObject();
 
     drawToScreen();
 

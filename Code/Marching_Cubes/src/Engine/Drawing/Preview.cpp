@@ -106,7 +106,9 @@ void Preview::drawPreviewSphere(glm::vec3 radius, glm::vec3 position) {
 	glBufferData(GL_ARRAY_BUFFER,sphereVertexData.size()*sizeof(glm::vec4),sphereVertexData.data(),GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
-	glDrawArrays(GL_TRIANGLES,0,sphereVertexData.size());	
+	glDisable(GL_DEPTH_TEST);
+	glDrawArrays(GL_TRIANGLES,0,sphereVertexData.size());
+	glEnable(GL_DEPTH_TEST);	
 
 }
 

@@ -12,7 +12,7 @@ class ChunkMesh {
         ~ChunkMesh();
     private:
         btBvhTriangleMeshShape* myShape;
-        MarchingChunk* myChunk;
+        // MarchingChunk* myChunk;
         btTriangleIndexVertexArray* meshInterface;
         btDefaultMotionState* myMotionState;
         btRigidBody* body;

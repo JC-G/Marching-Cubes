@@ -11,7 +11,7 @@ MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm:
     if (Config::get<bool>("draw_chunk_boundaries")) {
         generateBoundary();
     }
-    if (hasGeometry() && myDetailLevel > 8) {
+    if (hasGeometry()) {
 
         myMesh = new ChunkMesh(this);
         hasPhysicsMesh = true;

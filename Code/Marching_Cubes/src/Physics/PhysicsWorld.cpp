@@ -9,9 +9,6 @@ btAlignedObjectArray<btCollisionShape*> PhysicsWorld::collisionShapes;
 btDiscreteDynamicsWorld* PhysicsWorld::dynamicsWorld;
 btIDebugDraw* PhysicsWorld::debugDrawer;
 
-//test only
-btRigidBody* PhysicsWorld::testBody;
-
 bool PhysicsWorld::init() {
     //setup the bullet physics world
 
@@ -30,8 +27,8 @@ bool PhysicsWorld::init() {
     dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
     //set the gravity
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
+    setDebug(true);
     return true;
-    //setDebug(true);
 }
 
 void PhysicsWorld::setDebug(bool value) {
@@ -59,39 +56,3 @@ void PhysicsWorld::step() {
     dynamicsWorld->stepSimulation(1./600.); //maybe bad to do as fast as possible, we will see...
 }
 
-void PhysicsWorld::loadTestObject() {
-    btCollisionShape* testShape = new btSphereShape(btScalar(0.1));
-    btTransform testTransform;
-    testTransform.setIdentity();
-    btScalar mass(1.f);
-
-    btVector3 localInertia(0,0,0);
-    testShape->calculateLocalInertia(mass,localInertia);
-
-    testTransform.setOrigin(btVector3(0,10,0));
-
-    btDefaultMotionState* testMotionState = new btDefaultMotionState(testTransform);
-    btRigidBody::btRigidBodyConstructionInfo testInfo(mass,testMotionState,testShape,localInertia);
-    testBody = new btRigidBody(testInfo);
-
-    PhysicsWorld::addRigidBody(testBody);
-    
-}
-
-#include "Preview.h"
-
-void PhysicsWorld::drawTestObject() {
-    btTransform trans;
-    testBody->getMotionState()->getWorldTransform(trans);
-    glm::vec3 drawPos = glm::vec3(
-        trans.getOrigin().getX(),
-        trans.getOrigin().getY(),
-        trans.getOrigin().getZ()
-    );
-    Preview::drawPreviewSphere(glm::vec3(0.1),drawPos);
-}
-
-
-void PhysicsWorld::deleteTestObject() {
-    //nah lol
-}

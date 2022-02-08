@@ -103,8 +103,10 @@ add_executable(MarchingCubes
     src/Physics/DebugDraw.h
     src/Physics/PhysicsWorld.cpp
     src/Physics/PhysicsWorld.h
-    src/Physics/PlayerController.h
     src/Physics/PlayerController.cpp
+    src/Physics/PlayerController.h
+    src/Physics/TestShape.cpp
+    src/Physics/TestShape.h
 
     # These are not compiled - but adding them here means the project is rebuild (and hence the modifications are reflected in the output directory)
     config.json

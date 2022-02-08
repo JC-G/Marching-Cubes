@@ -7,7 +7,7 @@ void DebugDraw::drawLine(const btVector3 &from, const btVector3 &to, const btVec
     //Preview::drawPreviewLine(glm::vec3(from.x(),from.y(),from.z()), glm::vec3(to.x(),to.y(),to.z()));
     // std::cout << "Drawing Debug Line: " << glm::to_string(glm::vec3(from.x(),from.y(),from.z())) <<
     //     " to " << glm::to_string(glm::vec3(to.x(),to.y(),to.z())) << std::endl;
-    // Drawing::drawGLLine(glm::vec3(from.x(),from.y(),from.z()), glm::vec3(to.x(),to.y(),to.z()));
+    Drawing::drawGLLine(glm::vec3(from.x(),from.y(),from.z()), glm::vec3(to.x(),to.y(),to.z()));
 }
 
 void DebugDraw::drawContactPoint(const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color) {

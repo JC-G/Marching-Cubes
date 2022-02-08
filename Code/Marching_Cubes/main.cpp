@@ -106,8 +106,6 @@ void AppMain() {
     LoadObjects();
 
     PhysicsWorld::init();
-    //test only
-    PhysicsWorld::loadTestObject();
     std::cout << "Physics Initialized" << std::endl;
 
     // Main loop

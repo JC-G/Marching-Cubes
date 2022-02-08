@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "Editing.h"
 #include "Controller.h"
+#include "TestShape.h"
 // #include "Action.h"
 
 //initialise static members
@@ -162,6 +163,9 @@ void Window::handleInput()
     }
     if (Controller::keyPressed(window,GLFW_KEY_B)) {
         Editing::incrementAction();
+    }
+    if (Controller::keyPressed(window,GLFW_KEY_Y)) {
+        new TestShape(activeCamera->position);
     }
 
     Editing::currentAction()->handleInput(placePos);

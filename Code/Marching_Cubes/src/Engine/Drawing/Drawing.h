@@ -11,6 +11,7 @@ class Drawing {
         static GLuint screenVAO;
 
         static GLuint screenBuffer;
+        static GLuint lineBuffer;
 
         static bool init();
         static bool drawFrame();
@@ -29,6 +30,7 @@ class Drawing {
         static GLuint frameBufferTexture;
 
         static void drawGLLine(glm::vec3 pos1, glm::vec3 pos2);
+        static void drawAllGLLines();
 
     private:
 
@@ -44,6 +46,8 @@ class Drawing {
         static void drawGUIBox(glm::vec2 position, glm::vec2 size, GLuint texture);
 
         const static GLfloat screenQuadData[];
+
+        static std::vector<glm::vec4> allGLLines;
 
 };
 

@@ -12,13 +12,6 @@ class PhysicsWorld {
         static void debugDraw();
         static void step();
 
-        //Testing purposes only...
-        static void loadTestObject();
-        static void drawTestObject();
-        static void deleteTestObject();
-
-        static btRigidBody* testBody;
-
 
     private:
         PhysicsWorld(); //static class

@@ -7,11 +7,13 @@
 #include "Window.h"
 #include "MarchingChunk.h"
 #include "PhysicsWorld.h"
+#include "TestShape.h"
 
 GLuint Drawing::chunkVAO = 0;
 GLuint Drawing::lineVAO = 0;
 GLuint Drawing::screenVAO = 0;
 GLuint Drawing::screenBuffer = 0;
+GLuint Drawing::lineBuffer = 0;
 Shader* Drawing::chunkShader;
 Shader* Drawing::lineShader;
 Shader* Drawing::screenShader;
@@ -22,6 +24,8 @@ GLuint Drawing::frameBuffer = 0;
 GLuint Drawing::depthBuffer = 0;
 GLuint Drawing::frameBufferTexture = 0;
 GLuint Drawing::crosshairTexture;
+
+std::vector<glm::vec4> Drawing::allGLLines;
 
 const GLfloat Drawing::screenQuadData[] = { 
 	-1.0f,  1.0f, 0.0f,
@@ -101,6 +105,8 @@ bool Drawing::init() {
 
     crosshairTexture = loadTexture("Textures/crosshair.dds");
 
+	//for debug lines...
+	glGenBuffers(1,&lineBuffer);
     return true;
 }
 
@@ -115,8 +121,8 @@ bool Drawing::drawFrame() {
     drawChunks();
 
     drawGUI();
-	PhysicsWorld::drawTestObject();
-
+	TestShape::drawAll();
+	drawAllGLLines();
     drawToScreen();
 
     return true;
@@ -414,14 +420,21 @@ void Drawing::drawGUIBox(glm::vec2 position, glm::vec2 size, GLuint texture){
 
 void Drawing::drawGLLine(glm::vec3 pos1, glm::vec3 pos2) {
 	
-    // glm::mat4 VM = Window::activeCamera->getViewMatrix();
-	// glUseProgram(lineShader->getID());
-	// glUniformMatrix4fv(lineShader->getUniform("V"),1,GL_FALSE,&VM[0][0]);
+	allGLLines.push_back(glm::vec4(pos1,1));
+	allGLLines.push_back(glm::vec4(pos2,1));
 
-	// glBegin(GL_LINES);
-	// glVertex4f(pos1.x,pos1.y,pos1.z,1);
-	// glVertex4f(pos2.x,pos2.y,pos2.z,1);
-	// glEnd();
+}
 
+void Drawing::drawAllGLLines() {
+    glm::mat4 VM = Window::activeCamera->getViewMatrix();
+	glUseProgram(lineShader->getID());
+	glUniformMatrix4fv(lineShader->getUniform("V"),1,GL_FALSE,&VM[0][0]);
+	glBindVertexArray(lineVAO);
+	glBindBuffer(GL_ARRAY_BUFFER,lineBuffer);
+	glBufferData(GL_ARRAY_BUFFER,allGLLines.size() * sizeof(glm::vec4),allGLLines.data(),GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+	glDrawArrays(GL_LINES,0,allGLLines.size());
+	allGLLines.clear();
 
 }

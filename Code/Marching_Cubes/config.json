@@ -3,7 +3,7 @@
     "screen_height": 1080,
 
     "octree_size": 1024.0,
-    "octree_max_depth": 12,
+    "octree_max_depth": 9,
     "octree_lod_scale": 2000.0,
     "update_octree": true,
 

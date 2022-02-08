@@ -23,6 +23,15 @@ BrushBoundingBox Octree::getBoundingBox() {
 void Octree::update(glm::vec3 inPos)
 {
     //std::cout << "inPos: " << glm::to_string(inPos) << std::endl;
+    // if (!isLeaf && myChunk) {
+    //     std::cout << "CHUNK ERROR - has children but also chunk";
+    // }
+    // if (myChunk && !hasChunk) {
+    //     std::cout << "CHUNK ERROR 2 - chunk object exists";
+    // }
+    // if (!myChunk && hasChunk) {
+    //     std::cout << "CHUNK ERROR 3 - chunk object does not exist";
+    // }
     if (shouldChop(inPos)) {
         chop(inPos);
     } else if (shouldSplit(inPos)) {
@@ -58,6 +67,10 @@ void Octree::updateChildren(glm::vec3 inPos)
 
 void Octree::split(glm::vec3 inPos)
 {
+    if (hasChunk) {
+        myChunk = nullptr;
+        hasChunk = false;
+    }
     //split this octree into 8
     for(int i = 0; i <= 1; i++) {
         for(int j = 0; j <= 1; j++) {

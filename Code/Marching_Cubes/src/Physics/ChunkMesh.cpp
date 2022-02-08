@@ -6,8 +6,7 @@
 int ChunkMesh::maxIndex = 0;
 std::vector<int> ChunkMesh::indices;
 
-ChunkMesh::ChunkMesh(MarchingChunk* chunk)
-:myChunk(chunk) {
+ChunkMesh::ChunkMesh(MarchingChunk* chunk) {
     chunk->mapGeometry();
     resizeIndices(chunk->getGeometrySize());
 
@@ -53,16 +52,18 @@ ChunkMesh::ChunkMesh(MarchingChunk* chunk)
 
     body = new btRigidBody(0,myMotionState,myShape);
     PhysicsWorld::addRigidBody(body);
-    //TODO - DELETE MESHES AS WELL!
 
 }
 
 ChunkMesh::~ChunkMesh() {
+
+//deletion order matters here?
+//for some reason meshes are not getting deleted. Possibly the marchingchunk objects not getting deleted, not sure - the shared ptr might be doing something funny
+    delete body->getMotionState();
+    delete body->getCollisionShape();
     PhysicsWorld::removeRigidBody(body);
     delete body;
-    delete myShape;
     delete meshInterface;
-    delete myMotionState;
 
 }
 

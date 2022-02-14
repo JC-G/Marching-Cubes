@@ -1,46 +1,80 @@
-\documentclass[12pt]{article}
-\usepackage{lingmacros}
-\usepackage{tree-dvips}
+\documentclass{article}
+\title{Real-Time Procedural Terrain Generation with Marching Cubes}
+\author{Joseph Chambers-Graham}
+\date{}
+
+\setcounter{tocdepth}{3}
+
 \begin{document}
-	
-	\section*{Notes for My Paper}
-	
-	Don't forget to include examples of topicalization.
-	They look like this:
-	
-	{\small
-		\enumsentence{Topicalization from sentential subject:\\ 
-			\shortex{7}{a John$_i$ [a & kltukl & [el & 
-				{\bf l-}oltoir & er & ngii$_i$ & a Mary]]}
-			{ & {\bf R-}clear & {\sc comp} & 
-				{\bf IR}.{\sc 3s}-love   & P & him & }
-			{John, (it's) clear that Mary loves (him).}}
-	}
-	
-	\subsection*{How to handle topicalization}
-	
-	I'll just assume a tree structure like (\ex{1}).
-	
-	{\small
-		\enumsentence{Structure of A$'$ Projections:\\ [2ex]
-			\begin{tabular}[t]{cccc}
-				& \node{i}{CP}\\ [2ex]
-				\node{ii}{Spec} &   &\node{iii}{C$'$}\\ [2ex]
-				&\node{iv}{C} & & \node{v}{SAgrP}
-			\end{tabular}
-			\nodeconnect{i}{ii}
-			\nodeconnect{i}{iii}
-			\nodeconnect{iii}{iv}
-			\nodeconnect{iii}{v}
-		}
-	}
-	
-	\subsection*{Mood}
-	
-	Mood changes when there is a topic, as well as when
-	there is WH-movement.  \emph{Irrealis} is the mood when
-	there is a non-subject topic or WH-phrase in Comp.
-	\emph{Realis} is the mood when there is a subject topic
-	or WH-phrase.
-	
+\maketitle
+\newpage
+
+\tableofcontents
+\section{Introduction}
+
+\section{Background}
+\subsection{Signed Distance Functions}
+- what is a SDF\\
+- operations on SDF\\
+- conventions (what sign is in/out?)\\
+- aside: ``density'' functions? An nvidia paper says this, but everyone else says distance, which makes more sense\\
+
+\subsubsection{Noise}
+- brief explanation of noise for terrain generation, how to fit it into a SDF
+\subsubsection{Approximation}
+- not all of the SDFs are exact distances - particularly noise - but good enough for rendering\\
+- is it good enough for physics?
+\subsection{Marching Cubes Algorithm}
+- explain algorithm - basically just a reference?
+
+\section{Design}
+\subsection{GPU Implementation}
+- How is the algorithm modified\\
+- speed comparison (GPU is much faster)
+\subsection{LOD system}
+ - cannot render everything at max resolution
+\subsubsection{Octree}
+ - Chunks with same point count, but scaled based on depth of octree
+
+\subsection{Transvoxel Algorithm}
+\subsubsection{The problem it solves}
+ - cracks in between chunks at different LOD
+\subsubsection{How the algorithm works}
+ - basically just a reference again\\
+ - reference implementation is complicated
+\subsubsection{Adaption of the algorithm to GPU}
+ - optimizations to make use of sequential generation have actually been removed\\
+ - regardless, this is still pretty fast on the GPU\\
+ - similar approach to parallel marching cubes\\
+\subsubsection{More issues}
+- zero width triangles\\
+- edge cases where it still goes wrong (maybe a way to fix this by revisiting the octree)\\
+
+\subsection{Terrain Modification}
+\subsubsection{Strategy}
+ - adding or removing primitives using SDF operations\\
+ - regenerating chunks\\
+ - when to regenerate?\\
+ - how many primitives is reasonable before slowdown?\\
+ - bounding boxes of primitives to increase this limit\\
+ 
+ \subsection{Physics}
+ - Just use bullet physics - well-known and optimized library
+ - zero-width triangles havent turned out to be a problem so far
+ - generating physics meshes is slow - need to find a solution to this
+ \subsubsection{SDF-based physics}
+ - perhaps look at this - might be a struggle because of non-exact SDFs, and how would we do it for anything that isn't a sphere anyway?
+ 
+ \section{Implementation}
+  - C++ with fairly low-level opengl
+  - key code probably in design section
+  - section for the ``boring bits'' of the implementation, rather than key ideas
+  - something tying it all together?
+  
+\section{Results}
+ - demonstration of final product
+ - some sort of conclusion
+
+%\paragraph{paragraph}
+%\subparagraph{subparagraph}
 \end{document}

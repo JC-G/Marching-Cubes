@@ -8,7 +8,7 @@ uniform vec2 position;
 uniform vec2 size;
 
 void main() {
-    vec4 res = vec4(vertexPosition_modelspace,1);
+    vec4 res = vec4(vertexPosition_modelspace.xy,0,1);
     //transform quad in [-1,1] to quad in [position, position+size]
     //TODO - transformations exist for a reason...
     //res.xy = size * (res.xy - vec2(1.0))/vec2(2.0) + position;

@@ -49,6 +49,8 @@ add_executable(MarchingCubes
     src/SDF/NoiseTerrain.h
     src/SDF/planesdf.cpp
     src/SDF/planesdf.h
+    src/SDF/ScaledTerrain.cpp
+    src/SDF/ScaledTerrain.h
     src/SDF/SDF.cpp
     src/SDF/SDF.h
     src/SDF/SinTerrain.cpp

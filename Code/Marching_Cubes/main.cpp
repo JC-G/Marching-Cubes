@@ -19,6 +19,7 @@
 #include "SDF/NoiseTerrain.h"
 #include "SDF/TestSDF.h"
 #include "SDF/PlaneSDF.h"
+#include "SDF/ScaledTerrain.h"
 #include "Octree.h"
 #include "Config.h"
 #include "Drawing.h"
@@ -46,6 +47,8 @@ static void LoadObjects()
         usedSDF = new Sphere(glm::vec3(0.0),1.3);
     } else if (terrainMode == "sin") {
         usedSDF = new SinTerrain();
+    } else if (terrainMode == "scaled") {
+        usedSDF = new ScaledTerrain();
     }
     GeometryGenerator* G;
     std::string generatorMode = Config::get<std::string>("generator_mode");

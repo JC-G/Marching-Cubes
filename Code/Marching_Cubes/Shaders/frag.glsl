@@ -23,7 +23,7 @@ void main() {
 
     //diffuse
     vec4 lightDirection = normalize(lightPos - vertexPosition_worldSpace);
-    float diffuseTotal = diffusePower * max(0,dot(lightDirection,vertexNormal_worldSpace));
+    float diffuseTotal = diffusePower * max(0,dot(lightDirection,normalize(vertexNormal_worldSpace)));
 
 
     //specular

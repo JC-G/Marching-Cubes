@@ -178,6 +178,10 @@ void Window::handleInput()
         Config::wireframe = !Config::wireframe;
     }
 
+    if (Controller::keyPressed(window,GLFW_KEY_V)) {
+        activeCamera->position = placePos;
+    }
+
 
     activeCamera->moveFromVec3(movement,dt);
 }

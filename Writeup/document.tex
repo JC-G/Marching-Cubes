@@ -11,7 +11,7 @@
 
 \tableofcontents
 \section{Introduction}
-
+- project and report overview
 \section{Background}
 \subsection{Signed Distance Functions}
 - what is a SDF\\
@@ -41,7 +41,7 @@
  - cracks in between chunks at different LOD
 \subsubsection{How the algorithm works}
  - basically just a reference again\\
- - reference implementation is complicated
+ - reference implementation is complicated so could do with explanation
 \subsubsection{Adaption of the algorithm to GPU}
  - optimizations to make use of sequential generation have actually been removed\\
  - regardless, this is still pretty fast on the GPU\\
@@ -54,26 +54,28 @@
 \subsubsection{Strategy}
  - adding or removing primitives using SDF operations\\
  - regenerating chunks\\
- - when to regenerate?\\
- - how many primitives is reasonable before slowdown?\\
- - bounding boxes of primitives to increase this limit\\
+ - when to regenerate chunks, and which ones\\
+ - how many primitives is reasonable before slowdown due to SDF evaluation?\\
+ - bounding boxes of primitives to increase this limit - dont need to evaluate parts not affected\\
  
  \subsection{Physics}
- - Just use bullet physics - well-known and optimized library
- - zero-width triangles havent turned out to be a problem so far
- - generating physics meshes is slow - need to find a solution to this
+ - Just use bullet physics - well-known and optimized library\\
+ - zero-width triangles havent turned out to be a problem so far\\
+ - generating physics meshes is slow - need to find a solution to this\\
  \subsubsection{SDF-based physics}
  - perhaps look at this - might be a struggle because of non-exact SDFs, and how would we do it for anything that isn't a sphere anyway?
  
  \section{Implementation}
-  - C++ with fairly low-level opengl
-  - key code probably in design section
-  - section for the ``boring bits'' of the implementation, rather than key ideas
+  - C++ with fairly low-level opengl libraries\\
+  - key code probably in design section already\\
+  - section for the ``boring bits'' of the implementation, rather than key ideas\\
+  - perhaps section to explain other things that needed bugfixes?\\
   - something tying it all together?
   
-\section{Results}
- - demonstration of final product
- - some sort of conclusion
+\section{Conclusion}
+ - demonstration of final product\\
+ - conclusion\\
+ - somehting about future work?
 
 %\paragraph{paragraph}
 %\subparagraph{subparagraph}

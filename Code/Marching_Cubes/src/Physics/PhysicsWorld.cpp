@@ -4,6 +4,7 @@
 
 #include "DebugDraw.h"
 #include <iostream>
+#include "Config.h"
 
 btAlignedObjectArray<btCollisionShape*> PhysicsWorld::collisionShapes;
 btDiscreteDynamicsWorld* PhysicsWorld::dynamicsWorld;
@@ -27,7 +28,7 @@ bool PhysicsWorld::init() {
     dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
     //set the gravity
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
-    setDebug(true);
+    setDebug(Config::get<bool>("physics_debug"));
     return true;
 }
 
@@ -38,6 +39,8 @@ void PhysicsWorld::setDebug(bool value) {
     }
     if (value) {
         dynamicsWorld->getDebugDrawer()->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+    } else {
+        dynamicsWorld->getDebugDrawer()->setDebugMode(btIDebugDraw::DBG_NoDebug);
     }
 }
 

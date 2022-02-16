@@ -7,7 +7,7 @@ layout(location = 0) out vec4 color;
 in vec4 vertexPosition_worldSpace;
 in vec4 vertexNormal_worldSpace;
 
-const vec4 lightPos = vec4(0,100,0,1);
+const vec4 lightPos = vec4(0,100000,0,1);
 const vec4 lightColor = vec4(1);
 const float ambientPower = .10;
 const float diffusePower = 1.0;

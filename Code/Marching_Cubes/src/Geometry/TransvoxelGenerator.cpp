@@ -4,6 +4,7 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
     :densityFunction(densityFunction),
     generateShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
         densityFunction->getShaderCode(),
         Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
@@ -12,6 +13,7 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
     ),
     countShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
         densityFunction->getShaderCode(),
         Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
@@ -20,6 +22,7 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
     ),
     polygonizeShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
         densityFunction->getShaderCode(),
         Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),

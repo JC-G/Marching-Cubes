@@ -2,14 +2,14 @@
     "screen_width": 1920,
     "screen_height": 1080,
 
-    "octree_size": 1024.0,
-    "octree_max_depth": 8,
-    "octree_lod_scale": 2000.0,
+    "octree_size": 32768.0,
+    "octree_max_depth": 13,
+    "octree_lod_scale": 100000.0,
     "update_octree": true,
 
     "chunk_size": 16,
 
-    "camera_move_speed": 1.0,
+    "camera_move_speed": 5.0,
     "camera_start_position": [0.0,1.0,0.0],
 
     "wireframe": false,
@@ -32,5 +32,8 @@
     "raycast_mode": "mesh",
 
     "shader_debug": false,
-    "opengl_debug": false
+    "opengl_debug": false,
+    "physics_debug": false,
+    "enable_physics": true,
+    "physics_threshold": 13
 }

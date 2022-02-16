@@ -318,6 +318,7 @@ bool Drawing::drawGUI() {
 	//now draw the actual GUI
 	drawGUIBox(glm::vec2(Window::width/2, Window::height/2)-glm::vec2(16),glm::vec2(32),crosshairTexture);
 	Text::renderText(Editing::currentAction()->getDescription(), 25.0f, 25.0f, 0.5, glm::vec3(0.0));
+	Text::renderText(glm::to_string(Window::activeCamera->position),25.0f,50.0f,0.5f,glm::vec3(0.0));
     return true;
 }
 

@@ -9,6 +9,7 @@ float ScaledTerrain::density(glm::vec3 inPos) {return 0.0f;}
 glm::vec3 ScaledTerrain::normal(glm::vec3 inPos){return glm::vec3(0,1,0);}
 
 std::string ScaledTerrain::getShaderCode() {
+    //Hills with a max height of 1000, grid scale 500
     return
     R"SHADER(
         float sdBox( vec3 p, vec3 b )
@@ -33,16 +34,17 @@ std::string ScaledTerrain::getShaderCode() {
 
 
         float density(vec3 inPos) {
-            float ground = inPos.y;
+            float ground = inPos.y-1000.0 * terrain(inPos.xz/500.0);
             float box = sdBox(inPos-vec3(0.5,1,0.5),vec3(0.5,1,0.5));
             return min(box,ground);
         }
 
         vec3 normal(vec3 inPos) {
-            float ground = inPos.y;
+            float ground = inPos.y-1000.0 * terrain(inPos.xz/500.0);
             float box = sdBox(inPos-vec3(0.5,1,0.5), vec3(0.5,1,0.5));
             if (ground < box) {
-                return vec3(0,1,0);
+                vec2 terrDer = 1000.0/500.0 * terrainDerivative(inPos.xz/500.0);
+                return normalize(vec3(-terrDer.x,1,-terrDer.y));
             } else {
                 return sdBoxNormal(inPos-vec3(0.5,1,0.5),vec3(0.5,1,0.5));
             }

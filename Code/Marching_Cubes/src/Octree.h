@@ -37,12 +37,12 @@ class Octree
         bool isLeaf;
         bool hasChunk = false;
 
-        void split(glm::vec3 inPos);
-        void chop(glm::vec3 inPos);
+        void split();
+        void chop();
 
         void update(glm::vec3 inPos);
-
         void updateChildren(glm::vec3 inPos);
+        bool refine();
 
         bool shouldSplit(glm::vec3 inPos);
         bool shouldChop(glm::vec3 inPos);

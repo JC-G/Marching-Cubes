@@ -12,10 +12,9 @@ class Octree
     public:
         Octree(glm::vec3 size, glm::vec3 position, int detailLevel, GeometryGenerator* G, Octree* parent = NULL, glm::uvec3 positionInParent = glm::uvec3(0));
         virtual ~Octree();
-        void update(glm::vec3 inPos);
         void draw(GLuint VAO);
         void drawBoundary(GLuint VAO);
-
+        void refresh(glm::vec3 inPos);
         unsigned int getEdgeIndex();
         void generateAllChunks(bool force = false);
 
@@ -30,6 +29,7 @@ class Octree
         int myDetailLevel;
         std::shared_ptr<MarchingChunk> myChunk;
         Octree* myChildren[2][2][2];
+        Octree* childFromVec3(glm::ivec3 pos);
         GeometryGenerator* myGenerator;
         Octree* myParent;
         glm::uvec3 myPositionInParent;
@@ -39,6 +39,8 @@ class Octree
 
         void split(glm::vec3 inPos);
         void chop(glm::vec3 inPos);
+
+        void update(glm::vec3 inPos);
 
         void updateChildren(glm::vec3 inPos);
 

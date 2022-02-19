@@ -68,7 +68,7 @@ static void LoadObjects()
     if (Config::get<bool>("load_octree")) {
         O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);
         Window::mainOctree = O;
-        O->update(glm::vec3(0));
+        O->refresh(glm::vec3(0));
 
     }
     if (Config::get<bool>("show_test_cube")) {
@@ -120,7 +120,7 @@ void AppMain() {
         //Update the octree
         if (Config::get<bool>("load_octree")) {
             if (Config::get<bool>("update_octree")) {
-                O->update(Window::activeCamera->position);
+                O->refresh(Window::activeCamera->position);
             }
             O->generateAllChunks();
         }

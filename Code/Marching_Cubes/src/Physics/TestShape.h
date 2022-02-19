@@ -9,6 +9,8 @@ class TestShape {
         TestShape(glm::vec3 pos);
         void draw();
         static void drawAll();
+        glm::vec3 getPosition();
+        static std::vector<glm::vec3> getShapePositions();
     private:
         btRigidBody* testBody;
         static std::vector<TestShape*> allShapes;

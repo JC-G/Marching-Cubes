@@ -40,3 +40,22 @@ void TestShape::drawAll() {
         shape->draw();
     }
 }
+
+glm::vec3 TestShape::getPosition() {
+    btTransform trans;
+    testBody->getMotionState()->getWorldTransform(trans);
+    glm::vec3 pos = glm::vec3(
+        trans.getOrigin().getX(),
+        trans.getOrigin().getY(),
+        trans.getOrigin().getZ()
+    );
+    return pos;
+}
+
+std::vector<glm::vec3> TestShape::getShapePositions() {
+    std::vector<glm::vec3> poss;
+    for (auto shape : allShapes) {
+        poss.push_back(shape->getPosition());
+    }
+    return poss;
+}

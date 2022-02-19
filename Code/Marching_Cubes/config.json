@@ -26,7 +26,7 @@
     "show_test_cube": false,
     "draw_chunk_boundaries": false,
 
-    "terrain_mode": "scaled",
+    "terrain_mode": "plane",
     "generator_mode": "transvoxel",
 
     "raycast_mode": "mesh",
@@ -36,6 +36,9 @@
     "physics_debug": true,
     "enable_physics": true,
     "physics_threshold": 13,
-    "physics_object_lod_scale": 20.0
+    "physics_object_lod_scale": 20.0,
+
+    "never_chop": false,
+    "camera_lod": true
 
 }

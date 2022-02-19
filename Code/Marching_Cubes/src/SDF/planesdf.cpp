@@ -22,6 +22,6 @@ glm::vec3 PlaneSDF::normal(glm::vec3 inPos)
 std::string PlaneSDF::getShaderCode()
 {
     return
-    "float density (vec3 inPos) { return inPos.y; }"
+    "float density (vec3 inPos) { return inPos.y-0.5; }"
     "vec3 normal(vec3 inPos) { return normalize(vec3(0,1,0)); }";
 }

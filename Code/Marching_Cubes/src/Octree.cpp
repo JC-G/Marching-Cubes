@@ -23,9 +23,9 @@ BrushBoundingBox Octree::getBoundingBox() {
 void Octree::update(glm::vec3 inPos)
 {
     if (shouldChop(inPos)) {
-        chop(inPos);
+        chop();
     } else if (shouldSplit(inPos)) {
-        split(inPos);
+        split();
     }
     if (isLeaf) {
         //Check if this leaf node needs a new marching chunk because of editing
@@ -55,7 +55,7 @@ void Octree::updateChildren(glm::vec3 inPos)
 }
 
 
-void Octree::split(glm::vec3 inPos)
+void Octree::split()
 {
     if (hasChunk) {
         myChunk = nullptr;
@@ -72,7 +72,7 @@ void Octree::split(glm::vec3 inPos)
     isLeaf = false;
 }
 
-void Octree::chop(glm::vec3 inPos)
+void Octree::chop()
 {
     isLeaf = true;
     deleteChildren();
@@ -103,7 +103,9 @@ bool Octree::shouldSplit(glm::vec3 inPos)
     }
     if (glm::length(inPos - getCenter()) <= Config::get<float>("octree_lod_scale")*glm::pow(0.5,myDetailLevel)) {
         //split if the camera is close
-        return true;
+        if (Config::get<bool>("camera_lod")) {
+            return true;
+        }
     }
 
     //physics objects
@@ -115,21 +117,31 @@ bool Octree::shouldSplit(glm::vec3 inPos)
         }
     }
 
-
     return false;
 }
 
 bool Octree::shouldChop(glm::vec3 inPos)
 {
+    if (Config::get<bool>("never_chop")) {
+        return false;
+    }
     if (isLeaf) {
         //do not chop if we are already a leaf
         return false;
     }
+    //This doesnt work....
+    //if edgeIndex != 0, chopping would create a hole...
+    // if (getEdgeIndex() != 0) {
+    //     //std::cout << "Chop Bad" << std::endl;
+    //     return false;
+    // }
 
     
     if (glm::length(inPos - getCenter()) <= Config::get<float>("octree_lod_scale") * glm::pow(0.5,myDetailLevel)) {
         //do not chop if the camera is close
-        return false;
+        if (Config::get<bool>("camera_lod")) {
+            return false;
+        }
     }
 
     //physics objects
@@ -141,6 +153,7 @@ bool Octree::shouldChop(glm::vec3 inPos)
         }
     }
 
+    // std::cout << "Chopping" <<std::endl;
     return true;
 }
 
@@ -293,28 +306,10 @@ float Octree::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction) {
 void Octree::refresh(glm::vec3 inPos) {
     //initially update
     update(inPos);
-    //refine the octree - if a leaf neighbor of a particular octree cell is larger by more than one,
-    //split the neighbor
-    //ie: if parent.getNeighbor = NULL, split
-    //if parent does not exist, we are in the root
-    //
-    
-    // if (!myParent) {
-    //     glm::ivec3 edgeNeighbors[6] = {
-    //         glm::ivec3(0,0,1),
-    //         glm::ivec3(0,0,-1),
-    //         glm::ivec3(0,1,0),
-    //         glm::ivec3(0,-1,0),
-    //         glm::ivec3(1,0,0),
-    //         glm::ivec3(-1,0,0)
-    //     };
-        
-    //     for (int i = 0; i < 6; i++) {
-    //         Octree* neighbor = myParent->getNeighbor(edgeNeighbors[i]);
-    //         if (!neighbor) {
-    //             //find the 
-    //         }
-    //     }
+
+    // bool done = false;
+    // while (!done) {
+    //     done = refine();
     // }
 
 
@@ -322,4 +317,62 @@ void Octree::refresh(glm::vec3 inPos) {
 
 Octree* Octree::childFromVec3(glm::ivec3 pos) {
     return myChildren[pos.x][pos.y][pos.z];
+}
+
+//refine the octree - if a neighbor directly adjacent, smaller by more than one exists, split this
+//return true if no refinements were made
+bool Octree::refine() {
+    bool result = true;
+    glm::ivec3 edgeNeighbors[6] = {
+        glm::ivec3(0,0,1),
+        glm::ivec3(0,0,-1),
+        glm::ivec3(0,1,0),
+        glm::ivec3(0,-1,0),
+        glm::ivec3(1,0,0),
+        glm::ivec3(-1,0,0)
+    };
+    
+    for (int n = 0; n < 6; n++) {
+        Octree* neighbor = getNeighbor(edgeNeighbors[n]);
+        if (neighbor && !neighbor->isLeaf) {
+            for (int i = 0; i <= 1; i++) {
+                for (int j = 0; j <= 1; j++) {
+                    for (int k = 0; k <= 1; k++) {
+                        glm::ivec3 childPosition = glm::ivec3(
+                            edgeNeighbors[n].x == 0 ? i : (1-edgeNeighbors[n].x)/2,
+                            edgeNeighbors[n].y == 0 ? j : (1-edgeNeighbors[n].y)/2,
+                            edgeNeighbors[n].z == 0 ? k : (1-edgeNeighbors[n].z)/2
+                        );
+                        Octree* child = neighbor->childFromVec3(childPosition);
+                        if (child && !child->isLeaf && isLeaf) {
+                            if (myDetailLevel < Config::get<int>("octree_max_depth")) {
+                                //std::cout << "Splitting..." << std::endl;
+                                result = false;
+                                split();
+                                //once we know we are splitting, dont bother checking the other options
+                                //break 4 loops is easiest with a goto
+                                goto REFINE_CHILDREN;
+                            }
+                        }
+                        if (edgeNeighbors[n].z != 0) break;
+                    }
+                    if (edgeNeighbors[n].y != 0) break;
+                }
+                if (edgeNeighbors[n].x != 0) break;
+            }
+        }
+    }
+    
+    REFINE_CHILDREN:
+    //refine children
+    if (!isLeaf) {
+        for (int i = 0; i <= 1; i++) {
+            for (int j = 0; j <= 1; j++) {
+                for (int k = 0; k <= 1; k++) {
+                    result &= myChildren[i][j][k]->refine();
+                }
+            }
+        }
+    }
+    return result;
 }

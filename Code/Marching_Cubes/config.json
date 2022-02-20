@@ -33,8 +33,8 @@
 
     "shader_debug": false,
     "opengl_debug": false,
-    "physics_debug": true,
-    "enable_physics": true,
+    "physics_debug": false,
+    "enable_physics": false,
     "physics_threshold": 13,
     "physics_object_lod_scale": 20.0,
 

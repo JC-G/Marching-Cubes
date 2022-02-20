@@ -40,8 +40,6 @@ class Octree
         void split();
         void chop();
 
-        void update(glm::vec3 inPos);
-        void updateChildren(glm::vec3 inPos);
         bool refine();
 
         bool shouldSplit(glm::vec3 inPos);
@@ -60,6 +58,14 @@ class Octree
         unsigned int edgeIndex = 0;
 
         bool needsRegen = false;
+
+        //Octree updating 2.0
+        //flagged chunks are deleted
+        bool flagged = false;
+        bool flagSplitPhase(glm::vec3 inPos);
+        // void splitPhase(glm::vec3 inPos);
+        void deleteRegenPhase();
+
 };
 
 #endif // OCTREE_H

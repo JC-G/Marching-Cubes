@@ -4,6 +4,7 @@
 #include <iostream>
 Octree::~Octree()
 {
+    // std::cout << "Deleting Chunk:" << myDetailLevel << ":" << glm::to_string(myPosition) << std::endl;
     if (!isLeaf) {
         deleteChildren();
     }
@@ -14,62 +15,32 @@ Octree::Octree(glm::vec3 size, glm::vec3 position, int detailLevel, GeometryGene
 :mySize(size),myPosition(position),myDetailLevel(detailLevel), myGenerator(G), myParent(parent), myPositionInParent(positionInParent)
 {
     isLeaf = true;
+    // std::cout << "Creating New Chunk:"<< myDetailLevel << ":" << glm::to_string(myPosition) << std::endl;
 }
 
 BrushBoundingBox Octree::getBoundingBox() {
     return BrushBoundingBox(myPosition,myPosition+mySize);
 }
 
-void Octree::update(glm::vec3 inPos)
+void Octree::split()
 {
-    if (shouldChop(inPos)) {
-        chop();
-    } else if (shouldSplit(inPos)) {
-        split();
-    }
-    if (isLeaf) {
-        //Check if this leaf node needs a new marching chunk because of editing
-        if (Editing::newBrushes.size() > 0) {
-            BrushBoundingBox myBB = getBoundingBox();
-            for (Brush* b : Editing::newBrushes) {
-                if (b->getBoundingBox().intersects(myBB)) {
-                    needsRegen = true;
+    if (flagged) {
+        flagged = false;
+    } else {
+        if (hasChunk) {
+            myChunk = nullptr;
+            hasChunk = false;
+        }
+        //split this octree into 8
+        for(int i = 0; i <= 1; i++) {
+            for(int j = 0; j <= 1; j++) {
+                for(int k = 0; k <= 1; k++) {
+                    myChildren[i][j][k] = new Octree(0.5f * mySize,myPosition + mySize * 0.5f * glm::vec3(i,j,k), myDetailLevel + 1,myGenerator,this,glm::uvec3(i,j,k));
                 }
             }
         }
-    } else {
-        //std::cout << "Updating Children" << std::endl;
-        updateChildren(inPos);
+        isLeaf = false;
     }
-}
-
-void Octree::updateChildren(glm::vec3 inPos)
-{
-    for(int i = 0; i <= 1; i++) {
-        for(int j = 0; j <= 1; j++) {
-            for(int k = 0; k <= 1; k++) {
-                myChildren[i][j][k]->update(inPos);
-            }
-        }
-    }
-}
-
-
-void Octree::split()
-{
-    if (hasChunk) {
-        myChunk = nullptr;
-        hasChunk = false;
-    }
-    //split this octree into 8
-    for(int i = 0; i <= 1; i++) {
-        for(int j = 0; j <= 1; j++) {
-            for(int k = 0; k <= 1; k++) {
-                myChildren[i][j][k] = new Octree(0.5f * mySize,myPosition + mySize * 0.5f * glm::vec3(i,j,k), myDetailLevel + 1,myGenerator,this,glm::uvec3(i,j,k));
-            }
-        }
-    }
-    isLeaf = false;
 }
 
 void Octree::chop()
@@ -77,6 +48,7 @@ void Octree::chop()
     isLeaf = true;
     deleteChildren();
 }
+
 void Octree::deleteChildren()
 {
     for(int i = 0; i <= 1; i++) {
@@ -128,15 +100,7 @@ bool Octree::shouldChop(glm::vec3 inPos)
     if (isLeaf) {
         //do not chop if we are already a leaf
         return false;
-    }
-    //This doesnt work....
-    //if edgeIndex != 0, chopping would create a hole...
-    // if (getEdgeIndex() != 0) {
-    //     //std::cout << "Chop Bad" << std::endl;
-    //     return false;
-    // }
-
-    
+    }    
     if (glm::length(inPos - getCenter()) <= Config::get<float>("octree_lod_scale") * glm::pow(0.5,myDetailLevel)) {
         //do not chop if the camera is close
         if (Config::get<bool>("camera_lod")) {
@@ -304,14 +268,30 @@ float Octree::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction) {
 }
 
 void Octree::refresh(glm::vec3 inPos) {
-    //initially update
-    update(inPos);
+    // std::cout << "======================================================================" << std::endl;
+    //Initially, pass through the entire octree and flag chunks that should be deleted, according to the chop condition
+    //Or split, according to split condition
+    //return true if something has split
+    bool needsRefinement = flagSplitPhase(inPos);
 
-    // bool done = false;
-    // while (!done) {
-    //     done = refine();
-    // }
+    //Refine, undoing flags rather than splitting
+    //need many passes for now, because a refinement may cause inconsistencies elsewhere
+    if (needsRefinement) {
+        // std::cout << "Mesh Refinement Needed" << std::endl;
+        bool done = false;
+        int steps = 0;
+        while (!done) {
+            steps++;
+            done = refine();
+        }
+        // std::cout << "Refinement done in: " << steps << " Steps" << std::endl;
 
+    }
+
+    //Now delete flagged chunks. Since this reaches all leaves, also do editing regeneration here
+    deleteRegenPhase();
+
+    generateAllChunks();
 
 }
 
@@ -331,7 +311,6 @@ bool Octree::refine() {
         glm::ivec3(1,0,0),
         glm::ivec3(-1,0,0)
     };
-    
     for (int n = 0; n < 6; n++) {
         Octree* neighbor = getNeighbor(edgeNeighbors[n]);
         if (neighbor && !neighbor->isLeaf) {
@@ -344,15 +323,18 @@ bool Octree::refine() {
                             edgeNeighbors[n].z == 0 ? k : (1-edgeNeighbors[n].z)/2
                         );
                         Octree* child = neighbor->childFromVec3(childPosition);
-                        if (child && !child->isLeaf && isLeaf) {
-                            if (myDetailLevel < Config::get<int>("octree_max_depth")) {
-                                //std::cout << "Splitting..." << std::endl;
+                        //if child exists, and is not a leaf, then this chunk is inconsistent
+                        //if it is a leaf, split it, otherwise just unflag it
+                        if (child && !child->isLeaf) {
+                            if (isLeaf && myDetailLevel < Config::get<int>("octree_max_depth")) {
                                 result = false;
                                 split();
                                 //once we know we are splitting, dont bother checking the other options
                                 //break 4 loops is easiest with a goto
-                                goto REFINE_CHILDREN;
+                            } else {
+                                flagged = false;
                             }
+                            goto REFINE_CHILDREN;
                         }
                         if (edgeNeighbors[n].z != 0) break;
                     }
@@ -364,7 +346,6 @@ bool Octree::refine() {
     }
     
     REFINE_CHILDREN:
-    //refine children
     if (!isLeaf) {
         for (int i = 0; i <= 1; i++) {
             for (int j = 0; j <= 1; j++) {
@@ -375,4 +356,56 @@ bool Octree::refine() {
         }
     }
     return result;
+}
+
+//returns true if something has been split or flagged - so refinement is needed
+bool Octree::flagSplitPhase(glm::vec3 inPos) {
+    bool result = false;
+    if (shouldChop(inPos)) {
+        flagged = true;
+        result = true;
+    } 
+    if (shouldSplit(inPos)) {
+        split();
+        result = true;
+    }
+    if (!isLeaf) {
+        for (int i = 0; i <= 1; i++) {
+            for (int j = 0; j <= 1; j++) {
+                for (int k = 0; k <= 1; k++) {
+                    result |= myChildren[i][j][k]->flagSplitPhase(inPos);
+                }
+            }
+        }
+    }
+    
+    return result;
+}
+
+void Octree::deleteRegenPhase() {
+    //chop chunks that shouldnt be there
+    if (flagged) {
+        chop();
+        flagged = false;
+    }
+    if (isLeaf) {
+        //Check if this leaf node needs a new marching chunk because of editing
+        if (Editing::newBrushes.size() > 0) {
+            BrushBoundingBox myBB = getBoundingBox();
+            for (Brush* b : Editing::newBrushes) {
+                if (b->getBoundingBox().intersects(myBB)) {
+                    needsRegen = true;
+                }
+            }
+        }
+    } else {
+        for (int i = 0; i <= 1; i++) {
+            for (int j = 0; j <= 1; j++) {
+                for (int k = 0; k <= 1; k++) {
+                    myChildren[i][j][k]->deleteRegenPhase();
+                }
+            }
+        }
+    }
+    
 }

@@ -106,10 +106,12 @@ void AppMain() {
         return;
     }
     
-    LoadObjects();
 
     PhysicsWorld::init();
     std::cout << "Physics Initialized" << std::endl;
+
+    //load objects after physics world
+    LoadObjects();
 
     // Main loop
     while(!glfwWindowShouldClose(Window::window)){
@@ -122,7 +124,7 @@ void AppMain() {
             if (Config::get<bool>("update_octree")) {
                 O->refresh(Window::activeCamera->position);
             }
-            O->generateAllChunks();
+            // O->generateAllChunks();
         }
         PhysicsWorld::step();
         // draw one frame
@@ -134,7 +136,7 @@ void AppMain() {
 }
 int main(int argc, char *argv[]) {
 
-BulletTest::test();
+    BulletTest::test();
     char buffer[MAXPATHLEN];
     //Set the working directory - if possible
     if (chdir(WORKING_DIRECTORY) == 0) {

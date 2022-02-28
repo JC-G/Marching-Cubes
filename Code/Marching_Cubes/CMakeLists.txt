@@ -103,6 +103,10 @@ add_executable(MarchingCubes
     src/Physics/ChunkMesh.h
     src/Physics/DebugDraw.cpp
     src/Physics/DebugDraw.h
+    src/Physics/LockQueue.cpp
+    src/Physics/LockQueue.h
+    src/Physics/MeshManager.cpp
+    src/Physics/MeshManager.h
     src/Physics/PhysicsWorld.cpp
     src/Physics/PhysicsWorld.h
     src/Physics/PlayerController.cpp
@@ -155,8 +159,16 @@ include_directories("src/Physics")
 # https://github.com/ArthurSonzogni/OpenGL_CMake_Skeleton/blob/master/CMakeLists.txt
 
 
-set_property(TARGET MarchingCubes PROPERTY CXX_STANDARD 11)
+set_property(TARGET MarchingCubes PROPERTY CXX_STANDARD 17)
 target_compile_options(MarchingCubes PRIVATE -Wall)
+
+# threads
+# windows xp minimum... for some reason this doesnt compile when set to 0x0A00 windows 10
+
+add_compile_definitions(WINVER=0x0501)
+add_compile_definitions(_WIN32_WINNT=0x0501)
+add_subdirectory(lib/mingw-std-threads)
+target_link_libraries(MarchingCubes PRIVATE mingw_stdthreads)
 
 # glfw
 add_subdirectory(lib/glfw EXCLUDE_FROM_ALL)

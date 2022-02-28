@@ -27,3 +27,6 @@
 	path = Code/Marching_Cubes/lib/bullet3
 	url = https://github.com/bulletphysics/bullet3
 	ignore = dirty
+[submodule "Code/Marching_Cubes/lib/mingw-std-threads"]
+	path = Code/Marching_Cubes/lib/mingw-std-threads
+	url = https://github.com/meganz/mingw-std-threads.git

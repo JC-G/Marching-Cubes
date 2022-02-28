@@ -61,7 +61,7 @@ static void LoadObjects()
     }
     if (Config::get<bool>("single_chunk_mode")) {
         //test code to generate a single chunk
-        MarchingChunk::loadedChunks.push_back(new MarchingChunk(glm::vec3(1,0,1),glm::vec3(4),glm::vec3(0.25),G,0b010001));
+        MarchingChunk::loadedChunks.push_back(MarchingChunk::createMarchingChunk(glm::vec3(1,0,1),glm::vec3(4),glm::vec3(0.25),G,0b010001).get());
 
         // loadedChunks.push_back(new MarchingChunk(glm::vec3(-1,-1,1),glm::vec3(4),glm::vec3(0.5),G,0b000000));
     }
@@ -73,7 +73,7 @@ static void LoadObjects()
     }
     if (Config::get<bool>("show_test_cube")) {
         GeometryGenerator* C = new CubeGeometryGenerator();
-        MarchingChunk::loadedChunks.push_back(new MarchingChunk(glm::vec3(0),glm::vec3(0),glm::vec3(0),C,0));
+        MarchingChunk::loadedChunks.push_back(MarchingChunk::createMarchingChunk(glm::vec3(0),glm::vec3(0),glm::vec3(0),C,0).get());
     }
 }
 

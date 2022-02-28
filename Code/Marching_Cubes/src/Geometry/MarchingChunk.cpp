@@ -3,6 +3,22 @@
 
 std::vector<MarchingChunk*> MarchingChunk::loadedChunks;
 
+std::shared_ptr<MarchingChunk> MarchingChunk::createMarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex, int detailLevel) {
+    std::shared_ptr<MarchingChunk> chunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(chunkLocation,chunkSize,chunkStride,Generator, edgeIndex,detailLevel));
+    chunk->attachMesh();
+    return chunk;
+}
+
+void MarchingChunk::attachMesh() {
+    if (hasGeometry() && Config::get<bool>("enable_physics") && myDetailLevel >= Config::get<int>("physics_threshold")) {
+
+        myMesh = new ChunkMesh(getptr());
+        hasPhysicsMesh = true;
+    } else {
+        hasPhysicsMesh = false;
+    }
+}
+
 MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex, int detailLevel)
    :myLocation(chunkLocation),mySize(chunkSize),myStride(chunkStride),Generator(Generator), myDetailLevel(detailLevel)
 {
@@ -10,13 +26,6 @@ MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm:
     Generator->GenerateGeometry(myLocation,mySize,myStride,&vertexBuffer,&normalBuffer, &myGeometrySize, edgeIndex);
     if (Config::get<bool>("draw_chunk_boundaries")) {
         generateBoundary();
-    }
-    if (hasGeometry() && Config::get<bool>("enable_physics") && myDetailLevel >= Config::get<int>("physics_threshold")) {
-
-        myMesh = new ChunkMesh(this);
-        hasPhysicsMesh = true;
-    } else {
-        hasPhysicsMesh = false;
     }
 
 }
@@ -30,7 +39,8 @@ MarchingChunk::~MarchingChunk() {
 
     }
     if (hasPhysicsMesh) {
-        delete myMesh;
+        myMesh->tryDelete();
+        // delete myMesh;
     }
 }
 

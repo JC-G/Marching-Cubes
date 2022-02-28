@@ -5,6 +5,7 @@
 #include "DebugDraw.h"
 #include <iostream>
 #include "Config.h"
+#include "MeshManager.h"
 
 btAlignedObjectArray<btCollisionShape*> PhysicsWorld::collisionShapes;
 btDiscreteDynamicsWorld* PhysicsWorld::dynamicsWorld;
@@ -29,6 +30,9 @@ bool PhysicsWorld::init() {
     //set the gravity
     dynamicsWorld->setGravity(btVector3(0, -10, 0));
     setDebug(Config::get<bool>("physics_debug"));
+
+    MeshManager::manager = new MeshManager();
+
     return true;
 }
 
@@ -56,6 +60,9 @@ void PhysicsWorld::debugDraw() {
 }
 
 void PhysicsWorld::step() {
+    MeshManager::manager->updateMeshesSingleThreaded();
+    if (!Config::get<bool>("physics_generation_thread")) {
+        MeshManager::manager->updateMeshes();
+    }
     dynamicsWorld->stepSimulation(1./600.); //maybe bad to do as fast as possible, we will see...
 }
-

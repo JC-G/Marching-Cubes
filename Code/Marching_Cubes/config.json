@@ -39,6 +39,8 @@
     "physics_object_lod_scale": 20.0,
 
     "never_chop": false,
-    "camera_lod": true
+    "camera_lod": true,
+
+    "physics_generation_thread": false
 
 }

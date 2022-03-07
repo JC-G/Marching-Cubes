@@ -7,14 +7,18 @@ Octree::~Octree()
     // std::cout << "Deleting Chunk:" << myDetailLevel << ":" << glm::to_string(myPosition) << std::endl;
     if (!isLeaf) {
         deleteChildren();
+    } else {
+        myChunk->tryDelete();
     }
 }
+
 
 
 Octree::Octree(glm::vec3 size, glm::vec3 position, int detailLevel, GeometryGenerator* G, Octree* parent, glm::uvec3 positionInParent)
 :mySize(size),myPosition(position),myDetailLevel(detailLevel), myGenerator(G), myParent(parent), myPositionInParent(positionInParent)
 {
     isLeaf = true;
+    myChunk = nullptr;
     // std::cout << "Creating New Chunk:"<< myDetailLevel << ":" << glm::to_string(myPosition) << std::endl;
 }
 
@@ -28,8 +32,9 @@ void Octree::split()
         flagged = false;
     } else {
         if (hasChunk) {
-            myChunk = nullptr;
+            myChunk->tryDelete();
             hasChunk = false;
+            myChunk = nullptr;
         }
         //split this octree into 8
         for(int i = 0; i <= 1; i++) {
@@ -125,7 +130,10 @@ bool Octree::shouldChop(glm::vec3 inPos)
 void Octree::generateMarchingChunk(int edgeIndex)
 {
     float stride = Config::get<float>("chunk_size");
-    myChunk = std::shared_ptr<MarchingChunk>(MarchingChunk::createMarchingChunk(myPosition,glm::vec3(stride),mySize/stride,myGenerator,edgeIndex, myDetailLevel));
+    if (myChunk) {
+        myChunk->tryDelete();
+    }
+    myChunk = MarchingChunk::createMarchingChunk(myPosition,glm::vec3(stride),mySize/stride,myGenerator,edgeIndex, myDetailLevel);
     hasChunk = true;
     needsRegen = false;
 }
@@ -225,9 +233,6 @@ void Octree::generateAllChunks(bool force)
         if (!hasChunk || E != edgeIndex || force || needsRegen) {
             edgeIndex = E;
             generateMarchingChunk(edgeIndex);
-            // if (Config::get<bool>("debug") && edgeIndex != 0 && myChunk->hasGeometry()) {
-            //     std::cout << "Chunk Status: " << myPosition.x << ", " << myPosition.y << ", " << myPosition.z << ": Edge Code: " << edgeIndex <<std::endl;
-            // }
         }
     } else {
         for(int i = 0; i <= 1; i++) {

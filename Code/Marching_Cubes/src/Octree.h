@@ -27,7 +27,7 @@ class Octree
         glm::vec3 mySize;
         glm::vec3 myPosition;
         int myDetailLevel;
-        std::shared_ptr<MarchingChunk> myChunk;
+        MarchingChunk* myChunk;
         Octree* myChildren[2][2][2];
         Octree* childFromVec3(glm::ivec3 pos);
         GeometryGenerator* myGenerator;

@@ -3,16 +3,26 @@
 
 std::vector<MarchingChunk*> MarchingChunk::loadedChunks;
 
-std::shared_ptr<MarchingChunk> MarchingChunk::createMarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex, int detailLevel) {
-    std::shared_ptr<MarchingChunk> chunk = std::shared_ptr<MarchingChunk>(new MarchingChunk(chunkLocation,chunkSize,chunkStride,Generator, edgeIndex,detailLevel));
+MarchingChunk* MarchingChunk::createMarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex, int detailLevel) {
+    MarchingChunk* chunk = new MarchingChunk(chunkLocation,chunkSize,chunkStride,Generator, edgeIndex,detailLevel);
     chunk->attachMesh();
     return chunk;
+}
+void MarchingChunk::tryDelete() {
+    //deleting in the case of physics mesh existing: delete the mesh, which will then delete the chunk once it is safe
+
+    if (hasPhysicsMesh) {
+        //let the mesh handle the deletion of this, since the mesh may be generating on another thread
+        myMesh->tryDelete();
+    } else {
+        delete this;
+    }
 }
 
 void MarchingChunk::attachMesh() {
     if (hasGeometry() && Config::get<bool>("enable_physics") && myDetailLevel >= Config::get<int>("physics_threshold")) {
 
-        myMesh = new ChunkMesh(getptr());
+        myMesh = new ChunkMesh(this);
         hasPhysicsMesh = true;
     } else {
         hasPhysicsMesh = false;
@@ -38,10 +48,12 @@ MarchingChunk::~MarchingChunk() {
         glDeleteBuffers(1,&boundaryBuffer);
 
     }
-    if (hasPhysicsMesh) {
-        myMesh->tryDelete();
-        // delete myMesh;
-    }
+    // if (hasPhysicsMesh) {
+    //     //TODO - this never happens, because of circular reference between MarchingChunk and ChunkMesh
+    //     std::cout << "Deleting Mesh"<<std::endl;
+    //     myMesh->tryDelete();
+    //     // delete myMesh;
+    // }
 }
 
 void MarchingChunk::draw(GLuint VAO) {

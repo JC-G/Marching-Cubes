@@ -18,11 +18,11 @@ it obtains its geometry from a GeometryGenerator, written into vertexBuffer and 
 #include "ChunkMesh.h"
 #include <glm/gtx/intersect.hpp>
 class ChunkMesh;
-class MarchingChunk : public std::enable_shared_from_this<MarchingChunk>
-{
+class MarchingChunk {
     public:
-        static std::shared_ptr<MarchingChunk> createMarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex = 0, int detailLevel = 0);
+        static MarchingChunk* createMarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex = 0, int detailLevel = 0);
         virtual ~MarchingChunk();
+        void tryDelete();
         void draw(GLuint VAO);
         bool hasGeometry();
         void drawBoundary(GLuint VAO);
@@ -37,9 +37,9 @@ class MarchingChunk : public std::enable_shared_from_this<MarchingChunk>
         static std::vector<MarchingChunk*> loadedChunks;
         bool hasPhysicsMesh;
 
-        std::shared_ptr<MarchingChunk> getptr() {
-            return shared_from_this();
-        }
+        // std::shared_ptr<MarchingChunk> getptr() {
+        //     return shared_from_this();
+        // }
     protected:
 
     private:

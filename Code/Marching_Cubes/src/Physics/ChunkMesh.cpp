@@ -7,7 +7,7 @@
 int ChunkMesh::maxIndex = 0;
 std::vector<int> ChunkMesh::indices;
 
-ChunkMesh::ChunkMesh(std::shared_ptr<MarchingChunk> chunk) 
+ChunkMesh::ChunkMesh(MarchingChunk* chunk) 
 :myChunk(chunk)
 {
     state.store(CHUNKMESH_INITIALIZED);
@@ -35,6 +35,9 @@ ChunkMesh::~ChunkMesh() {
     //     removeFromWorld();
     // }
 
+    //Delete the marchingchunk this relied on:
+    delete myChunk;
+
 }
 
 void ChunkMesh::resizeIndices(int maxVal) {
@@ -54,7 +57,7 @@ void ChunkMesh::removeFromWorld() {
 }
 
 void ChunkMesh::generateMesh() {
-    // std::this_thread::sleep_for(std::chrono::seconds(2));
+    //std::this_thread::sleep_for(std::chrono::milliseconds(10));
     meshInterface = new btTriangleIndexVertexArray();
     btIndexedMesh tempMesh;
     meshInterface->addIndexedMesh(tempMesh);

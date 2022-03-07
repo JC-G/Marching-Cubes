@@ -46,7 +46,7 @@ void MeshManager::updateMeshes() {
                     } else {
                         //std::cout << "Mesh was in state " << expected2 << std::endl;
                         if (expected2 == CHUNKMESH_FUTURE_DELETE) {
-                            std::cout << "Mesh requires future delete" << std::endl;
+                            // std::cout << "Mesh requires future delete" << std::endl;
                             int expected3 = CHUNKMESH_FUTURE_DELETE;
                             if (mesh.value()->state.compare_exchange_strong(expected3, CHUNKMESH_REMOVING)) {
                                 //std::cout << "Set to delete" << std::endl;
@@ -114,10 +114,9 @@ void MeshManager::updateMeshesSingleThreaded() {
                             //std::cout << "Could not add to world" << std::endl;
                         }
                     } else if (currentState == CHUNKMESH_INWORLD) {
-                        //remove state from world
+                        //remove mesh from world
                         expected = CHUNKMESH_INWORLD;
-                        if (mesh.value()->state.compare_exchange_strong(expected,CHUNKMESH_REMOVED+1)) {
-                            //std::cout << "Removing mesh from world" << std::endl;
+                        if (mesh.value()->state.compare_exchange_strong(expected,CHUNKMESH_REMOVED)) {
                             mesh.value()->removeFromWorld();
                             delete mesh.value();
                             stateChanged = true;
@@ -127,7 +126,7 @@ void MeshManager::updateMeshesSingleThreaded() {
                     } else if (currentState == CHUNKMESH_REMOVING) {
                         //delete from generated, but not in world
                         expected = CHUNKMESH_REMOVING;
-                        if (mesh.value()->state.compare_exchange_strong(expected, CHUNKMESH_REMOVED+2)) {
+                        if (mesh.value()->state.compare_exchange_strong(expected, CHUNKMESH_REMOVED)) {
                             //std::cout << "Cleaning up" << std::endl;
                             mesh.value()->cleanUp();
                             delete mesh.value();

@@ -7,7 +7,7 @@
     "octree_lod_scale": 100000.0,
     "update_octree": true,
 
-    "chunk_size": 16,
+    "chunk_size": 32,
 
     "camera_move_speed": 5.0,
     "camera_start_position": [0.0,1.0,0.0],
@@ -34,13 +34,13 @@
     "shader_debug": false,
     "opengl_debug": false,
     "physics_debug": false,
-    "enable_physics": false,
+    "enable_physics": true,
     "physics_threshold": 13,
     "physics_object_lod_scale": 20.0,
 
     "never_chop": false,
     "camera_lod": true,
 
-    "physics_generation_thread": false
+    "physics_generation_thread": true
 
 }

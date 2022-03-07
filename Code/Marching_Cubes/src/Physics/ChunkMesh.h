@@ -18,7 +18,7 @@ const int CHUNKMESH_REMOVED       =30;
 class MarchingChunk;
 class ChunkMesh {
     public:
-        ChunkMesh(std::shared_ptr<MarchingChunk> chunk);
+        ChunkMesh(MarchingChunk* chunk);
         ~ChunkMesh();
 
         //multithreading
@@ -34,7 +34,7 @@ class ChunkMesh {
 
     private:
         btBvhTriangleMeshShape* myShape;
-        std::shared_ptr<MarchingChunk> myChunk;
+        MarchingChunk* myChunk;
         btTriangleIndexVertexArray* meshInterface;
         btDefaultMotionState* myMotionState;
         btRigidBody* body;

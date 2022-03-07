@@ -1,4 +1,11 @@
 \documentclass{article}
+\usepackage{amsfonts}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\graphicspath{{./images/}}
+\usepackage{sidecap}
+
+
 \title{Real-Time Procedural Terrain Generation with Marching Cubes}
 \author{Joseph Chambers-Graham}
 \date{}
@@ -9,21 +16,51 @@
 \maketitle
 \newpage
 
+\section*{Abstract}
+This project explores a method for procedurally generating terrain by applying the a variation of the Marching Cubes algorithm known as the Transvoxel algorithm. We use an octree data structure to break down a large world into chunks at varying levels of detail, and apply the parallel processing power of the GPU to rapidly generate geometry on a per-chunk basis. We then explore applications of this approach, modifying the geometry in real-time by making localized changes to the underlying distance function. %Finally, we demonstrate the applicability of this approach by 
+Finally, we use the meshes we have generated with a well-known physics library.
+\newpage
+
 \tableofcontents
+
+\newpage
 \section{Introduction}
 - project and report overview
 \section{Background}
 \subsection{Signed Distance Functions}
-- what is a SDF\\
-- operations on SDF\\
-- conventions (what sign is in/out?)\\
-- aside: ``density'' functions? An nvidia paper says this, but everyone else says distance, which makes more sense\\
+At the core of the Marching Cubes algorithm, and the way we will be defining shapes, is the signed distance function (SDF). This is a function of the form $f:\mathbb{R}^3 \rightarrow \mathbb{R}$. The shape represented by an SDF is the implicit surface $f\left(x,y,z\right) = 0$. Furthermore, it is desirable for an SDF to have the following properties:
+\begin{enumerate}[label=\roman*.]
+\item At all points where $f\left(x,y,z\right) \neq 0$, if $\left(x,y,z\right)$ is inside the surface, $f\left(x,y,z\right) < 0$. If $\left(x,y,z\right)$ is outside the surface, $f\left(x,y,z\right) > 0$. This is the most important property of an SDF, without which the Marching Cubes algorithm is unlikely to produce valid geometry.
+\item At all points where $f\left(x,y,z\right) \neq 0$, the value $f\left(x,y,z\right)$ should be the smallest (signed) euclidean distance from the point $\left(x,y,z\right)$ to the surface $f\left(x,y,z\right) = 0$. In practice, many implicit functions we are using do not have this property, however for best results the value $f\left(x,y,z\right)$ should be a good approximation of the actual distance, and for floating point precision reasons, must be at least the same order of magnitude. This property will be used by the Marching Cubes algorithm to interpolate the positions of vertices, and as such a better distance approximation will lead to a more accurate mesh representation of the SDF. An SDF such that $f\left(x,y,z\right)$ gives the correct distance everywhere is an \textit{exact} SDF. Otherwise, it is an \textit{approximate} SDF.
+\item $f$ is continuous everywhere, and has all partial derivatives. This is useful for calculating the normal to the surface at a given point. In practice, we will relax these restrictions, but this should still hold in places where the algorithm might generate vertices.
+\end{enumerate}
+% Reference here - https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
+Many geometric shapes have exact SDF representations. Figure \ref{fig:Circle_SDF} shows a 2 dimensional exact SDF for a circle.
 
-\subsubsection{Noise}
-- brief explanation of noise for terrain generation, how to fit it into a SDF
-\subsubsection{Approximation}
-- not all of the SDFs are exact distances - particularly noise - but good enough for rendering\\
-- is it good enough for physics?
+\begin{SCfigure}[][h]
+\caption{Example of a 2 dimensional SDF representing a circle. The function shown is $f\left(x,y\right) = \sqrt{x^2+y^2}-1$, with the area where $f\left(x,y\right) < 0 $ shaded. Also shown are the contours where $f\left(x,y\right) = 0.1,0.2,...0.5$}
+\includegraphics[width=0.5\textwidth]{Circle_SDF}
+\label{fig:Circle_SDF}
+\end{SCfigure}
+
+However, many useful shapes, in particular heightmaps and shapes those defined by random noise, are not easy to represent as an exact SDF. For this sort of shape, we use an approximate SDF. Figure \ref{fig:Hill_SDF} shows a 2 dimensional approximate SDF for the heightmap defined by $y=1-\frac{x^2}{3}$. It is of course possible to define the exact distance function for any implicit shape, however such problems are often minimisation problems with with solutions that are expensive to compute. For example,even this simple example computing the exact distance to a quadratic curve requires computing the roots of a cubic polynomial, and computing the exact distance to a cubic curve requires solving a polynomial of degree 5, for which there is no elementary solution. Since this is useful for defining shapes based on interpolation splines, it is certainly worth considering when an approximation may be worth using due to the reduced computational cost.
+
+\begin{SCfigure}[][h]
+\caption{Plot of the SDF $f\left(x,y\right) = y - \left(1 - \frac{x^2}{3}\right)$. Note the contour lines are no longer uniformly spaced, as they would be with an exact SDF. In fact, the distance approximation gets worse, as the slope of the surface increases.}
+\includegraphics[width=0.5\textwidth]{Hill_SDF}
+\label{fig:Hill_SDF}
+\end{SCfigure}
+
+The basic set-theoretical operations of union, intersection, and difference have equivalent representations using the $\min$ and $\max$ functions. At this point, one many note that the function $\min\left(f,g\right)$ may fail to be differentiable at the point where $f = g$. Here, we may simply take the derivative of $f$ or $g$. 
+\\
+It is worth noting that some literature chooses the terminology of signed \textit{density} functions. This is equivalent to an approximate SDF, however the sign convention is flipped, so that a negative value is outside the surface.\\
+%https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-1-generating-complex-procedural-terrains-using-gpu
+
+\subsection{Noise}
+A typical noise function takes as input a point in $\mathbb{R}^n$ and returns a pseudorandom value, usually between 0 and 1. The use of noise to generate convincing heightmaps is well-documented, and typical implementations are as a function of the form $y = h\left(x,z\right)$ giving the height of the terrain at a given $\left(x,z\right)$ coordinate. This can be simply extended to an approximate SDF, using the formula $f\left(x,y,z\right) = y - h\left(x,z\right)$. Note that this is in fact an approximate SDF, and that the distance approximation worsens as the steepness of the slope of $h\left(x,z\right)$ increases. This phenomenon can be seen in figure \ref{fig:Hill_SDF}.
+\\
+The use of 3 dimensional noise as a distance function is also possible, and yields interesting results. %TODO - implement  this
+
 \subsection{Marching Cubes Algorithm}
 - explain algorithm - basically just a reference?
 
@@ -62,6 +99,7 @@
  - Just use bullet physics - well-known and optimized library\\
  - zero-width triangles havent turned out to be a problem so far\\
  - generating physics meshes is slow - need to find a solution to this\\
+ - In fact, physics is currently the *slowest* part of this...\\
  \subsubsection{SDF-based physics}
  - perhaps look at this - might be a struggle because of non-exact SDFs, and how would we do it for anything that isn't a sphere anyway?
  

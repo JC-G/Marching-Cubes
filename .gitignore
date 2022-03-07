@@ -6,3 +6,7 @@ build/
 Writeup/Notes.txt
 .metals/
 .vscode/
+*.aux
+*.log
+*.pdf
+*.synctex.gz

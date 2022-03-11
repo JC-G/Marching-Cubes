@@ -10,3 +10,9 @@ Writeup/Notes.txt
 *.log
 *.pdf
 *.synctex.gz
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.toc

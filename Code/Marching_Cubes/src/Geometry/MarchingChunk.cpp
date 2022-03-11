@@ -162,6 +162,7 @@ float MarchingChunk::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction)
 }
 
 void MarchingChunk::mapGeometry() {
+    //Rare crash here if a raycast and a physics generation try to resize the vector in parallel...
     if (!isMapped) {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexBuffer);
         mappedTriangles.resize(myGeometrySize);

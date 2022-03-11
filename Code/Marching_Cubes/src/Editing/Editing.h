@@ -22,6 +22,7 @@ class Editing {
 
         static void incrementAction();
         static Action* currentAction();
+        static std::vector<BrushParams> getBrushesInBox(BrushBoundingBox box);
     private:
         static Shader* raycastShader;
         static int actionIndex;

@@ -70,3 +70,14 @@ Action* Editing::currentAction() {
     return allActions[actionIndex];
 }
 
+std::vector<BrushParams> Editing::getBrushesInBox(BrushBoundingBox box) {
+    
+    std::vector<BrushParams> result;
+    for (Brush* b : Editing::allBrushes) {
+        if (b->getBoundingBox().intersects(box)) {
+            result.push_back(b->getBrushParams());
+        }
+    }
+    return result;
+}
+

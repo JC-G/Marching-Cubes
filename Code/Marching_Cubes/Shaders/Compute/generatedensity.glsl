@@ -9,7 +9,7 @@ layout(local_size_x=8,local_size_y=8,local_size_z=8) in;
 
 void generate(uvec3 gid) {
     uint arrID = getArrID(gid);
-    densityValues[arrID] = density(gid*chunkStride + chunkPosition);
+    densityValues[arrID] = modified_density(gid*chunkStride + chunkPosition);
 }
 
 void main() {

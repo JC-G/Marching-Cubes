@@ -26,6 +26,7 @@ class GPUMarchingCubesGenerator : public GeometryGenerator
         Shader stage3Shader;
 
         GLuint densityValuesBuffer;
+        GLuint brushBuffer;
 
         GLuint marchableCounter; //stage 2 -> 3
         GLuint pointCounter; //stage 2 -> out

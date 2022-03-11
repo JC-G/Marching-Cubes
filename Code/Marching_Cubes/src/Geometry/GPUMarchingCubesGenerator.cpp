@@ -1,5 +1,6 @@
 #include "GPUMarchingCubesGenerator.h"
-
+#include "Brush.h"
+#include "Editing.h"
 
 const int GPUMarchingCubesGenerator::edgeTable[256] = {
     0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -42,12 +43,37 @@ const int GPUMarchingCubesGenerator::totalTable[256] = {0,3,3,6,3,6,6,9,3,6,6,9,
 
 //TODO - this is not very efficient... why are we always including common and sdf code when we dont use it
 GPUMarchingCubesGenerator::GPUMarchingCubesGenerator(SDF* densityFunction)
-    :stage1Shader(Shader::ComputeShaderFromFile("Shaders/Compute/generatedensity.glsl", densityFunction->getShaderCode())),
-    stage2Shader(Shader::ComputeShaderFromFile("Shaders/Compute/countpolygons.glsl", densityFunction->getShaderCode())),
-    stage3Shader(Shader::ComputeShaderFromFile("Shaders/Compute/polygonize.glsl", densityFunction->getShaderCode())),
+    :stage1Shader(Shader::ComputeShaderFromVector(std::vector<std::string>{
+        Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
+        densityFunction->getShaderCode(),
+        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/common.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/generatedensity.glsl")})
+    ),
+    stage2Shader(Shader::ComputeShaderFromVector(std::vector<std::string>{
+        Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
+        densityFunction->getShaderCode(),
+        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/common.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/countpolygons.glsl")})
+    ),
+    stage3Shader(Shader::ComputeShaderFromVector(std::vector<std::string>{
+        Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
+        densityFunction->getShaderCode(),
+        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/common.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/polygonize.glsl")})
+    ),
     densityFunction(densityFunction)
 {
     glGenBuffers(1,&densityValuesBuffer);
+    glGenBuffers(1,&brushBuffer);
 
     glGenBuffers(1,&marchableCounter);
     glGenBuffers(1,&pointCounter);
@@ -83,6 +109,12 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,10,totalTableBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,256*sizeof(int),totalTable,GL_DYNAMIC_DRAW);
 
+    //Terrain Modification Buffer
+    BrushBoundingBox myBox = BrushBoundingBox::getChunkBox(chunkLocation,chunkSize,chunkStride);
+    std::vector<BrushParams> brushList = Editing::getBrushesInBox(myBox);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,16,brushBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,brushList.size() * sizeof(BrushParams),&brushList[0],GL_DYNAMIC_DRAW);
+
     //Stage 1
 
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -94,6 +126,8 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     glUniform3fv(stage1Shader.getUniform("chunkPosition"),1,&chunkLocation[0]);
     glUniform3fv(stage1Shader.getUniform("chunkStride"),1,&chunkStride[0]);
     glUniform3uiv(stage1Shader.getUniform("chunkSize"),1,&chunkSize[0]);
+    
+    glUniform1i(stage1Shader.getUniform("brushCount"),brushList.size());
 
     glDispatchCompute(1+chunkSize.x/8, 1+chunkSize.y/8, 1+chunkSize.z/8);
     //std::cout << "Stage 1 Complete" << std::endl;
@@ -151,6 +185,8 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,6,*normalBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,pointCount*sizeof(glm::vec4),NULL,GL_DYNAMIC_DRAW);
+    
+    glUniform1i(stage3Shader.getUniform("brushCount"),brushList.size());
 
     glDispatchCompute(jobCount,1,1);
 

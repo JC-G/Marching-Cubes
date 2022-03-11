@@ -34,6 +34,7 @@ class TransvoxelGenerator : public GeometryGenerator
         Shader polygonizeShader;
 
         GLuint densityValuesBuffer;
+        GLuint brushBuffer;
 
         GLuint marchableCounter; //stage 2 -> 3
         GLuint pointCounter; //stage 2 -> out

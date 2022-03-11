@@ -137,7 +137,7 @@ void main() {
                     //normals[3*index+t] = normalize(vec4(dX,dY,dZ,0));
 
                     //specified normals
-                    normals[3*index+t] = vec4(normal(vertPos),0);
+                    normals[3*index+t] = vec4(modified_normal(vertPos),0);
 
                 }
 			}

@@ -36,6 +36,7 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
     actually generate the polygons (shader 3)
     */
     glGenBuffers(1,&densityValuesBuffer);
+    glGenBuffers(1,&brushBuffer);
 
     glGenBuffers(1,&marchableCounter);
     glGenBuffers(1,&pointCounter);
@@ -115,31 +116,8 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
 
     //Terrain Modification buffer
 
-    //Temporary test objects:
-    TestBrushes::generateRandomSpheres();
-    TestBrushes::generateRandomCylinders();
-    GLuint brushBuffer;
-
     BrushBoundingBox myBox = BrushBoundingBox::getChunkBox(chunkLocation,chunkSize,chunkStride);
-
-    std::vector<BrushParams> brushList;
-    // for (Brush* b : TestBrushes::randomSpheres) {
-    //     if (b->getBoundingBox().intersects(myBox)) {
-    //         brushList.push_back(b->getBrushParams());
-    //     }
-    // }
-    // for (Brush* b : TestBrushes::randomCylinders) {
-    //     if (b->getBoundingBox().intersects(myBox)) {
-    //         brushList.push_back(b->getBrushParams());
-    //     }
-    // }
-
-    for (Brush* b : Editing::allBrushes) {
-        if (b->getBoundingBox().intersects(myBox)) {
-            brushList.push_back(b->getBrushParams());
-        }
-    }
-    glGenBuffers(1,&brushBuffer);
+    std::vector<BrushParams> brushList = Editing::getBrushesInBox(myBox);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,16,brushBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,brushList.size() * sizeof(BrushParams),&brushList[0],GL_DYNAMIC_DRAW);
 

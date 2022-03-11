@@ -59,8 +59,9 @@ void MeshManager::updateMeshes() {
                         }
                     }
                 } else {
-                    //std::cout << "Instead of init: " << expected << std::endl;
-                    
+                    std::cout << "Instead of init: " << expected << std::endl;
+                    //case when in generation queue, but needs deletion...
+                    addTaskSingleThreaded(mesh.value());
                 }
             } else {
                 //std::cout << "Attempted to process a deleted mesh" << std::endl;
@@ -88,8 +89,8 @@ void MeshManager::updateMeshesSingleThreaded() {
                         //chunk deleted before even generated...
                         expected = CHUNKMESH_INITIALIZED;
                         if (mesh.value()->state.compare_exchange_strong(expected,CHUNKMESH_REMOVED)) {
-                            //std::cout << "Mesh deleted from INITIALIZED" << std::endl;
-                            delete mesh.value();
+                            std::cout << "Mesh deleted from INITIALIZED " << mesh.value() << " with " << mesh.value()->myChunk << std::endl;
+                            // delete mesh.value();
                             stateChanged = true;
                         } else {
                             //std::cout << "Failed to delete from INITIALIZED" << std::endl;
@@ -98,7 +99,7 @@ void MeshManager::updateMeshesSingleThreaded() {
                         //cannot delete from here, so set to future_delete instead
                         expected = CHUNKMESH_GENERATING;
                         if (mesh.value()->state.compare_exchange_strong(expected, CHUNKMESH_FUTURE_DELETE)) {
-                            //std::cout << "Chunk set to future delete" << std::endl;
+                            // std::cout << "Chunk set to future delete: " << mesh.value() << std::endl;
                             stateChanged = true;
                         } else {
                             //std::cout << "Could not set to future delete" << std::endl;
@@ -117,6 +118,7 @@ void MeshManager::updateMeshesSingleThreaded() {
                         //remove mesh from world
                         expected = CHUNKMESH_INWORLD;
                         if (mesh.value()->state.compare_exchange_strong(expected,CHUNKMESH_REMOVED)) {
+                            // std::cout << "Mesh Removed from world: " << mesh.value() << std::endl;
                             mesh.value()->removeFromWorld();
                             delete mesh.value();
                             stateChanged = true;
@@ -127,7 +129,7 @@ void MeshManager::updateMeshesSingleThreaded() {
                         //delete from generated, but not in world
                         expected = CHUNKMESH_REMOVING;
                         if (mesh.value()->state.compare_exchange_strong(expected, CHUNKMESH_REMOVED)) {
-                            //std::cout << "Cleaning up" << std::endl;
+                            // std::cout << "Cleaning up: " << mesh.value() << std::endl;
                             mesh.value()->cleanUp();
                             delete mesh.value();
                             stateChanged = true;
@@ -135,6 +137,10 @@ void MeshManager::updateMeshesSingleThreaded() {
                             //std::cout << "could not clean up" <<std::endl;
                         }
 
+                    } else if (currentState == CHUNKMESH_REMOVED) {
+                        //was in the generation queue, but not generated, and now needs removing
+                        delete mesh.value();
+                        stateChanged = true;
                     }
                     
                     else {

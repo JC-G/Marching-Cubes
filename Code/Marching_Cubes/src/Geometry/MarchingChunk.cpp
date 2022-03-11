@@ -22,8 +22,8 @@ void MarchingChunk::tryDelete() {
 void MarchingChunk::attachMesh() {
     if (hasGeometry() && Config::get<bool>("enable_physics") && myDetailLevel >= Config::get<int>("physics_threshold")) {
 
-        myMesh = new ChunkMesh(this);
         hasPhysicsMesh = true;
+        myMesh = ChunkMesh::CreateMesh(this);
     } else {
         hasPhysicsMesh = false;
     }
@@ -46,14 +46,7 @@ MarchingChunk::~MarchingChunk() {
     glDeleteBuffers(1,&normalBuffer);
     if (Config::get<bool>("draw_chunk_boundaries")) {
         glDeleteBuffers(1,&boundaryBuffer);
-
     }
-    // if (hasPhysicsMesh) {
-    //     //TODO - this never happens, because of circular reference between MarchingChunk and ChunkMesh
-    //     std::cout << "Deleting Mesh"<<std::endl;
-    //     myMesh->tryDelete();
-    //     // delete myMesh;
-    // }
 }
 
 void MarchingChunk::draw(GLuint VAO) {
@@ -162,13 +155,14 @@ float MarchingChunk::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction)
 }
 
 void MarchingChunk::mapGeometry() {
-    //Rare crash here if a raycast and a physics generation try to resize the vector in parallel...
-    if (!isMapped) {
+    //Rare crash here if a raycast and a physics generation try to resize the vector in parallel, so use a lock
+    static std::lock_guard<std::mutex> lk(mapMutex);
+    if (!isMapped.load()) {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexBuffer);
         mappedTriangles.resize(myGeometrySize);
         glGetBufferSubData(GL_SHADER_STORAGE_BUFFER,0,myGeometrySize * sizeof(glm::vec4),mappedTriangles.data());
         //mappedTriangles = (glm::vec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,myGeometrySize,GL_MAP_READ_BIT);
-        isMapped = true;
+        isMapped.store(true);
     }
 }
 
@@ -177,9 +171,10 @@ int MarchingChunk::getGeometrySize() {
 }
 
 std::vector<glm::vec4>* MarchingChunk::getGeometryPointer() {
-    if (!isMapped) {
-        mapGeometry();
-    }
+    // Assume it is mapped by the constructor of the mesh
+    // if (!isMapped.load()) {
+    //     mapGeometry();
+    // }
     return &mappedTriangles;
 }
 

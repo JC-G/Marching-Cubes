@@ -7,7 +7,7 @@
 
 #include "LockQueue.h"
 
-const int CHUNKMESH_INITIALIZED   = 0;
+const int CHUNKMESH_INITIALIZED   = 1;
 const int CHUNKMESH_GENERATING    = 5;
 const int CHUNKMESH_FUTURE_DELETE = 7;
 const int CHUNKMESH_GENERATED     =10;
@@ -18,7 +18,7 @@ const int CHUNKMESH_REMOVED       =30;
 class MarchingChunk;
 class ChunkMesh {
     public:
-        ChunkMesh(MarchingChunk* chunk);
+        static ChunkMesh* CreateMesh(MarchingChunk* chunk);
         ~ChunkMesh();
 
         //multithreading
@@ -30,11 +30,13 @@ class ChunkMesh {
         void cleanUp();
         void tryDelete();
         
+        
+        MarchingChunk* myChunk;
 
 
     private:
+        ChunkMesh(MarchingChunk* chunk);
         btBvhTriangleMeshShape* myShape;
-        MarchingChunk* myChunk;
         btTriangleIndexVertexArray* meshInterface;
         btDefaultMotionState* myMotionState;
         btRigidBody* body;

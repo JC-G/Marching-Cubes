@@ -10,30 +10,22 @@ std::vector<int> ChunkMesh::indices;
 ChunkMesh::ChunkMesh(MarchingChunk* chunk) 
 :myChunk(chunk)
 {
+    std::cout << "Created " << this << " with: " << myChunk << std::endl;
     state.store(CHUNKMESH_INITIALIZED);
-    chunk->mapGeometry();
+    myChunk->mapGeometry();
     //indices will be at least as big as needed
-    resizeIndices(chunk->getGeometrySize());
-    // if (Config::get<bool>("physics_generation_thread")) {
-    //     //problem here: adding to the physics world during some other iteration over objects creates errors
-    //     //Perhaps solve this by using a vector of generated shapes, and then adding all the ready ones on main thread
-        
-    //     genThread = std::thread(&ChunkMesh::generateMesh, this, chunk);
-    // } else {
-    //     generateMesh(chunk);
-    // }
-    MeshManager::manager->addTask(this);
+    resizeIndices(myChunk->getGeometrySize());
 
+
+}
+ChunkMesh* ChunkMesh::CreateMesh(MarchingChunk* chunk) {
+    ChunkMesh* C = new ChunkMesh(chunk);
+    MeshManager::manager->addTask(C);
+    return C;
 
 }
 
 ChunkMesh::~ChunkMesh() {
-    // if (Config::get<bool>("physics_generation_thread")) {
-    //     delThread = std::thread(&ChunkMesh::removeFromWorld, this);
-    //     delThread.detach();
-    // } else {
-    //     removeFromWorld();
-    // }
 
     //Delete the marchingchunk this relied on:
     delete myChunk;
@@ -57,6 +49,7 @@ void ChunkMesh::removeFromWorld() {
 }
 
 void ChunkMesh::generateMesh() {
+    std::cout <<"Generating " << this << " with: " <<  myChunk <<std::endl;
     // std::this_thread::sleep_for(std::chrono::milliseconds(10));
     meshInterface = new btTriangleIndexVertexArray();
     btIndexedMesh tempMesh;
@@ -78,7 +71,6 @@ void ChunkMesh::generateMesh() {
 
     memcpy((void*)mesh.m_vertexBase,geometry->data(),sizeof(glm::vec4)*myChunk->getGeometrySize());
 
-    //need to delete this
     myShape = new btBvhTriangleMeshShape(meshInterface,true);
 
     btTransform trans;

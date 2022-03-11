@@ -13,6 +13,8 @@ it obtains its geometry from a GeometryGenerator, written into vertexBuffer and 
 
 */
 
+#include <atomic>
+#include "mingw.mutex.h"
 #include "GeometryGenerator.h"
 #include "Config.h"
 #include "ChunkMesh.h"
@@ -57,7 +59,8 @@ class MarchingChunk {
         GLuint boundaryBuffer;
 
         std::vector<glm::vec4> mappedTriangles;
-        bool isMapped = false;
+        std::mutex mapMutex;
+        std::atomic_bool isMapped = std::atomic_bool(false);
         ChunkMesh* myMesh;
 };
 

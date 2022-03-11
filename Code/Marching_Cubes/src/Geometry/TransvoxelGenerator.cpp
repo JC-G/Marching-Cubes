@@ -264,6 +264,7 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     glDispatchCompute(jobCount,1,1);
 
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
+    // glFinish();
     *geometrySize = pointCount;
 
     //BEGIN DEBUG REGION

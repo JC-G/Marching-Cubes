@@ -1,10 +1,33 @@
 \documentclass{article}
 \usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{xcolor}
+
 \usepackage{enumitem}
+
 \usepackage{graphicx}
 \graphicspath{{./images/}}
 \usepackage{sidecap}
+
 \usepackage{hyperref}
+
+\usepackage{listings}
+% \lstset{
+%   % basicstyle=\ttfamily,
+%   % columns=fullflexible,
+%   % frame=single,
+%   breaklines=true,
+%   postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
+% }
+\lstset{
+  basicstyle=\ttfamily,
+  breaklines=true,
+  postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+  stepnumber=1,
+  tabsize=1,
+}
+
+\usepackage[margin=1in]{geometry}
 
 \title{Real-Time Procedural Terrain Generation with Marching Cubes}
 \author{Joseph Chambers-Graham}
@@ -65,21 +88,55 @@ A typical noise function takes as input a point in $\mathbb{R}^n$ and returns a 
 The use of 3 dimensional noise as a distance function is also possible, and yields interesting results. %TODO - implement  this
 
 \subsection{Marching Cubes Algorithm}
-The Marching Cubes algorithm is an algorithm for polygonising a 3 dimensional scalar field. It works by splitting the space into a uniform grid of cubes (\textit{cells}), and sampling the scalar field at the vertices of each cube. Pre-computed lookup tables, indexed by the vertices of the cell which are classified as "inside" or "outside", are used to determine the geometry that exists within the cell. Each vertex of this geometry lies on an edge of the cell, and the position of each geometry vertex is adjusted by linearly interpolating the sampled values of the scalar field at the cell vertices, such that the vertex is placed approximately on the surface described by the scalar field. In this context, we use a 3 dimensional SDF as described in Section \ref{section:sdf} to provide scalar field samples, and the lookup tables as described by Paul Bourke. \cite{bourke_1994}
+\label{section:mc}
+The Marching Cubes algorithm is an algorithm for polygonising a 3 dimensional scalar field. It works by splitting the space into a uniform grid of cubes (\textit{cells}), and sampling the scalar field at the vertices of each cube. Pre-computed lookup tables, indexed by the vertices of the cell which are classified as "inside" or "outside", are used to determine the geometry that exists within the cell. Each vertex of this geometry lies on an edge of the cell, and the position of each geometry vertex is adjusted by linearly interpolating the sampled values of the scalar field at the cell vertices, such that the vertex is placed approximately on the surface described by the scalar field. In this project, we use a 3 dimensional SDF as described in Section \ref{section:sdf} to provide scalar field samples, and the lookup tables as described by Paul Bourke. \cite{bourke_1994}
 
 \section{Design}
 \subsection{GPU Implementation}
-% - How is the algorithm modified\\
-The Marching Cubes algorithm operates on a large grid of cells, on a per-cell basis. As such, it is well-suited to parallelisation. In this section, we describe an implementation of the Marching Cubes algorithm on a GPU, using GLSL. The implementation works on \textit{chunks}, which are cuboids of grid cells, and is split into 3 phases:
+The Marching Cubes algorithm operates on a large grid of cells, on a per-cell basis. As such, it is well-suited to parallelisation. In this section, we describe an implementation of the Marching Cubes algorithm on a GPU, using GLSL. This implementation is based on the reference implementation cited in Section \ref{section:mc}. The implementation works on \textit{chunks}, which are cuboids of grid cells, and is split into 3 phases:
 \begin{enumerate}
-\item Distance function computation: For each grid cell vertex in the chunk, the SDF is sampled, and the values are stored in a buffer to be passed to the subsequent phases. This is done separately to the other phases, which operate over grid cells rather than grid cell vertices, to avoid unnecessary recomputation of the SDF, since one grid cell vertex may belong to up to 8 neighboring grid cells.
-\item Counting phase: For each grid cell in the chunk, the number of mesh triangles in the cell is calculated, using the SDF sample values computed in the previous phase. This allows the vertex buffer to be sized correctly. This phase also filters out grid cells which have no triangles in at all, since no geometry needs to be generated.
-\item Polygonisation phase: For each of the grid cells that will contain mesh triangles, these triangles are actually generated, and the vertex positions are adjusted by linearly interpolating the pre-computed SDF values. At this stage, the vertex normals are also generated. This can be done using face normals, or by providing a normal function. % derivative
+
+\item \underline{Distance function computation}: For each grid cell vertex in the chunk, the SDF is sampled, and the values are stored in a buffer to be passed to the subsequent phases. This is done separately to the other phases, which operate over grid cells rather than grid cell vertices, to avoid unnecessary recomputation of the SDF, since one grid cell vertex may belong to up to 8 neighboring grid cells.
+\begin{lstlisting}[language=C++,label={mc_generate},caption={GLSL code for generating the SDF at one vertex in a chunk. The function \texttt{generate} may use any SDF, and stores the value in a buffer.}]
+void main() {
+  uvec3 gid = gl_GlobalInvocationID;
+  if (gid.x > chunkSize.x || gid.y > chunkSize.y || gid.z > chunkSize.z) {
+    return;
+  }
+  generate(gid);
+}
+\end{lstlisting}
+
+\item \underline{Counting phase}: For each grid cell in the chunk, the number of mesh triangles in the cell is calculated, using the SDF sample values computed in the previous phase. This allows the vertex buffer to be sized correctly. This phase also filters out grid cells which have no triangles in at all, since no geometry needs to be generated. Listing \ref{mc_count} shows part of the code responsible for this. Variable \texttt{cubeIndex} is calculated according to the Marching Cubes algorithm, and corresponds to the vertices of the grid cell that are inside or outside of the surface. Hence, this \textit{cube index} determines the geometry that will end up in each grid cell. \texttt{totalTable} contains the number of triangles in a grid cell with that index, which is added to the atomic variable \texttt{pointCount}. \texttt{bufferIndex} reserves a place in the buffer \texttt{marchableList} for this grid cell. The condition in line 1 filters out the cube indices which do not generate any geometry.
+\begin{lstlisting}[language=C++,label={mc_count},caption={GLSL code for counting the number of vertices and marchable grid cells in the chunk.}]
+if (cubeIndex != 0 && cubeIndex != 255)
+{
+  atomicCounterAddARB(pointCount,totalTable[cubeIndex]);
+  uint bufferIndex = atomicCounterIncrement(marchableCount);
+  uvec4 mc = uvec4(gid.x,gid.y,gid.z,cubeIndex);
+  marchableList[bufferIndex] = mc;
+}
+\end{lstlisting}
+
+\item \underline{Polygonisation phase}: For each of the grid cells that will contain mesh triangles, these triangles are actually generated, and the vertex positions are adjusted by linearly interpolating the pre-computed SDF values. At this stage, the vertex normals are also generated. This can be done using face normals, or by providing a normal function. Listing \ref{mc_poly} shows part of the code responsible for this. Atomic variable \texttt{triCount} keeps track of the number of triangles that have been generated across the entire chunk, and allocates a space in the buffers \texttt{vertices} and \texttt{normals}, which have been sized according to the values calculated in the previous phase. \texttt{triTable} is a buffer containing a flattened version of the table with the same name in the reference implementation. It contains a list of indices into the array \texttt{vertlist} for each cube index. Each vertex in \texttt{vertlist} is positioned on the edge of the grid cell, linearly interpolated as described in Section \ref{section:mc}.
+\begin{lstlisting}[language=C++,label={mc_poly},caption={GLSL code for generating the geometry of a grid cell.}]
+for (int tCount = 0; triTable[tCount+16*cubeIndex] != -1; tCount+=3)
+{
+  uint index = atomicCounterIncrement(triCount);
+  for (int t = 0; t < 3;t++)
+  {
+    vec3 vertPos = vertlist[triTable[cubeIndex*16+tCount+t]]*chunkStride + chunkPosition;
+    vertices[3*index+t] = vec4(vertPos,1);
+    normals[3*index+t] = vec4(modified_normal(vertPos),0);
+  }
+}
+\end{lstlisting}
+
 \end{enumerate}
-- tradeoff - vertex sharing?
-- speed comparison (GPU is much faster)
+The choice to parallelise the algorithm in this way presents some downsides. Triangles are generated and placed into the vertex buffer in an order which is very unlikely to be coherent, meaning that there is no way to reliably use an index buffer for vertices that are generated in the same place, a common occurance. This results in many duplicate vertices in the vertex array. Nevertheless, this is a worthwhile tradeoff, with the GPU implementation greatly outperforming the CPU implementation
+TODO: - speed comparison experiment (GPU is much faster)
 \subsection{LOD system}
- - cannot render everything at max resolution
+Even with a much more efficient GPU implementation of the Marching Cubes algorithm, when attempting to generate very large areas of geometry, it becomes infeasible to generate and render a uniform grid of Marching Cubes chunks. Furthermore, generating large amounts of triangles very far away from the camera is unnecessary, since the detail will not be visible. For this reason, it is necessary to have a dynamic level of detail (LOD) system.
 \subsubsection{Octree}
  - Chunks with same point count, but scaled based on depth of octree
 

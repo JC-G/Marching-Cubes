@@ -24,6 +24,7 @@
 #include "Config.h"
 #include "Drawing.h"
 #include "PhysicsWorld.h"
+#include "Timing.h"
 
 
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -49,6 +50,8 @@ static void LoadObjects()
         usedSDF = new SinTerrain();
     } else if (terrainMode == "scaled") {
         usedSDF = new ScaledTerrain();
+    } else if (terrainMode == "test") {
+        usedSDF = new TestSDF(Config::get<float>("test_scale"),Config::get<float>("test_iso"));
     }
     GeometryGenerator* G;
     std::string generatorMode = Config::get<std::string>("generator_mode");
@@ -61,9 +64,23 @@ static void LoadObjects()
     }
     if (Config::get<bool>("single_chunk_mode")) {
         //test code to generate a single chunk
-        MarchingChunk::loadedChunks.push_back(MarchingChunk::createMarchingChunk(glm::vec3(1,0,1),glm::vec3(4),glm::vec3(0.25),G,0b010001));
-
-        // loadedChunks.push_back(new MarchingChunk(glm::vec3(-1,-1,1),glm::vec3(4),glm::vec3(0.5),G,0b000000));
+        usedSDF = new TestSDF(50.0,0.6);
+        std::cout << "Beginning chunk timing..." << std::endl;
+        Timing::timeDiff();
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                MarchingChunk::loadedChunks.push_back(
+                    MarchingChunk::createMarchingChunk(
+                        glm::vec3(i*Config::get<float>("single_chunk_size")*Config::get<float>("single_chunk_stride"),0,j*Config::get<float>("single_chunk_size")*Config::get<float>("single_chunk_stride")),
+                        glm::vec3(Config::get<float>("single_chunk_size")),
+                        glm::vec3(Config::get<float>("single_chunk_stride")),
+                        G,0b000000
+                    )
+                );
+            }
+        }
+        long t = Timing::timeDiff();
+        std::cout << "Finished chunk timing: " << t << "ms" << std::endl;
     }
     if (Config::get<bool>("load_octree")) {
         O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);
@@ -136,7 +153,7 @@ void AppMain() {
 }
 int main(int argc, char *argv[]) {
 
-    BulletTest::test();
+    // BulletTest::test();
     char buffer[MAXPATHLEN];
     //Set the working directory - if possible
     if (chdir(WORKING_DIRECTORY) == 0) {

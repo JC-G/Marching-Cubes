@@ -155,8 +155,11 @@ void Window::handleInput()
     if (Controller::getKeyState(window,GLFW_KEY_LEFT_SHIFT)) {
         movement.y-=1.0f;
     }
-
-    placePos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
+    if (Config::get<bool>("single_chunk_mode")) {
+        placePos = activeCamera->position;
+    } else {
+        placePos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
+    }
     Editing::newBrushes.clear();
     if (Controller::keyPressed(window,GLFW_KEY_P)) {
         Editing::allBrushes.clear();

@@ -10,7 +10,7 @@ std::vector<int> ChunkMesh::indices;
 ChunkMesh::ChunkMesh(MarchingChunk* chunk) 
 :myChunk(chunk)
 {
-    std::cout << "Created " << this << " with: " << myChunk << std::endl;
+    // std::cout << "Created " << this << " with: " << myChunk << std::endl;
     state.store(CHUNKMESH_INITIALIZED);
     myChunk->mapGeometry();
     //indices will be at least as big as needed
@@ -49,7 +49,7 @@ void ChunkMesh::removeFromWorld() {
 }
 
 void ChunkMesh::generateMesh() {
-    std::cout <<"Generating " << this << " with: " <<  myChunk <<std::endl;
+    // std::cout <<"Generating " << this << " with: " <<  myChunk <<std::endl;
     // std::this_thread::sleep_for(std::chrono::milliseconds(10));
     meshInterface = new btTriangleIndexVertexArray();
     btIndexedMesh tempMesh;

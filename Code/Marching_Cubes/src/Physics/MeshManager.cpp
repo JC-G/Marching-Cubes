@@ -59,7 +59,7 @@ void MeshManager::updateMeshes() {
                         }
                     }
                 } else {
-                    std::cout << "Instead of init: " << expected << std::endl;
+                    // std::cout << "Instead of init: " << expected << std::endl;
                     //case when in generation queue, but needs deletion...
                     addTaskSingleThreaded(mesh.value());
                 }
@@ -89,7 +89,7 @@ void MeshManager::updateMeshesSingleThreaded() {
                         //chunk deleted before even generated...
                         expected = CHUNKMESH_INITIALIZED;
                         if (mesh.value()->state.compare_exchange_strong(expected,CHUNKMESH_REMOVED)) {
-                            std::cout << "Mesh deleted from INITIALIZED " << mesh.value() << " with " << mesh.value()->myChunk << std::endl;
+                            // std::cout << "Mesh deleted from INITIALIZED " << mesh.value() << " with " << mesh.value()->myChunk << std::endl;
                             // delete mesh.value();
                             stateChanged = true;
                         } else {

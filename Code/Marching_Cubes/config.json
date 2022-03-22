@@ -20,18 +20,23 @@
     "generate_regular_cells": true,
     "interpolate": true,
 
-    "single_chunk_mode": false,
-    "load_octree": true,
+    "single_chunk_mode": true,
+    "load_octree": false,
+
+    "single_chunk_size": 32,
+    "single_chunk_stride":0.5,
+    "test_scale":20,
+    "test_iso":0.6,
 
     "show_test_cube": false,
     "draw_chunk_boundaries": false,
 
-    "terrain_mode": "scaled",
-    "generator_mode": "transvoxel",
+    "terrain_mode": "test",
+    "generator_mode": "CPU",
 
     "raycast_mode": "mesh",
 
-    "shader_debug": true,
+    "shader_debug": false,
     "opengl_debug": false,
     "physics_debug": false,
     "enable_physics": true,

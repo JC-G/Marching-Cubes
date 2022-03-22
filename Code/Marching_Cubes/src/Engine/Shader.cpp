@@ -155,13 +155,13 @@ void Shader::SetUniforms(GLuint ProgramID, std::map<std::string, GLuint>& shader
     GLchar name[bufSize]; // variable name in GLSL
     GLsizei length; // name length
     glGetProgramiv(ProgramID, GL_ACTIVE_UNIFORMS, &count);
-    printf("Active Uniforms: %d\n", count);
+    // printf("Active Uniforms: %d\n", count);
 
     for (int i = 0; i < count; i++)
     {
         glGetActiveUniform(ProgramID, (GLuint)i, bufSize, &length, &size, &type, name);
 
-        printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
+        // printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
         std::string nameString(name);
         shaderUniforms[nameString] = i;
     }

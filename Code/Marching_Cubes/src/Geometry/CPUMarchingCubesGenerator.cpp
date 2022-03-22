@@ -319,16 +319,16 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 {
     //generate the distance field
     //use 3D vector to bypass stack size limit for large chunk sizes
-    std::vector<std::vector<std::vector<float>>> densities;
+    std::vector<std::vector<std::vector<float>>> distances;
     for (int x = 0; x <= chunkSize.x; x++) {
-        densities.push_back(std::vector<std::vector<float>>());
+        distances.push_back(std::vector<std::vector<float>>());
         for (int y = 0; y <= chunkSize.y; y++) {
-            densities[x].push_back(std::vector<float>());
+            distances[x].push_back(std::vector<float>());
             for (int z = 0; z <= chunkSize.z; z++) {
-                densities[x][y].push_back(0.0);
+                distances[x][y].push_back(0.0);
                 //generate the distance values
                 glm::vec3 currentPosition = chunkLocation + chunkStride * glm::vec3(x,y,z);
-                densities[x][y][z] = distanceFunction->distance(currentPosition);
+                distances[x][y][z] = distanceFunction->distance(currentPosition);
             }
         }
     }
@@ -344,14 +344,14 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
 
                 //put the grid data into format as required by algorithm
                 float gridCells[8];
-                gridCells[0] = densities[x  ][y  ][z  ];
-                gridCells[1] = densities[x+1][y  ][z  ];
-                gridCells[2] = densities[x+1][y+1][z  ];
-                gridCells[3] = densities[x  ][y+1][z  ];
-                gridCells[4] = densities[x  ][y  ][z+1];
-                gridCells[5] = densities[x+1][y  ][z+1];
-                gridCells[6] = densities[x+1][y+1][z+1];
-                gridCells[7] = densities[x  ][y+1][z+1];
+                gridCells[0] = distances[x  ][y  ][z  ];
+                gridCells[1] = distances[x+1][y  ][z  ];
+                gridCells[2] = distances[x+1][y+1][z  ];
+                gridCells[3] = distances[x  ][y+1][z  ];
+                gridCells[4] = distances[x  ][y  ][z+1];
+                gridCells[5] = distances[x+1][y  ][z+1];
+                gridCells[6] = distances[x+1][y+1][z+1];
+                gridCells[7] = distances[x  ][y+1][z+1];
 
                 glm::vec3 gridPos[8];
                 gridPos[0] = chunkLocation + chunkStride * glm::vec3(x  ,y  ,z  );

@@ -141,12 +141,12 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     //BEGIN DEBUG REGION
 //
 //    int dbsize = getDistanceBufferSize(chunkSize,edgeIndex);
-//    std::cout << "Densities:" << dbsize<< std::endl;
+//    std::cout << "Distances:" << dbsize<< std::endl;
 //    glBindBuffer(GL_SHADER_STORAGE_BUFFER,distanceValuesBuffer);
-//    float* mappedDensities;
-//    mappedDensities = (float*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,dbsize,GL_MAP_READ_BIT);
+//    float* mappedDistances;
+//    mappedDistances = (float*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,dbsize,GL_MAP_READ_BIT);
 //    for (int i = 0; i < dbsize; i++) {
-//        std::cout << i << ": " << mappedDensities[i] << std::endl;
+//        std::cout << i << ": " << mappedDistances[i] << std::endl;
 //    }
 //    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 

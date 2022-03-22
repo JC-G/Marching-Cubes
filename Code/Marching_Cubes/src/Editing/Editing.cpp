@@ -48,7 +48,7 @@ glm::vec3 Editing::rayCast(glm::vec3 pos, glm::vec3 direction, Octree* O) {
 //     if (!raycastShader) {
 //         raycastShader = &(Shader::ComputeShaderFromVector(std::vector<std::string>{
 //             Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
-//             Generator->densityFunction->getShaderCode(),
+//             Generator->distanceFunction->getShaderCode(),
 //             Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
 //             Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
             

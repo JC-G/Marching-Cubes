@@ -9,7 +9,7 @@ NoiseTerrain::~NoiseTerrain()
 {
     //dtor
 }
-float NoiseTerrain::density(glm::vec3 inPos)
+float NoiseTerrain::distance(glm::vec3 inPos)
 {
     //TODO - decide if we want the option of running this on the CPU
     return 0.0f;
@@ -24,7 +24,7 @@ std::string NoiseTerrain::getShaderCode()
 {
     //TODO - find the source of this... probably iq
     return
-    "float density(vec3 inPos) {\n"
+    "float distance(vec3 inPos) {\n"
     "   return inPos.y - 5.*terrain(inPos.xz / 5);\n"
     "}\n"
     "vec3 normal(vec3 inPos) {\n"

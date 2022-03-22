@@ -10,7 +10,7 @@ TestSDF::~TestSDF()
 
 }
 
-float TestSDF::density(glm::vec3 inPos)
+float TestSDF::distance(glm::vec3 inPos)
 {
     return 0.0;
 }
@@ -23,7 +23,7 @@ glm::vec3 TestSDF::normal(glm::vec3 inPos)
 std::string TestSDF::getShaderCode()
 {
     return
-    "float density(vec3 inPos) {"
+    "float distance(vec3 inPos) {"
     "   return inPos.y-inPos.x-inPos.z;"
     "}"
     "vec3 normal(vec3 inPos) {"

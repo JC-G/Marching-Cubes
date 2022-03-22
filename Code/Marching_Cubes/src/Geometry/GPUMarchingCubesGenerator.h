@@ -8,7 +8,7 @@
 class GPUMarchingCubesGenerator : public GeometryGenerator
 {
     public:
-        GPUMarchingCubesGenerator(SDF* densityFunction);
+        GPUMarchingCubesGenerator(SDF* distanceFunction);
         virtual ~GPUMarchingCubesGenerator();
 
 
@@ -25,7 +25,7 @@ class GPUMarchingCubesGenerator : public GeometryGenerator
         Shader stage2Shader;
         Shader stage3Shader;
 
-        GLuint densityValuesBuffer;
+        GLuint distanceValuesBuffer;
         GLuint brushBuffer;
 
         GLuint marchableCounter; //stage 2 -> 3
@@ -37,7 +37,7 @@ class GPUMarchingCubesGenerator : public GeometryGenerator
         GLuint totalTableBuffer;
         GLuint edgeTableBuffer;
 
-        SDF* densityFunction;
+        SDF* distanceFunction;
 
 
 };

@@ -126,7 +126,7 @@ add_executable(MarchingCubes
 
     Shaders/Compute/common.glsl
     Shaders/Compute/countpolygons.glsl
-    Shaders/Compute/generatedensity.glsl
+    Shaders/Compute/generatedistance.glsl
     Shaders/Compute/polygonize.glsl
 
     Shaders/Compute/shadertop.glsl

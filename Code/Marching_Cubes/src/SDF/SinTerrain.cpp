@@ -10,7 +10,7 @@ SinTerrain::~SinTerrain()
     //dtor
 }
 
-float SinTerrain::density(glm::vec3 inPos)
+float SinTerrain::distance(glm::vec3 inPos)
 {
     return inPos.y - 1.0 * glm::sin(inPos.x+inPos.z);
 }
@@ -29,7 +29,7 @@ std::string SinTerrain::getShaderCode()
 {
     std::stringstream ss;
     ss <<
-        "float density(vec3 inPos) {"
+        "float distance(vec3 inPos) {"
         "   return inPos.y - 1.0 * sin(inPos.x + inPos.z);"
         "}"
         "vec3 normal(vec3 inPos) {"

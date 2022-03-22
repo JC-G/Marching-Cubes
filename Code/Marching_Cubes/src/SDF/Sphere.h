@@ -10,7 +10,7 @@ class Sphere : public SDF
         Sphere(glm::vec3 center, float radius);
         virtual ~Sphere();
 
-        float density(glm::vec3 inPos) override;
+        float distance(glm::vec3 inPos) override;
         glm::vec3 normal(glm::vec3 inPos) override;
 
         std::string getShaderCode() override;

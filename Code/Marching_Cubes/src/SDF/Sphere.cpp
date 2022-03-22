@@ -11,7 +11,7 @@ Sphere::Sphere(glm::vec3 center, float radius)
 
 }
 
-float Sphere::density(glm::vec3 inPos)
+float Sphere::distance(glm::vec3 inPos)
 {
     return glm::length(inPos - center) - radius;
 }
@@ -25,7 +25,7 @@ std::string Sphere::getShaderCode()
 {
     std::stringstream ss;
     ss <<
-        "float density(vec3 inPos) {"
+        "float distance(vec3 inPos) {"
         "   return length(inPos - " << glm::to_string(center) << ") - " << radius << ";"
         "}"
         "vec3 normal(vec3 inPos) {"

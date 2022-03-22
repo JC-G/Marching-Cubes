@@ -3,7 +3,7 @@
 #extension GL_ARB_shader_atomic_counter_ops : enable
 
 layout(binding = 1) buffer Grid {
-    float densityValues[];
+    float distanceValues[];
 };
 
 //number of cells to polygonize
@@ -40,7 +40,7 @@ void main () {
 
 		for (int i = 0; i < 8; i++)
 		{
-			gridCells[i] = densityValues[getArrID(gridPos[i],uvec3(0))];
+			gridCells[i] = distanceValues[getArrID(gridPos[i],uvec3(0))];
 		}
 
 		int cellIndex = 0;
@@ -89,7 +89,7 @@ void main () {
 						for (int xi = 0; xi < 3; xi++) {
 							ivec3 actualPosition = getActualPosition(ivec3(xi,yi,zi),directionData);
 
-							transitionGridCells[gridCellCounter] = densityValues[getArrID(gid + cellEdges + getFullPart(actualPosition), getHalfPart(actualPosition))];
+							transitionGridCells[gridCellCounter] = distanceValues[getArrID(gid + cellEdges + getFullPart(actualPosition), getHalfPart(actualPosition))];
 							gridCellCounter++;
 							if (directionData.x == 0) break;
 						}

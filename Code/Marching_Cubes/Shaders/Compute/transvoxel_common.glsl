@@ -35,7 +35,7 @@ const ivec3 gridOffset[8] = ivec3[](
 //gid is between 0 and chunkSize inclusive
 //halfXYZ is 0 or 1 for half values
 
-//Changes here may affect TransvoxelGenerator::getDensityBufferSize
+//Changes here may affect TransvoxelGenerator::getDistanceBufferSize
 uint getArrID(uvec3 gid, uvec3 halfXYZ) {
 
     //TODO - remove debug method for something better

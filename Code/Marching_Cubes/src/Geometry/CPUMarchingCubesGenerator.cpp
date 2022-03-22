@@ -303,8 +303,8 @@ const int CPUMarchingCubesGenerator::edgeTable[256] = {
     0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
 };
 
-CPUMarchingCubesGenerator::CPUMarchingCubesGenerator(SDF* densityFunction)
-:densityFunction(densityFunction)
+CPUMarchingCubesGenerator::CPUMarchingCubesGenerator(SDF* distanceFunction)
+:distanceFunction(distanceFunction)
 {
     //ctor
 }
@@ -317,7 +317,7 @@ CPUMarchingCubesGenerator::~CPUMarchingCubesGenerator()
 
 void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize,int edgeIndex = 0)
 {
-    //generate the density field
+    //generate the distance field
     //use 3D vector to bypass stack size limit for large chunk sizes
     std::vector<std::vector<std::vector<float>>> densities;
     for (int x = 0; x <= chunkSize.x; x++) {
@@ -326,13 +326,13 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
             densities[x].push_back(std::vector<float>());
             for (int z = 0; z <= chunkSize.z; z++) {
                 densities[x][y].push_back(0.0);
-                //generate the density values
+                //generate the distance values
                 glm::vec3 currentPosition = chunkLocation + chunkStride * glm::vec3(x,y,z);
-                densities[x][y][z] = densityFunction->density(currentPosition);
+                densities[x][y][z] = distanceFunction->distance(currentPosition);
             }
         }
     }
-    //polygonize the density field
+    //polygonize the distance field
 
     std::vector<glm::vec4> points;
     std::vector<glm::vec4> normals;
@@ -426,9 +426,9 @@ void CPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
                     points.push_back(glm::vec4(vertlist[triTable[cubeindex][i+1]],1));
                     points.push_back(glm::vec4(vertlist[triTable[cubeindex][i+2]],1));
 
-                    normals.push_back(glm::vec4(densityFunction->normal(vertlist[triTable[cubeindex][i  ]]),0));
-                    normals.push_back(glm::vec4(densityFunction->normal(vertlist[triTable[cubeindex][i+1]]),0));
-                    normals.push_back(glm::vec4(densityFunction->normal(vertlist[triTable[cubeindex][i+2]]),0));
+                    normals.push_back(glm::vec4(distanceFunction->normal(vertlist[triTable[cubeindex][i  ]]),0));
+                    normals.push_back(glm::vec4(distanceFunction->normal(vertlist[triTable[cubeindex][i+1]]),0));
+                    normals.push_back(glm::vec4(distanceFunction->normal(vertlist[triTable[cubeindex][i+2]]),0));
                     ntriang++;
                 }
             }

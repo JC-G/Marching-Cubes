@@ -42,20 +42,20 @@ const int GPUMarchingCubesGenerator::triTable[4096]= {-1,-1,-1,-1,-1,-1,-1,-1,-1
 const int GPUMarchingCubesGenerator::totalTable[256] = {0,3,3,6,3,6,6,9,3,6,6,9,6,9,9,6,3,6,6,9,6,9,9,12,6,9,9,12,9,12,12,9,3,6,6,9,6,9,9,12,6,9,9,12,9,12,12,9,6,9,9,6,9,12,12,9,9,12,12,9,12,15,15,6,3,6,6,9,6,9,9,12,6,9,9,12,9,12,12,9,6,9,9,12,9,12,12,15,9,12,12,15,12,15,15,12,6,9,9,12,9,12,6,9,9,12,12,15,12,15,9,6,9,12,12,9,12,15,9,6,12,15,15,12,15,6,12,3,3,6,6,9,6,9,9,12,6,9,9,12,9,12,12,9,6,9,9,12,9,12,12,15,9,6,12,9,12,9,15,6,6,9,9,12,9,12,12,15,9,12,12,15,12,15,15,12,9,12,12,9,12,15,15,12,12,9,15,6,15,12,6,3,6,9,9,12,9,12,12,15,9,12,12,15,6,9,9,6,9,12,12,15,12,15,15,6,12,9,15,12,9,6,12,3,9,12,12,15,12,15,9,12,12,15,15,6,9,12,6,3,6,9,9,6,9,12,6,3,9,6,12,3,6,3,3,0};
 
 //TODO - this is not very efficient... why are we always including common and sdf code when we dont use it
-GPUMarchingCubesGenerator::GPUMarchingCubesGenerator(SDF* densityFunction)
+GPUMarchingCubesGenerator::GPUMarchingCubesGenerator(SDF* distanceFunction)
     :stage1Shader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
-        densityFunction->getShaderCode(),
+        distanceFunction->getShaderCode(),
         Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/common.glsl"),
-        Shader::ReadShaderFile("Shaders/Compute/generatedensity.glsl")})
+        Shader::ReadShaderFile("Shaders/Compute/generatedistance.glsl")})
     ),
     stage2Shader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
-        densityFunction->getShaderCode(),
+        distanceFunction->getShaderCode(),
         Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/common.glsl"),
@@ -64,15 +64,15 @@ GPUMarchingCubesGenerator::GPUMarchingCubesGenerator(SDF* densityFunction)
     stage3Shader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
-        densityFunction->getShaderCode(),
+        distanceFunction->getShaderCode(),
         Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/common.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/polygonize.glsl")})
     ),
-    densityFunction(densityFunction)
+    distanceFunction(distanceFunction)
 {
-    glGenBuffers(1,&densityValuesBuffer);
+    glGenBuffers(1,&distanceValuesBuffer);
     glGenBuffers(1,&brushBuffer);
 
     glGenBuffers(1,&marchableCounter);
@@ -118,9 +118,9 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     //Stage 1
 
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER,densityValuesBuffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER,distanceValuesBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,(1+chunkSize.x) * (1+chunkSize.y) * (1+chunkSize.z) * sizeof(float), NULL, GL_STATIC_READ); //TODO - READ?
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,densityValuesBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,distanceValuesBuffer);
 
     glUseProgram(stage1Shader.getID());
     glUniform3fv(stage1Shader.getUniform("chunkPosition"),1,&chunkLocation[0]);

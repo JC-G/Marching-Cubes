@@ -20,7 +20,7 @@ class SDF
         SDF();
         virtual ~SDF();
 
-        virtual float density(glm::vec3 inPos) = 0;
+        virtual float distance(glm::vec3 inPos) = 0;
         virtual glm::vec3 normal(glm::vec3 inPos) = 0;
 
         virtual std::string getShaderCode() = 0;

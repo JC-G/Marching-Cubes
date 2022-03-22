@@ -1,7 +1,7 @@
 //GPU Marching Cubes Stage 3 - Actually generate the geometry
 
 layout(binding = 1) buffer Grid {
-    float densityValues[];
+    float distanceValues[];
 };
 uniform uint marchableCount;
 
@@ -67,7 +67,7 @@ void main() {
 
 
         for (int i = 0; i < 8; i++) {
-            gridCells[i] = densityValues[getArrID(gridPos[i])];
+            gridCells[i] = distanceValues[getArrID(gridPos[i])];
         }
 
         int E = int(edgeTable[marchableList[gl_GlobalInvocationID.x].w]);

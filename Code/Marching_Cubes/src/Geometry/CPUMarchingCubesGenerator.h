@@ -7,7 +7,7 @@
 class CPUMarchingCubesGenerator : public GeometryGenerator
 {
     public:
-        CPUMarchingCubesGenerator(SDF* densityFunction);
+        CPUMarchingCubesGenerator(SDF* distanceFunction);
         virtual ~CPUMarchingCubesGenerator();
 
         void GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex) override;
@@ -20,7 +20,7 @@ class CPUMarchingCubesGenerator : public GeometryGenerator
 
         glm::vec3 VertexInterp(glm::vec3 p1, glm::vec3 p2, float valp1, float valp2);
 
-        SDF* densityFunction;
+        SDF* distanceFunction;
 
 };
 

@@ -1,7 +1,7 @@
 //Transvoxel Stage 1 - populate the grid
 
 layout(binding = 1) buffer Grid {
-    float densityValues[];
+    float distanceValues[];
 };
 
 //TODO - change this from 8 to ? - maybe better performance?
@@ -9,7 +9,7 @@ layout(local_size_x=8,local_size_y=8,local_size_z=8) in;
 
 void generate(uvec3 gid, uvec3 halfXYZ) {
     uint arrID = getArrID(gid, halfXYZ);
-    densityValues[arrID] = modified_density((gid + 0.5 * vec3(halfXYZ)) * chunkStride + chunkPosition);
+    distanceValues[arrID] = modified_distance((gid + 0.5 * vec3(halfXYZ)) * chunkStride + chunkPosition);
 }
 
 void main() {

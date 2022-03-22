@@ -1,5 +1,5 @@
 //idea: we have a base SDF/normal - which is the generated one
-//these are passed into the shader via the density() and normal() functions
+//these are passed into the shader via the distance() and normal() functions
 //we apply operations to it based on an array of BrushParams operators
 
 struct BrushParams {
@@ -29,59 +29,59 @@ bool inBox(vec4 bottom, vec4 top, vec3 inPos) {
 
 const float F_MAX = 1e20;
 
-float modified_density(vec3 inPos) {
-    float terrainDensity = density(inPos);
-    float resultDensity = terrainDensity;
+float modified_distance(vec3 inPos) {
+    float terrainDistance = distance(inPos);
+    float resultDistance = terrainDistance;
     for (int i = 0; i < brushCount; i++) {
         BrushParams b = brushInstances[i];
-        float testDensity = F_MAX;
+        float testDistance = F_MAX;
         if (inBox(b.bottom,b.top,inPos)) {
             if (b.type == 1) {
-                testDensity = ellipsoid_density(inPos,b.location,b.size);
+                testDistance = ellipsoid_distance(inPos,b.location,b.size);
             } else if (b.type == 2) {
-                testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
+                testDistance = cylinder_distance(inPos,b.location,b.size,b.param1);
             } else if (b.type == 3) {
-                testDensity = bezier_density(inPos,b.location,b.size, b.data1, b.param1);
+                testDistance = bezier_distance(inPos,b.location,b.size, b.data1, b.param1);
             } else if (b.type == 4) {
-                testDensity = cubic_bezier_density(inPos,b.location,b.size,b.data1,b.data2,b.param1);
+                testDistance = cubic_bezier_distance(inPos,b.location,b.size,b.data1,b.data2,b.param1);
             } else if (b.type == 5) {
-                testDensity = road_density(inPos,b.location,b.size,b.data1,b.data2,b.param1);
+                testDistance = road_distance(inPos,b.location,b.size,b.data1,b.data2,b.param1);
             }
         }
         if (b.mode == 0) {
-            resultDensity = min(resultDensity,testDensity);
+            resultDistance = min(resultDistance,testDistance);
         } else if (b.mode == 1) {
-            resultDensity = max(resultDensity, -testDensity);
+            resultDistance = max(resultDistance, -testDistance);
         }
     }
-    return resultDensity;
+    return resultDistance;
 }
 vec3 modified_normal(vec3 inPos) {
     int bestI = -1;
-    float bestDensity = density(inPos);
+    float bestDistance = distance(inPos);
 
     for (int i = 0; i < brushCount; i++) {
         BrushParams b = brushInstances[i];
-        float testDensity = F_MAX;
+        float testDistance = F_MAX;
 
         if (inBox(b.bottom,b.top,inPos)) {
             if (b.type == 1) {
-                testDensity = ellipsoid_density(inPos,b.location,b.size);
+                testDistance = ellipsoid_distance(inPos,b.location,b.size);
             } else if (b.type == 2) {
-                testDensity = cylinder_density(inPos,b.location,b.size,b.param1);
+                testDistance = cylinder_distance(inPos,b.location,b.size,b.param1);
             } else if (b.type == 3) {
-                testDensity = bezier_density(inPos,b.location,b.size, b.data1, b.param1);
+                testDistance = bezier_distance(inPos,b.location,b.size, b.data1, b.param1);
             } else if (b.type == 4) {
-                testDensity = cubic_bezier_density(inPos,b.location,b.size,b.data1,b.data2,b.param1);
+                testDistance = cubic_bezier_distance(inPos,b.location,b.size,b.data1,b.data2,b.param1);
             } else if (b.type == 5) {
-                testDensity = road_density(inPos,b.location,b.size,b.data1,b.data2,b.param1);
+                testDistance = road_distance(inPos,b.location,b.size,b.data1,b.data2,b.param1);
             }
         }
-        if (testDensity < bestDensity && b.mode == 0) {
-            bestDensity = testDensity;
+        if (testDistance < bestDistance && b.mode == 0) {
+            bestDistance = testDistance;
             bestI = i;
-        } else if(-testDensity > bestDensity && b.mode == 1) {
-            bestDensity = -testDensity;
+        } else if(-testDistance > bestDistance && b.mode == 1) {
+            bestDistance = -testDistance;
             bestI = i;
         }
     }

@@ -1,7 +1,7 @@
 //GPU Marching Cubes Stage 2 - Calculate number of "marchable" cubes in the chunk (contain geometry), and cubeIndex for each
 #extension GL_ARB_shader_atomic_counter_ops : enable
 layout(binding = 1) buffer Grid {
-    float densityValues[];
+    float distanceValues[];
 };
 
 layout(binding = 2) uniform atomic_uint marchableCount;
@@ -37,7 +37,7 @@ void main() {
 
 	for (int i = 0; i < 8; i++)
 	{
-		gridCells[i] = densityValues[getArrID(gridPos[i])];
+		gridCells[i] = distanceValues[getArrID(gridPos[i])];
 	}
 
 

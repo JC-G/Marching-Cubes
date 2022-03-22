@@ -9,7 +9,7 @@ class ScaledTerrain : public SDF
         ScaledTerrain();
         virtual ~ScaledTerrain();
 
-        float density(glm::vec3 inPos) override;
+        float distance(glm::vec3 inPos) override;
         glm::vec3 normal(glm::vec3 inPos) override;
 
         std::string getShaderCode() override;

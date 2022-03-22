@@ -1,11 +1,11 @@
 #include "TransvoxelGenerator.h"
 
-TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
-    :densityFunction(densityFunction),
+TransvoxelGenerator::TransvoxelGenerator(SDF* distanceFunction)
+    :distanceFunction(distanceFunction),
     generateShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
-        densityFunction->getShaderCode(),
+        distanceFunction->getShaderCode(),
         Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_common.glsl"),
@@ -14,7 +14,7 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
     countShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
-        densityFunction->getShaderCode(),
+        distanceFunction->getShaderCode(),
         Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_common.glsl"),
@@ -23,7 +23,7 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
     polygonizeShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
-        densityFunction->getShaderCode(),
+        distanceFunction->getShaderCode(),
         Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_common.glsl"),
@@ -31,11 +31,11 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* densityFunction)
     )
 {
     /*algorithm shape:
-    generate density function, with additional values where edgeIndex requires (shader 1)
+    generate distance function, with additional values where edgeIndex requires (shader 1)
     count polygons and get case index (shader 2) - here is where the cell splitting occurs
     actually generate the polygons (shader 3)
     */
-    glGenBuffers(1,&densityValuesBuffer);
+    glGenBuffers(1,&distanceValuesBuffer);
     glGenBuffers(1,&brushBuffer);
 
     glGenBuffers(1,&marchableCounter);
@@ -124,9 +124,9 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
     //Stage 1
 
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER,densityValuesBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER,getDensityBufferSize(chunkSize,edgeIndex) * sizeof(float), NULL, GL_STATIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,densityValuesBuffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER,distanceValuesBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,getDistanceBufferSize(chunkSize,edgeIndex) * sizeof(float), NULL, GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,distanceValuesBuffer);
 
     glUseProgram(generateShader.getID());
     glUniform3fv(generateShader.getUniform("chunkPosition"),1,&chunkLocation[0]);
@@ -140,9 +140,9 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
 
     //BEGIN DEBUG REGION
 //
-//    int dbsize = getDensityBufferSize(chunkSize,edgeIndex);
+//    int dbsize = getDistanceBufferSize(chunkSize,edgeIndex);
 //    std::cout << "Densities:" << dbsize<< std::endl;
-//    glBindBuffer(GL_SHADER_STORAGE_BUFFER,densityValuesBuffer);
+//    glBindBuffer(GL_SHADER_STORAGE_BUFFER,distanceValuesBuffer);
 //    float* mappedDensities;
 //    mappedDensities = (float*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,dbsize,GL_MAP_READ_BIT);
 //    for (int i = 0; i < dbsize; i++) {
@@ -287,7 +287,7 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
 }
 
 //Changes here may affect getArrID in transvoxel_common
-int TransvoxelGenerator::getDensityBufferSize(glm::uvec3 chunkSize, int edgeIndex)
+int TransvoxelGenerator::getDistanceBufferSize(glm::uvec3 chunkSize, int edgeIndex)
 {
     //TODO - remove when getArrID is fixed
     return (2*chunkSize.x + 1) * (2*chunkSize.y + 1) * (2*chunkSize.z + 1);

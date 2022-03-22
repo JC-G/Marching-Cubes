@@ -1,7 +1,7 @@
 //Transvoxel Marching Cubes Stage 3 - Actually generate the geometry
 
 layout(binding = 1) buffer Grid {
-    float densityValues[];
+    float distanceValues[];
 };
 uniform uint marchableCount;
 
@@ -146,9 +146,9 @@ void generateCell() {
         hasShifted[i] = (avp != vec3(gridPos[i]));
     }
 
-    //Actual density values
+    //Actual distance values
     for (int i = 0; i < 8; i++) {
-        gridCells[i] = densityValues[getArrID(gridPos[i],uvec3(0))];
+        gridCells[i] = distanceValues[getArrID(gridPos[i],uvec3(0))];
     }
 
 	uint cellIndex = marchableList[gl_GlobalInvocationID.x].w & ((1<<9)-1);
@@ -258,7 +258,7 @@ void generateTransitionCell() {
             for (int yi = 0; yi < 3; yi++) {
                 for (int xi = 0; xi < 3; xi++) {
                     ivec3 actualPosition = getActualPosition(ivec3(xi,yi,zi),directionData);
-                    transitionGridCells[gridCellCounter] = densityValues[getArrID(gid + cellEdges + getFullPart(actualPosition), getHalfPart(actualPosition))];
+                    transitionGridCells[gridCellCounter] = distanceValues[getArrID(gid + cellEdges + getFullPart(actualPosition), getHalfPart(actualPosition))];
                     gridCellCounter++;
                     if (directionData.x == 0) break;
                 }

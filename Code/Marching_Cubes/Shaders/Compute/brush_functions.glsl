@@ -1,4 +1,4 @@
-float ellipsoid_density(vec3 inPos, vec4 location, vec4 radius) {
+float ellipsoid_distance(vec3 inPos, vec4 location, vec4 radius) {
     //from https://iquilezles.org/www/articles/ellipsoids/ellipsoids.htm
     float k1 = length((inPos-location.xyz)/radius.xyz);
     return (k1-1.0) * min(min(radius.x,radius.y),radius.z);
@@ -9,7 +9,7 @@ vec3 ellipsoid_normal(vec3 inPos, vec4 location, vec4 radius) {
     return normalize(1.0/k1 * (inPos.xyz - location.xyz) / (radius.xyz * radius.xyz));
 }
 
-float cylinder_density(vec3 inPos, vec4 a, vec4 b, float r) {
+float cylinder_distance(vec3 inPos, vec4 a, vec4 b, float r) {
     //https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
     vec3  ba = b.xyz - a.xyz;
     vec3  pa = inPos - a.xyz;
@@ -30,10 +30,10 @@ vec3 cylinder_normal(vec3 inPos, vec4 a, vec4 b, float r) {
     vec3 dy = inPos + vec3(0,eps,0);
     vec3 dz = inPos + vec3(0,0,eps);
 
-    float f  = cylinder_density(inPos,a,b,r);
-    float fx = cylinder_density(dx,a,b,r);
-    float fy = cylinder_density(dy,a,b,r);
-    float fz = cylinder_density(dz,a,b,r);
+    float f  = cylinder_distance(inPos,a,b,r);
+    float fx = cylinder_distance(dx,a,b,r);
+    float fy = cylinder_distance(dy,a,b,r);
+    float fz = cylinder_distance(dz,a,b,r);
     return normalize(vec3((fx-f)/eps, (fy-f)/eps, (fz-f)/eps));
 }
 
@@ -72,7 +72,7 @@ float sdBezier(vec3 A, vec3 B, vec3 C, vec3 p)
     return dis;
 }
 
-float bezier_density(vec3 inPos, vec4 A, vec4 B, vec4 C, float r) {
+float bezier_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, float r) {
     return sdBezier(A.xyz,B.xyz,C.xyz,inPos) - r;
 }
 
@@ -82,10 +82,10 @@ vec3 bezier_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, float r) {
     vec3 dy = inPos + vec3(0,eps,0);
     vec3 dz = inPos + vec3(0,0,eps);
 
-    float f  = bezier_density(inPos,A,B,C,r);
-    float fx = bezier_density(dx,A,B,C,r);
-    float fy = bezier_density(dy,A,B,C,r);
-    float fz = bezier_density(dz,A,B,C,r);
+    float f  = bezier_distance(inPos,A,B,C,r);
+    float fx = bezier_distance(dx,A,B,C,r);
+    float fy = bezier_distance(dy,A,B,C,r);
+    float fz = bezier_distance(dz,A,B,C,r);
     return normalize(vec3((fx-f)/eps, (fy-f)/eps, (fz-f)/eps));
 }
 
@@ -287,7 +287,7 @@ vec3 d3cubic_spline(in vec3 x, in vec3 p0, in vec3 p1, in vec3 p2, in vec3 p3) {
     }
     return vMin;
 }
-float cubic_bezier_density(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
+float cubic_bezier_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
     return dcubic_spline(inPos, A.xyz,B.xyz,C.xyz,D.xyz)-r;
 }
 
@@ -297,10 +297,10 @@ vec3 cubic_bezier_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
     vec3 dy = inPos + vec3(0,eps,0);
     vec3 dz = inPos + vec3(0,0,eps);
 
-    float f  = cubic_bezier_density(inPos,A,B,C,D,r);
-    float fx = cubic_bezier_density(dx,A,B,C,D,r);
-    float fy = cubic_bezier_density(dy,A,B,C,D,r);
-    float fz = cubic_bezier_density(dz,A,B,C,D,r);
+    float f  = cubic_bezier_distance(inPos,A,B,C,D,r);
+    float fx = cubic_bezier_distance(dx,A,B,C,D,r);
+    float fy = cubic_bezier_distance(dy,A,B,C,D,r);
+    float fz = cubic_bezier_distance(dz,A,B,C,D,r);
     return normalize(vec3((fx-f)/eps, (fy-f)/eps, (fz-f)/eps));
 }
 
@@ -321,7 +321,7 @@ vec3 capsuleDerivative(vec3 p, vec3 a, vec3 b, float r) {
 
 
 int roadResolution = 16;
-float road_density(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
+float road_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
 
     //Approximation - use capsules for now
     //TODO - find a nicer distance function - maybe a straight version of the cross-section we already have from the attempts at the analytic version

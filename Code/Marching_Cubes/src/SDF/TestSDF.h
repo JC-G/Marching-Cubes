@@ -10,7 +10,7 @@ class TestSDF : public SDF
         TestSDF();
         virtual ~TestSDF();
 
-        float density(glm::vec3 inPos) override;
+        float distance(glm::vec3 inPos) override;
         glm::vec3 normal(glm::vec3 inPos) override;
 
         std::string getShaderCode() override;

@@ -16,4 +16,4 @@ Writeup/Notes.txt
 *.fls
 *.out
 *.toc
-bullet3/lib/*.a
+*.a

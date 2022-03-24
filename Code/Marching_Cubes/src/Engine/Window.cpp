@@ -54,7 +54,7 @@ bool Window::initGL()
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
     }
 
-    Window::window = glfwCreateWindow(Window::width,Window::height,"Window Title",NULL,NULL);
+    Window::window = glfwCreateWindow(Window::width,Window::height,"Marching Cubes",NULL,NULL);
     if (Window::window == NULL) {
         printf("Window was not created");
         glfwTerminate();

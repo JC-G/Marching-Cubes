@@ -69,18 +69,29 @@ static void LoadObjects()
         Timing::timeDiff();
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
-                MarchingChunk::loadedChunks.push_back(
-                    MarchingChunk::createMarchingChunk(
-                        glm::vec3(i*Config::get<float>("single_chunk_size")*Config::get<float>("single_chunk_stride"),0,j*Config::get<float>("single_chunk_size")*Config::get<float>("single_chunk_stride")),
-                        glm::vec3(Config::get<float>("single_chunk_size")),
-                        glm::vec3(Config::get<float>("single_chunk_stride")),
-                        G,0b000000
-                    )
-                );
+                for (int k = 0; k < 10; k++) {
+                    MarchingChunk::loadedChunks.push_back(
+                        MarchingChunk::createMarchingChunk(
+                            glm::vec3(
+                                i*Config::get<float>("single_chunk_size")*Config::get<float>("single_chunk_stride"),
+                                j*Config::get<float>("single_chunk_size")*Config::get<float>("single_chunk_stride"),
+                                k*Config::get<float>("single_chunk_size")*Config::get<float>("single_chunk_stride")
+                            ),
+                            glm::vec3(Config::get<float>("single_chunk_size")),
+                            glm::vec3(Config::get<float>("single_chunk_stride")),
+                            G,0b000000
+                        )
+                    );
+                }
             }
         }
         long t = Timing::timeDiff();
         std::cout << "Finished chunk timing: " << t << "ms" << std::endl;
+        int total = 0;
+        for (MarchingChunk* c : MarchingChunk::loadedChunks) {
+            total += c->getGeometrySize();
+        }
+        std::cout << "Total Triangles: " << total/3 << std::endl;
     }
     if (Config::get<bool>("load_octree")) {
         O = new Octree(glm::vec3(Config::get<float>("octree_size")),glm::vec3(Config::get<float>("octree_size") * -0.5),0,G);

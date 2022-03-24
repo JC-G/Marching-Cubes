@@ -29,10 +29,10 @@
     "test_iso":0.6,
 
     "show_test_cube": false,
-    "draw_chunk_boundaries": false,
+    "draw_chunk_boundaries": true,
 
     "terrain_mode": "test",
-    "generator_mode": "CPU",
+    "generator_mode": "GPU",
 
     "raycast_mode": "mesh",
 
@@ -46,6 +46,8 @@
     "never_chop": false,
     "camera_lod": true,
 
-    "physics_generation_thread": true
+    "physics_generation_thread": true,
+
+    "draw_text": false
 
 }

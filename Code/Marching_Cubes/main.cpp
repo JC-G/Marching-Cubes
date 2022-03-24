@@ -45,7 +45,7 @@ static void LoadObjects()
     } else if (terrainMode == "terrain") {
         usedSDF = new NoiseTerrain();
     } else if (terrainMode == "sphere") {
-        usedSDF = new Sphere(glm::vec3(0.0),1.3);
+        usedSDF = new Sphere(glm::vec3(100.0),100.0);
     } else if (terrainMode == "sin") {
         usedSDF = new SinTerrain();
     } else if (terrainMode == "scaled") {

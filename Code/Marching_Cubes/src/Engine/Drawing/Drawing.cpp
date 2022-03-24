@@ -54,6 +54,8 @@ bool Drawing::init() {
 
     glUseProgram(chunkShader->getID());
     glUniformMatrix4fv(chunkShader->getUniform("P"),1,GL_FALSE,&PM[0][0]);
+	glm::vec3 terrainColor = Config::getVec3("terrain_color");
+	glUniform3fv(chunkShader->getUniform("terrainColor"),1,&terrainColor[0]);
 
     glUseProgram(lineShader->getID());
     glUniformMatrix4fv(lineShader->getUniform("P"),1,GL_FALSE,&PM[0][0]);
@@ -311,12 +313,17 @@ GLuint Drawing::loadTexture(char const* Filename) { //https://github.com/g-truc/
 
 bool Drawing::drawGUI() {
 	//this must be drawn before the actual GUI, because of transparency...
-	Editing::currentAction()->drawPreview();
+	if (Config::get<bool>("draw_edit_preview")){
+		Editing::currentAction()->drawPreview();
+
+	}
 
 	PhysicsWorld::debugDraw();
 
 	//now draw the actual GUI
-	drawGUIBox(glm::vec2(Window::width/2, Window::height/2)-glm::vec2(16),glm::vec2(32),crosshairTexture);
+	if (Config::get<bool>("draw_crosshair")) {
+		drawGUIBox(glm::vec2(Window::width/2, Window::height/2)-glm::vec2(16),glm::vec2(32),crosshairTexture);
+	}
 	if (Config::get<bool>("draw_text")) {
 		Text::renderText(Editing::currentAction()->getDescription(), 25.0f, 25.0f, 0.5, glm::vec3(0.0));
 		Text::renderText(glm::to_string(Window::activeCamera->position),25.0f,50.0f,0.5f,glm::vec3(0.0));

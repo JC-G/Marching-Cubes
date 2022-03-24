@@ -13,7 +13,7 @@ const float ambientPower = .10;
 const float diffusePower = 1.0;
 const float specularPower = 10.0;
 const float specularExponent = 10.0;
-const vec3 terrainColor = vec3(0.1,0.5,0.1);
+uniform vec3 terrainColor = vec3(0.1,0.5,0.1);
 
 uniform vec3 cameraPosition;
 

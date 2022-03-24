@@ -7,7 +7,7 @@
     "octree_lod_scale": 100000.0,
     "update_octree": true,
 
-    "chunk_size": 32,
+    "chunk_size": 4,
 
     "camera_move_speed": 5.0,
     "camera_start_position": [0.0,1.0,0.0],
@@ -20,8 +20,8 @@
     "generate_regular_cells": true,
     "interpolate": true,
 
-    "single_chunk_mode": true,
-    "load_octree": false,
+    "single_chunk_mode": false,
+    "load_octree": true,
 
     "single_chunk_size": 32,
     "single_chunk_stride":0.5,
@@ -29,9 +29,9 @@
     "test_iso":0.6,
 
     "show_test_cube": false,
-    "draw_chunk_boundaries": true,
+    "draw_chunk_boundaries": false,
 
-    "terrain_mode": "test",
+    "terrain_mode": "scaled",
     "generator_mode": "GPU",
 
     "raycast_mode": "mesh",
@@ -48,6 +48,9 @@
 
     "physics_generation_thread": true,
 
-    "draw_text": false
+    "draw_text": false,
+    "draw_edit_preview": false,
+    "terrain_color": [0.1,0.5,0.1],
+    "draw_crosshair": false
 
 }

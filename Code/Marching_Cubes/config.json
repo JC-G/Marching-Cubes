@@ -5,7 +5,7 @@
     "octree_size": 32768.0,
     "octree_max_depth": 13,
     "octree_lod_scale": 100000.0,
-    "update_octree": true,
+    "update_octree": false,
 
     "chunk_size": 4,
 
@@ -31,8 +31,8 @@
     "show_test_cube": false,
     "draw_chunk_boundaries": false,
 
-    "terrain_mode": "scaled",
-    "generator_mode": "GPU",
+    "terrain_mode": "plane",
+    "generator_mode": "transvoxel",
 
     "raycast_mode": "mesh",
 
@@ -50,7 +50,7 @@
 
     "draw_text": false,
     "draw_edit_preview": false,
-    "terrain_color": [0.1,0.5,0.1],
+    "terrain_color": [0.0,0.0,0.0],
     "draw_crosshair": false
 
 }

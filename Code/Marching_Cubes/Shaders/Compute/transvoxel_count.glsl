@@ -98,7 +98,7 @@ void main () {
 					if (directionData.z == 0) break;
 				}
 
-				//Note the obscure order of this - see Figure 4.17
+				//Note the obscure order of this - see Figure 4.17 in transvoxel paper
 				//order is 0,1,2,5,8,7,6,3,4
 				int transitionFaceOrder[9] = int[](0,1,2,5,8,7,6,3,4);
 				int transitionCellMask = 1;
@@ -117,7 +117,7 @@ void main () {
 				//do not march if all inside or all outside
 				if (transitionCellIndex != 0 && transitionCellIndex != 511) {
 					//number of points in the mesh
-					//and with 0x7f
+					//and with 0x7f for lookup table
 					atomicCounterAddARB(pointCount,transitionTotalTable[0x7F & transitionCellClass[transitionCellIndex]]);
 
 					uint bufferIndex = atomicCounterIncrement(marchableCount);

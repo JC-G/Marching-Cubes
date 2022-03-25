@@ -23,6 +23,7 @@
   basicstyle=\ttfamily,
   breaklines=true,
   postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+  numbers=left,
   stepnumber=1,
   tabsize=1,
 }
@@ -65,7 +66,7 @@ At the core of the Marching Cubes algorithm, and the way we will be defining sha
 \end{enumerate}
 Many primitive shapes have exact SDF representations \cite{quilez:sdf}. Figure \ref{fig:Circle_SDF} shows a 2 dimensional exact SDF for a circle.
 
-\begin{SCfigure}[][H]
+\begin{SCfigure}[][h]
 \caption{Example of a 2 dimensional SDF representing a circle. The function shown is $f\left(x,y\right) = \sqrt{x^2+y^2}-1$, with the area where $f\left(x,y\right) < 0 $ shaded. Also shown are the contours where $f\left(x,y\right) = 0.1,0.2,...0.5$}
 \includegraphics[width=0.5\textwidth]{Circle_SDF}
 \label{fig:Circle_SDF}
@@ -73,7 +74,7 @@ Many primitive shapes have exact SDF representations \cite{quilez:sdf}. Figure \
 
 However, many useful shapes, in particular heightmaps and shapes those defined by random noise, are not easy to represent as an exact SDF. For this sort of shape, we use an approximate SDF. Figure \ref{fig:Hill_SDF} shows a 2 dimensional approximate SDF for the heightmap defined by $y=1-\frac{x^2}{3}$. It is of course possible to define the exact distance function for any implicit shape, however such problems are often minimisation problems with with solutions that are expensive to compute. For example,even this simple example computing the exact distance to a quadratic curve requires computing the roots of a cubic polynomial, and computing the exact distance to a cubic curve requires solving a polynomial of degree 5, for which there is no elementary solution. Since this is useful for defining shapes based on interpolation splines, it is certainly worth considering when an approximation may be worth using due to the reduced computational cost.
 
-\begin{SCfigure}[][H]
+\begin{SCfigure}[][h]
 \caption{Plot of the SDF $f\left(x,y\right) = y - \left(1 - \frac{x^2}{3}\right)$. Note the contour lines are no longer uniformly spaced, as they would be with an exact SDF. In fact, the distance approximation gets worse, as the slope of the surface increases.}
 \includegraphics[width=0.5\textwidth]{Hill_SDF}
 \label{fig:Hill_SDF}
@@ -208,13 +209,12 @@ The Transvoxel algorithm works similarly to the Marching Cubes algorithm, since 
 %  - reference implementation is complicated so could do with explanation
 \subsubsection{Adaption of the algorithm to GPU}
 
-%  - optimizations to make use of sequential generation have actually been removed\\
 To parallelise the Transvoxel algorithm, we employ a similar three phase approach to the one described in section \ref{section:mc_gpu}. However, since the algorithm now needs to account for transition cells, and therefore additional SDF sample values, the stages become considerably more complicated. Once again, the algorithm operates on large chunks made up of grid cells, and the resolution of a chunk determines the size of each grid cell. To determine where transition cells need to be generated, a chunk now makes use of a new variable, \texttt{edgeIndex}. This is a 6-bit integer, such that each bit stores whether a face should have transition cells generated on it. This is a parameter passed to the shaders before they are run. The calculation of \texttt{edgeIndex} is described in section ... %TODO - reference this 
 
 \begin{enumerate}
 \item \underline{Distance function computation}: For each grid cell vertex, sample the SDF. In addition, if this vertex lies on the face of the chunk, also sample the SDF at additional points on the face, for use in transition cells. Store all of these values in a buffer for the next phases. This shader is invoked once for each grid cell vertex, and the invocations corresponding to the vertices on the faces where transition cells are generated are responsible for calculating the additional sample points
 
-\begin{lstlisting}[language=C++,label={tv_generate},caption={Part of the GLSL code responsible for sampling the SDF in the parallel Transvoxel algorithm. This code snippet samples the SDF at the actual grid point, as well as at points surrounding it on the -X and +X faces. Figure \ref{fig:tv_gen_grid} demonstrates which sample points would be calculated here. The \texttt{generate} function takes 2 parameters: the first is the actual position of the grid cell vertex, and the second is an offset parameter, for generating sample values halfway beetween grid vertices. For example, a value of \texttt{uvec3(0,1,0)} corresponds to a point that is offset from the position in the first argument by half a grid cell in the Y direction.}]
+\begin{lstlisting}[language=C++,label={tv_generate},caption={Part of the GLSL code responsible for sampling the SDF in the parallel Transvoxel algorithm. This code snippet samples the SDF at the actual grid point, as well as at points surrounding it on the -X and +X facing faces. Lines 7-17 are repeated for the remaining faces of the chunk. Figure \ref{fig:tv_gen_grid} demonstrates which sample points would be calculated in various invocations of this algorithm. The \texttt{generate} function takes 2 parameters: the first is the actual position of the grid cell vertex, and the second is an offset parameter, for generating sample values halfway beetween grid vertices. For example, a value of \texttt{uvec3(0,1,0)} corresponds to a point that is offset from the position in the first argument by half a grid cell in the Y direction.}]
 uvec3 gid = gl_GlobalInvocationID;
 if (gid.x > chunkSize.x || gid.y > chunkSize.y || gid.z > chunkSize.z) {
   return;
@@ -240,11 +240,59 @@ if ((gid.x == 0 && (edgeIndex & 1) != 0) || (gid.x == chunkSize.x && (edgeIndex 
   \label{fig:tv_gen_grid}
 \end{SCfigure}
 
+\item \underline{Counting phase}: For each grid cell in the chunk, calculate the number of mesh triangles inside the regular cell within it, and if this number is non-zero, add it to the list of cells to generate geometry for in the next phase. This part of the algorithm is the same as the Marching Cubes algorithm. To handle the additional transition cells, the following is done, for each possible orientation of transition cell:
+  \begin{itemize}
+    \item Check whether a transition cell should be generated, based on \texttt{edgeIndex}, and whether this grid cell lies on the face of the chunk. If not, then skip the rest of the generation.
+    \item Determine the values of the SDF on the higher resolution face of the transition cell. This corresponds to the additional values generated on the face in the previous phase. These values determine the geometry that exists within the transition cell. In particular, this does not rely on the values of the SDF on the opposite face of the transition cell. Use this information to calculate the variable \texttt{transitionCellIndex}.
+    \item Use the lookup tables with \texttt{transitionCellIndex} to determine how much geometry exists within this transition cell, and increase the atomic counter accordingly.
+    \item Append this transition cell to the buffer of cells to be polygonised in the subsequent phase. The transition cell will be polygonised separately from the regular cell that exists within the same grid cell. Additional flags are added to the data in this buffer to indicate that this cell is a transition cell, and its orientation.
+  \end{itemize}
+\begin{lstlisting}[language=C++,label={tv_count},caption={Part of the code responsible for counting the triangles in transition cells, and appending them to the geometry generation buffer. The first 9 bits of \texttt{paddedTransitionCellIndex} store the type of geometry inside the transition cell, the 10th bit records that the cell is a transition cell, and bits 11-16 are a mask identifying the orientation of the transition cell.}]
+//cell is a transition cell:
+int paddedTransitionCellIndex = transitionCellIndex;
+paddedTransitionCellIndex |= (1<<9);
 
-\item \underline{Counting phase}:
-\item \underline{Polygonisation phase}:
+//store cell orientation:
+paddedTransitionCellIndex |= (mask<<10);
+
+//do not march if all inside or all outside
+if (transitionCellIndex != 0 && transitionCellIndex != 511) {
+  //number of points in the mesh
+  //and with 0x7f for lookup table
+  atomicCounterAddARB(pointCount,transitionTotalTable[0x7F & transitionCellClass[transitionCellIndex]]);
+
+  uint bufferIndex = atomicCounterIncrement(marchableCount);
+  uvec4 mc = uvec4(gid.x,gid.y,gid.z,paddedTransitionCellIndex);
+  marchableList[bufferIndex] = mc;
+}
+\end{lstlisting}
+
+\item \underline{Polygonisation phase}: This shader is run once for each regular cell or transition cell that will contain geometry, as decided by the previous phase. For regular cells, this process is essentially the same as for the regular Marching Cubes algorithm. However, care must be taken to ensure that vertices are placed in the right position. In the case where a regular cell has been made smaller, the SDF has been sampled at the grid cell vertices, rather than the vertices of the regular cell. This introduces inaccuracies in the resulting geometry. The Transvoxel algorithm paper describes a transformation that solves this issue, which is applied to the generated vertices whenever the cell vertices have changed position. Figure \ref{tv_poly_transform} shows the implementation of this transformation.
+
+\begin{lstlisting}[language=C++,label={tv_poly_transform},caption={Transformation to be applied to a generated vertex, when the cell vertices it is being generated between have moved.}]
+if (hasShifted[v1Index] || hasShifted[v2Index]) { //if this vertex has moved
+  //apply the transformation as in Figure 4.12 in the Transvoxel paper
+
+  //where the vertex would have been
+  vec3 vp2 = VertexInterp(gridPos[v1Index],gridPos[v2Index],gridCells[v1Index], gridCells[v2Index]);
+  //normal at this position - in world space
+  vec3 n = modified_normal(vp2 * chunkStride + chunkPosition);
+  vec3 dv = vertPos - vp2;
+  vertPos -= (dot(n,dv)) * n;
+}
+\end{lstlisting}
+
+Transition cells are handled completely separately from the regular cells, even if they share the same grid cell. There are multiple possible shapes a transition cell may need to take, depending on the resolution of surrounding cells, so that they fully close the gaps in between levels of detail. These vertex positions are calculated per transition cell, and the geometry to generate is sourced from lookup tables. Figure \ref{fig:transition_cells} showed some examples of different shapes the transition cell may take, although this does not cover all of the possible shapes. In particular, there is a case where multiple vertices of the transition cell may be moved to the same place. An example of this occuring is shown in figure \ref{fig:tv_transition_plane}. This could lead to zero-width triangles being generated, which is not desirable, and could have the potential to interfere with any other algorithms the generated geometry is used with. However, the number of zero-width triangles is likely to be small, so we simply ignore this issue.
+
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{tv_transition_plane}
+  \caption{Example of a plane being generated with Transvoxel transition cells between levels of detail. The circled transition cell has vertices placed on top of each other, leading to zero-width triangles.}
+  \label{fig:tv_transition_plane}
+\end{figure}
 
 \end{enumerate}
+% - optimizations to make use of sequential generation have actually been removed\\
+% - calculation of edgeIndex from the octree.
 
 
  - regardless, this is still pretty fast on the GPU\\

@@ -166,16 +166,15 @@ void generateCell() {
         uint v1Index = vertexData & 0x0F;
         uint v2Index = vertexData >> 4;
 
-        vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],gridCells[v1Index],gridCells[v2Index]);// * chunkStride + chunkPosition;
+        vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],gridCells[v1Index],gridCells[v2Index]);
 
         if (hasShifted[v1Index] || hasShifted[v2Index]) { //if this vertex has moved
-            //apply the transformation as in Figure 4.12
+            //apply the transformation as in Figure 4.12 in the Transvoxel paper
 
             //where the vertex would have been
             vec3 vp2 = VertexInterp(gridPos[v1Index],gridPos[v2Index],gridCells[v1Index], gridCells[v2Index]);
             //normal at this position - in world space
             vec3 n = modified_normal(vp2 * chunkStride + chunkPosition);
-
             vec3 dv = vertPos - vp2;
             vertPos -= (dot(n,dv)) * n;
         }
@@ -294,7 +293,7 @@ void generateTransitionCell() {
             uint v1Index = vertexData & 0x0F;
             uint v2Index = vertexData >> 4;
 
-            vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],transitionGridCells[v1Index],transitionGridCells[v2Index]);// * chunkStride + chunkPosition;
+            vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],transitionGridCells[v1Index],transitionGridCells[v2Index]);
 
             //the back face has always been shifted, the front face has never been shifted
             bool hasShifted[13] = {false,false,false,

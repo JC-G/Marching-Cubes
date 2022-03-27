@@ -320,7 +320,7 @@ Octree* Octree::getNeighbor(glm::ivec3 relativePosition) {
 \end{lstlisting}
 
 \begin{SCfigure}[][h]
-  \caption{The blue cell has 3 neighbors at the same level of detail. The green neighbor is within the same parent octree cell, and no recursive calls are needed. The red neighbor is not within the same parent cell, so the neighbor of the parent is found, and the corresponding child of this neihgbor is returned. The orange neighbor is not a leaf, so \texttt{edgeIndex} is updated to reflect this. There is no neighbor at the same level of detail above the blue cell.}
+  \caption{The blue cell has 3 neighbors at the same level of detail. The green neighbor is within the same parent octree cell, and no recursive calls are needed. The red neighbor is not within the same parent cell, so the neighbor of the parent is found, and the corresponding child of this neighbor is returned. The orange neighbor is not a leaf, so \texttt{edgeIndex} is updated to reflect this. There is no neighbor at the same level of detail above the blue cell.}
   \includegraphics[width=0.5\textwidth]{octree_neighbors.png}
   \label{fig:octree_neighbors}
 \end{SCfigure}

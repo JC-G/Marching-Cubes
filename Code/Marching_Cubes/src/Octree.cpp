@@ -204,24 +204,24 @@ unsigned int Octree::getEdgeIndex()
 }
 
 //return the neighbor at the same LOD if one exists, or NULL if none exists
-//whether this is a leaf or not determines the edge code
-Octree* Octree::getNeighbor(glm::ivec3 relativePosition)
-{
+//whether this is a leaf or not determines the edge index
+Octree* Octree::getNeighbor(glm::ivec3 relativePosition) {
     if (!myParent) {
         return NULL;
     }
     glm::ivec3 childPosition = relativePosition + glm::ivec3(myPositionInParent);
     if (glm::all(glm::greaterThanEqual(childPosition, glm::ivec3(0))) && 
         glm::all(glm::lessThanEqual(childPosition,glm::ivec3(1)))) {
+        //return the parent child at this relative position
         return myParent->childFromVec3(childPosition);
     } else {
+        //return the child of the parent neighbor
         Octree* neighbor = myParent->getNeighbor(relativePosition);
         if (!neighbor || neighbor->isLeaf) return NULL;
         //glm does not have integer mod, so we have to do this manually...
         glm::ivec3 cm2 = glm::abs(glm::ivec3(childPosition.x % 2, childPosition.y % 2, childPosition.z % 2));
         return neighbor->childFromVec3(cm2);
     }
-
 }
 
 void Octree::generateAllChunks(bool force)
@@ -273,26 +273,21 @@ float Octree::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction) {
 }
 
 void Octree::refresh(glm::vec3 inPos) {
-    // std::cout << "======================================================================" << std::endl;
     //Initially, pass through the entire octree and flag chunks that should be deleted, according to the chop condition
     //Or split, according to split condition
     //return true if something has split
     bool needsRefinement = flagSplitPhase(inPos);
 
     //Refine, undoing flags rather than splitting
-    //need many passes for now, because a refinement may cause inconsistencies elsewhere
+    //need many passes, because a refinement may cause inconsistencies elsewhere
     if (needsRefinement) {
-        // std::cout << "Mesh Refinement Needed" << std::endl;
         bool done = false;
         int steps = 0;
         while (!done) {
             steps++;
             done = refine();
         }
-        // std::cout << "Refinement done in: " << steps << " Steps" << std::endl;
-
     }
-
     //Now delete flagged chunks. Since this reaches all leaves, also do editing regeneration here
     deleteRegenPhase();
 

@@ -168,7 +168,7 @@ Even with a much more efficient GPU implementation of the Marching Cubes algorit
 \subsubsection{Octree}
 \label{section:octree}
 To implement a versatile LOD system, an octree data structure is used. %TODO - explain an octree?
-Each octree node represents a cuboid of space, such that the root node of the octree represents the entire renderable world, and the 8 children of an octree node equally divide the space represented by the parent node into octants. Each leaf node contains a reference to a chunk of generated geometry, as described in section \ref{section:mc_gpu}. The depth of the octree in any given region corresponds to the level of detail at which that region will have geometry generated. Each Marching Cubes chunk is generated with the same number of grid cells, regardless of the level of detail it is being generated for. However, the size of the grid cells doubles for each detail level increase. Using an octree provides versatility since any condition can be used to set the level of detail at a specific point in space. For example, it will be desirable to use the maximum level of detail near physics objects, so the physics collision is as accurate as possible, even if the camera is very far away.
+Each octree node represents a cuboid of space, such that the root node of the octree represents the entire renderable world, and the 8 children of an octree node equally divide the space represented by the parent node into octants. Each leaf node contains a reference to a chunk of generated geometry, as described in section \ref{section:mc_gpu}. The depth of the octree in any given region corresponds to the level of detail at which that region will have geometry generated. Each Marching Cubes chunk is generated with the same number of grid cells, regardless of the level of detail it is being generated for. However, the size of the grid cells doubles for each detail level increase. Using an octree provides versatility since any condition can be used to set the level of detail at a specific point in space. For example, it will be desirable to use the maximum level of detail near physics objects, so the physics collision is as accurate as possible, even if the camera is very far away. These conditions will be represented by functions \texttt{shouldSplit} and \texttt{shouldChop} for each node in the octree. The function \texttt{shouldSplit} returns whether a leaf node should split into its 8 children, and \texttt{shouldChop} returns whether a non-leaf node, should become a leaf, removing the rest of the octree below that node.
 
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{octree_plane.png}
@@ -334,7 +334,38 @@ This approach is sufficient in most cases for eliminating cracks in the geometry
 \end{SCfigure}
 
 % - fix the edge cases
-To rectify this issue, a refinement strategy is used to ensure that cases like this do not occur. TODO: write this up.
+To rectify this issue, a refinement strategy is used to ensure that cases like this do not occur within the octree. When the octree needs to be modified, the following 4 steps are performed in order:
+\begin{enumerate}
+  \item Traverse the octree data structure, visiting every node, including leaves. If a node satisfies \texttt{shouldChop}, then flag it, but do not delete its children yet. If a node satisfies \texttt{shouldSplit}, then split it, creating the 8 new leaf nodes. The newly created leaf nodes will also be traversed in this step, since this allows for more than one layer of the octree to be generated at once.
+  \item If the first step changed the structure of the octree, or flagged any nodes, then traverse the octree, checking whether any nodes have neighbors which are more than one level of detail higher. This is done using the \texttt{getNeighbor} function described in listing \ref{octree_neighbor}. If this occurs, then split the node into its 8 children. If the node is not a leaf, but was flagged by the previous phase, the unflag it. This flagging prevents octree nodes and the geometry chunks that have been created as a result of this refinement being deleted in the first step, then immediately recreated. Performing this refinement step may create inconsistencies elsewhere. Hence, it is performed repeatedly, until no changes are made.
+  \item Once the previous step is complete, traverse the octree, deleting the children of any nodes which are still flagged. Since this step reaches all of the leaves of the updated octree structure, and does not create additional leaves, it is also where any regeneration of geometry chunks occurs, if this is necessary (for example, if the geometry inside the chunk has been modified).
+  \item Traverse the octree a final time, generating geometry chunks for all new leaves, and all leaves that needed regeneration. Also regenerate geometry for all leaves where \texttt{edgeIndex} has changed, so that cracks do not appear after changing the level of detail of a neighboring chunk.
+\end{enumerate}
+Listing \ref{octree_refine} shows the code responsible for this:
+\begin{lstlisting}[language=C++,label={octree_refine},caption={Code showing the order of steps in the octree refinement process}]
+void Octree::refresh(glm::vec3 inPos) {
+  //Initially, pass through the entire octree and flag chunks that should be deleted, according to the chop condition
+  //Or split, according to split condition
+  //return true if something has split
+  bool needsRefinement = flagSplitPhase(inPos);
+
+  //Refine, undoing flags rather than splitting
+  //need many passes, because a refinement may cause inconsistencies elsewhere
+  if (needsRefinement) {
+    bool done = false;
+    int steps = 0;
+    while (!done) {
+      steps++;
+      done = refine();
+    }
+  }
+  //Now delete flagged chunks. Since this reaches all leaves, also do editing regeneration here
+  deleteRegenPhase();
+
+  generateAllChunks();
+}
+\end{lstlisting}
+
 
 \subsubsection{Efficiency compared to Marching Cubes}
 % todo - make this efficient

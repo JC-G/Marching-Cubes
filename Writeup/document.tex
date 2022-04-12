@@ -82,8 +82,7 @@ However, many useful shapes, in particular heightmaps and shapes those defined b
 \label{fig:Hill_SDF}
 \end{SCfigure}
 
-The basic set-theoretical operations of union, intersection, and difference have equivalent representations using the $\min$ and $\max$ functions. At this point, one many note that the function $\min\left(f,g\right)$ may fail to be differentiable at the point where $f = g$. Here, we may simply take the derivative of $f$ or $g$. 
-\\
+The basic set-theoretical operations of union, intersection, and difference have equivalent representations using the $\min$ and $\max$ functions. At this point, one many note that the function $\min\left(f,g\right)$ may fail to be differentiable at the point where $f = g$. Here, we may simply take the derivative of $f$ or $g$.
 It is worth noting that some literature chooses the terminology of signed \textit{density} functions \cite{nguyen_geiss_2007}. This is equivalent to an approximate SDF, however the sign convention is flipped, so that a negative value is outside the surface.\\
 %https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-1-generating-complex-procedural-terrains-using-gpu
 
@@ -96,7 +95,7 @@ The use of 3 dimensional noise as a distance function is also possible, and yiel
 \label{section:mc}
 The Marching Cubes algorithm is an algorithm for polygonising a 3 dimensional scalar field. It works by splitting the space into a uniform grid of cubes (\textit{cells}), and sampling the scalar field at the vertices of each cube. Pre-computed lookup tables, indexed by the vertices of the cell which are classified as "inside" or "outside", are used to determine the geometry that exists within the cell. Each vertex of this geometry lies on an edge of the cell, and the position of each geometry vertex is adjusted by linearly interpolating the sampled values of the scalar field at the cell vertices, such that the vertex is placed approximately on the surface described by the scalar field. In this project, we use a 3 dimensional SDF as described in Section \ref{section:sdf} to provide scalar field samples, and the lookup tables as described by Paul Bourke. \cite{bourke_1994}
 
-\section{Design}
+\section{Algorithm implementation}
 \subsection{GPU Implementation}
 \label{section:mc_gpu}
 The Marching Cubes algorithm operates on a large grid of cells, on a per-cell basis. As such, it is well-suited to parallelisation. In this section, we describe an implementation of the Marching Cubes algorithm on a GPU, using GLSL. This implementation is based on the reference implementation cited in Section \ref{section:mc}. The implementation works on \textit{chunks}, which are cuboids of grid cells, and is split into 3 phases:
@@ -494,15 +493,16 @@ void Octree::refresh(glm::vec3 inPos) {
 % todo - make this efficient
 - TODO: regardless, this is still pretty fast on the GPU\\
 
-\subsection{Terrain Modification}
-\subsubsection{Method of Terrain Modification}
+\section{Terrain Modification}
+\subsection{Method of Terrain Modification}
 Since the parallel Transvoxel algorithm runs so efficiently, it is possible to regenerate significant portions of geometry in between frames, and so real-time terrain editing is achievable.\\
 There are multiple different approaches to modifying the generated geometry. Modifying the generated geometry, for example by dragging or inserting vertices, edges and faces, is possible, however is a subsequent step applied after the Transvoxel algorithm, and the modifications would be ambiguous when the level of detail changes. Alternatively, the value of the SDF at sample points could be modified. This would give an effect of pushing the geometry in or pulling it out, at a point. However, this sort of modification would also be ambiguous when the level of detail changes. The approach we will use will be to add primitive shapes to the SDF itself, using the set-theoretical operations, and their representations as discussed in section \ref{section:sdf}. This means that the shape represented by the SDF changes, so the generated geometry also changes, regardless of the level of detail.
-\subsubsection{Implementation of Terrain Modification}
+
+\subsection{Adding Primitives to the SDF}
 \label{section:modification_implementation}
 % - TODO - more efficient than a list?
 To implement terrain modification, a global list of \texttt{Brush} objects is maintained. Each \texttt{Brush} object contains information about a shape that has been added to the world,and has 2 methods which are overridden for each type of shape. The first method is \texttt{getBoundingBox()}, which returns an axis-aligned bounding box such that the shape lies entirely within the box. The second is \texttt{getBrushParams()}, which returns a structure containing all of the information required to add this shape to the SDF. For example, it may contain the radius of a sphere, or the control points and thickness of a shape defined by a Bezier spline. An example is given in listing \ref{brushparams_glsl}.
-\begin{lstlisting}[language=C++,label={brushparams_glsl},caption={The \texttt{BrushParams} data structure, in GLSL. Common to all shapes are the values \texttt{bottom} and \texttt{top}, which correspond to diagonally opposite corners of the bounding box as given in \texttt{getBoundingBox}, the value \texttt{type}, which is a constant corresponding to the type of shape represented, and \texttt{mode}, which is a constant describing how the shape is to be added to the SDF, for example whether it should be added or subtracted}]
+\begin{lstlisting}[language=C++,label={brushparams_glsl},caption={The \texttt{BrushParams} data structure, in GLSL. Common to all shapes are the values \texttt{bottom} and \texttt{top}, which correspond to diagonally opposite corners of the bounding box as given in \texttt{getBoundingBox}, the value \texttt{type}, which is a constant corresponding to the type of shape represented, and \texttt{mode}, which is a constant describing how the shape is to be added to the SDF, for example whether it should be added or subtracted. In principle, the other values may be used however they are needed, but typically the \texttt{location} and \texttt{size} variables represent the location and size of the shape to be added.}]
 struct BrushParams {
   vec4 location;
   vec4 size;
@@ -518,7 +518,7 @@ struct BrushParams {
   vec4 data2;
 };
 \end{lstlisting}
-When a shape is added to the world, a new \texttt{Brush} object is created, and appended to a separate list. During the final iteration over the octree, as described in section \ref{section:octree_refinement}, the bounding box of the chunk at each leaf node of the octree is tested against the bounding box of each new \texttt{Brush} object. If these boxes intersect, then the geometry inside that chunk is regenerated. Listing \ref{edit_deleteregenphase} shows the code responsible for this.
+When a shape is added to the world, a new \texttt{Brush} object is created, and appended the main list, as well as a separate list of new brushes. During the final iteration over the octree, as described in section \ref{section:octree_refinement}, the bounding box of the chunk at each leaf node of the octree is tested against the bounding box of each new \texttt{Brush} object. If these boxes intersect, then the geometry inside that chunk is regenerated. Listing \ref{edit_deleteregenphase} shows the code responsible for this.
 \begin{lstlisting}[language=C++,label={edit_deleteregenphase},caption={Modified \texttt{deleteRegenPhase()} method, accounting for regeneration of chunks where the geometry has been edited.}]
 void Octree::deleteRegenPhase() {
   //chop chunks that shouldnt be there
@@ -548,10 +548,51 @@ void Octree::deleteRegenPhase() {
 }
 
 \end{lstlisting}
+% TODO - modify so normal and sdf are produced at the same time
+When a chunk of geometry is generated, an array of \texttt{BrushParams} structures corresponding to the shapes with bounding boxes intersecting the chunk is passed as a buffer to the Transvoxel algorithm shaders. Each type of shape that may be used to modify the terrain has an SDF and normal function implementation in GLSL. The shapes represented in this array are used, in the order they are passed, to modify the SDF via the interpretations of set union and subtraction using the \texttt{min} and \texttt{max} functions. The normal function is computed by taking the shape which produces the smallest value of the SDF, and returning the normal function for that shape. Both the SDF and normal suffer from inaccuracies when a non-exact SDF is very far from the actual distance value, and in extreme cases, the resulting inaccurate interpolation can lead to cracks appearing in the geometry. Figure \ref{fig:inaccurate_sdf} shows an example of an SDF that exhibits this problem. However, with careful choices of SDF, in most cases it produces an acceptable result.
 
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{inaccurate_sdf.png}
+  \caption{An example of an inaccurate sphere SDF on an accurate plane SDF. Here the value of the SDF has been scaled to be much smaller than it should be. The result is that the incorrect SDF has been chosen for interpolation, resulting in the blocky appearance of the sphere, and the cracks on the further away sphere, where the level of detail changes. This also results in the incorrect normal being used, as shown by the dark patches underneath the spheres.}
+  \label{fig:inaccurate_sdf}
+\end{figure}
 
+For efficiency reasons, the SDF of a shape is only considered when the sample point lies within its bounding box. This introduces discontinuities in the overall SDF being computed, and for this reason, it is necessary that the bounding box really is a bounding box, such that any geometry that may be generated for the shape lies fully within it, and hence all vertices are properly generated. 
 
-\subsubsection{Implementation of Primitives}
+\subsection{Interactive Terrain Modification}
+%TODO - IQ reference
+User interaction with the terrain modification system uses a set of pre-defined actions, defined through classes derived from a base \texttt{Action} class. The methods defined in such a class are shown in listing \ref{action_methods}
+
+\begin{lstlisting}[language=C++,label={edit_deleteregenphase},caption={The methods of the \texttt{Action} class responsible for handling user interaction}]
+virtual void onMouseDown(glm::vec3 pos) {};
+virtual void onMouseUp(glm::vec3 pos) {};
+virtual void onMouseHold(glm::vec3 pos) {};
+virtual void onCancel() {};
+virtual void increaseSize() {};
+virtual void decreaseSize() {};
+
+virtual void handleInput(glm::vec3 placePos);
+\end{lstlisting}
+The first 3 of these functions are designed to be overridden, to implement the action when the mouse is pressed, released, and held, respectively. The argument is the in-world position at which the mouse is pointing. The method \texttt{onCancel} is designed to be called when the action has been cancelled, to clean up any state that has been created, for example in a more complex action that may store intermediate control points. The methods \texttt{increaseSize} and \texttt{decreaseSize} are designed to provide a standard way of increasing and decreasing the size of a shape, for example changing the radius of a sphere, or thickness of a spline curve. The final method, \texttt{handleInput}, is designed for more general input for an action, which is useful for actions that require more input than the options given in the other functions. It has a default implementation, which calls the other functions, that can be overridden. This implementation is shown in listing \ref{action_handleinput}
+\begin{lstlisting}[language=C++,label={action_handleinput},caption={Default implementation of \texttt{handleInput}}]
+void Action::handleInput(glm::vec3 placePos) {
+  //default input handling for an action
+  if (Controller::getKeyState(Window::window,GLFW_KEY_LEFT_BRACKET)) {
+    decreaseSize();
+  }
+  if (Controller::getKeyState(Window::window,GLFW_KEY_RIGHT_BRACKET)) {
+    increaseSize();
+  }
+  if (Controller::mousePressed(Window::window,GLFW_MOUSE_BUTTON_LEFT)) {
+    onMouseDown(placePos);
+  } else if (Controller::getMouseState(Window::window,GLFW_MOUSE_BUTTON_LEFT)) {
+    onMouseHold(placePos);
+  } else if (Controller::mouseReleased(Window::window,GLFW_MOUSE_BUTTON_LEFT)) {
+    onMouseUp(placePos);
+  }
+}
+\end{lstlisting}
+
  - how are they actually implemented\\
  - bounding boxes of primitives - dont need to evaluate parts not affected\\
  - Example of simple shape, and more complex ones eg bezier\\

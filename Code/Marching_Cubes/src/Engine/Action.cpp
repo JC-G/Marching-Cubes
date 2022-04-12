@@ -8,8 +8,6 @@ void Action::handleInput(glm::vec3 placePos) {
     if (Controller::getKeyState(Window::window,GLFW_KEY_RIGHT_BRACKET)) {
         increaseSize();
     }
-
-
     if (Controller::mousePressed(Window::window,GLFW_MOUSE_BUTTON_LEFT)) {
         onMouseDown(placePos);
     } else if (Controller::getMouseState(Window::window,GLFW_MOUSE_BUTTON_LEFT)) {

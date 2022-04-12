@@ -56,6 +56,7 @@ float modified_distance(vec3 inPos) {
     }
     return resultDistance;
 }
+
 vec3 modified_normal(vec3 inPos) {
     int bestI = -1;
     float bestDistance = distance(inPos);
@@ -91,17 +92,13 @@ vec3 modified_normal(vec3 inPos) {
         vec3 testNormal = vec3(0.0);
         if (b.type == 1) {
             testNormal = ellipsoid_normal(inPos,b.location,b.size);
-        }
-        else if (b.type == 2) {
+        } else if (b.type == 2) {
             testNormal = cylinder_normal(inPos,b.location,b.size,b.param1);
-        } 
-        else if (b.type == 3) {
+        } else if (b.type == 3) {
             testNormal = bezier_normal(inPos,b.location,b.size, b.data1, b.param1);
-        }
-        else if (b.type == 4) {
+        } else if (b.type == 4) {
             testNormal = cubic_bezier_normal(inPos,b.location,b.size, b.data1, b.data2, b.param1);
-        }
-         else if (b.type == 5) {
+        } else if (b.type == 5) {
             testNormal = road_normal(inPos,b.location,b.size,b.data1,b.data2,b.param1);
         }
         if (b.mode == 1) {

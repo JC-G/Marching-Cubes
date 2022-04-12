@@ -6,6 +6,7 @@
 #include "CubicBezierAction.h"
 #include "InterpolationSplineAction.h"
 #include "RoadAction.h"
+#include "SingleSphereAction.h"
 
 #include "EllipsoidBrush.h"
 
@@ -14,6 +15,7 @@ std::vector<Brush*> Editing::newBrushes;
 int Editing::actionIndex = 0;
 std::vector<Action*> Editing::allActions = {
     new SphereAction(1.0),
+    new SingleSphereAction(10.0),
     new CylinderAction(1.0),
     new DigSphereAction(1.0),
     new BezierAction(1.0),

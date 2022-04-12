@@ -7,7 +7,7 @@
     "octree_lod_scale": 100000.0,
     "update_octree": true,
 
-    "chunk_size": 4,
+    "chunk_size": 32,
 
     "camera_move_speed": 5.0,
     "camera_start_position": [0.0,1.0,0.0],
@@ -50,9 +50,9 @@
 
     "physics_generation_thread": true,
 
-    "draw_text": false,
+    "draw_text": true,
     "draw_edit_preview": false,
-    "terrain_color": [0.0,0.0,0.0],
-    "draw_crosshair": false
+    "terrain_color": [0.1,0.5,0.1],
+    "draw_crosshair": true
 
 }

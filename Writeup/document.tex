@@ -689,7 +689,9 @@ The situation is much more complicated with approximate SDFs, however. Since the
   \caption{A circle with radius $0.5$ near an approximate SDF, where the distance is not exact. Here the dashed line is the contour line of the approximate SDF $f\left(x,y\right) = y - \left(1 - \frac{x^2}{3}\right)$ where the value is $0.5$. If this were an exact SDF, then the shapes would only just touch. However, they intersect by a considerable amount. Using this value in physics simulation would be ineffective, since it does not give information about whether the circle is intersecting the shape or not.}
   \includegraphics[width=0.5\textwidth]{approx_collision}
   \label{fig:approx_collision}
-  \end{SCfigure}
+\end{SCfigure}
+
+Furthermore, collision between an SDF and a different shape is more complicated, even if the SDF is exact. Since the distance from a surface at which a shape is colliding with it is different depending on the orientation of the shape relative to the surface, and the evaluation of an SDF gives no information about direction to the nearest point on the surface, such a system would be inaccurate. There is potential in using an approximate SDF which provides a lower bound of the distance to the surface, along with a spherical bounding volume for physics shapes, to perform culling on objects to determine when it is impossible for them to intersect. However, we will not explore this here, choosing instead to remain with the library implementation.    
 \section{Implementation}
 - C++ with fairly low-level opengl libraries\\
 - key code probably in design section already\\

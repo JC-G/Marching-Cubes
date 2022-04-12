@@ -336,9 +336,133 @@ The Transvoxel algorithm with chunks is sufficient in most cases for eliminating
 To rectify this issue, a refinement strategy is used to ensure that cases like this do not occur within the octree. When the octree needs to be modified, the following 4 steps are performed in order:
 \begin{enumerate}
   \item Traverse the octree data structure, visiting every node, including leaves. If a node satisfies \texttt{shouldChop}, then flag it, but do not delete its children yet. If a node satisfies \texttt{shouldSplit}, then split it, creating the 8 new leaf nodes. The newly created leaf nodes will also be traversed in this step, since this allows for more than one layer of the octree to be generated at once.
-  \item If the first step changed the structure of the octree, or flagged any nodes, then traverse the octree, checking whether any nodes have neighbors which are more than one level of detail higher. This is done using the \texttt{getNeighbor} function described in listing \ref{octree_neighbor}. If this occurs, then split the node into its 8 children. If the node is not a leaf, but was flagged by the previous phase, the unflag it. This flagging prevents octree nodes and the geometry chunks that have been created as a result of this refinement being deleted in the first step, then immediately recreated. Performing this refinement step may create inconsistencies elsewhere. Hence, it is performed repeatedly, until no changes are made.
-  \item Once the previous step is complete, traverse the octree, deleting the children of any nodes which are still flagged. Since this step reaches all of the leaves of the updated octree structure, and does not create additional leaves, it is also where any regeneration of geometry chunks occurs, if this is necessary (for example, if the geometry inside the chunk has been modified).
+  
+  \begin{lstlisting}[language=C++,label={flagsplitphase},caption={The first stage in the octree refinement process, \texttt{flagSplitPhase}}]
+bool Octree::flagSplitPhase(glm::vec3 inPos) {
+  bool result = false;
+  if (shouldChop(inPos)) {
+    flagged = true;
+    result = true;
+  } 
+  if (shouldSplit(inPos)) {
+    split();
+    result = true;
+  }
+  if (!isLeaf) {
+    for (int i = 0; i <= 1; i++) {
+      for (int j = 0; j <= 1; j++) {
+        for (int k = 0; k <= 1; k++) {
+          result |= myChildren[i][j][k]->flagSplitPhase(inPos);
+        }
+      }
+    }
+  }
+  return result;
+}
+  \end{lstlisting}
+  \item If the first step changed the structure of the octree, or flagged any nodes, then traverse the octree, checking whether any nodes have neighbors which are more than one level of detail higher. This is done using the \texttt{getNeighbor} function described in listing \ref{octree_neighbor}. If this occurs, then split the node into its 8 children. If the node is not a leaf, but was flagged by the previous phase, the unflag it. This flagging prevents octree nodes and the geometry chunks that have been created as a result of this refinement being deleted in the first step, then immediately recreated. Performing this refinement step may create inconsistencies elsewhere. Hence, it is performed repeatedly, until no changes are made. %TODO - maybe make this easier to understand with a 2D analogy?
+  \begin{lstlisting}[language=C++,label={refinephase},caption={The second stage in the octree refinement process, \texttt{refine}. This phase is called repeatedly until no more changes are made. The array \texttt{edgeNeighbors} corresponds to the relative positions of the neighboring chunks, at the same level of detail, and the variable \texttt{childPosition} gives the position of the child to check in each neighbor. The flow of this code is complicated, and is designed such that exactly the 4 children of the neighboring chunk that touch this chunk are checked.}] 
+//refine the octree - if a neighbor directly adjacent, smaller by more than one exists, split this
+//return true if no refinements were made
+bool Octree::refine() {
+  bool result = true;
+  glm::ivec3 edgeNeighbors[6] = {
+    glm::ivec3(0,0,1),
+    glm::ivec3(0,0,-1),
+    glm::ivec3(0,1,0),
+    glm::ivec3(0,-1,0),
+    glm::ivec3(1,0,0),
+    glm::ivec3(-1,0,0)
+  };
+  for (int n = 0; n < 6; n++) {
+    Octree* neighbor = getNeighbor(edgeNeighbors[n]);
+    if (neighbor && !neighbor->isLeaf) {
+      for (int i = 0; i <= 1; i++) {
+        for (int j = 0; j <= 1; j++) {
+          for (int k = 0; k <= 1; k++) {
+            glm::ivec3 childPosition = glm::ivec3(
+              edgeNeighbors[n].x == 0 ? i : (1-edgeNeighbors[n].x)/2,
+              edgeNeighbors[n].y == 0 ? j : (1-edgeNeighbors[n].y)/2,
+              edgeNeighbors[n].z == 0 ? k : (1-edgeNeighbors[n].z)/2
+            );
+            Octree* child = neighbor->childFromVec3(childPosition);
+            //if child exists, and is not a leaf, then this chunk is inconsistent
+            //if it is a leaf, split it, otherwise just unflag it
+            if (child && !child->isLeaf) {
+              if (isLeaf && myDetailLevel < Config::get<int>("octree_max_depth")) {
+                result = false;
+                split();
+                //once we know we are splitting, dont bother checking the other options
+                //break 4 loops is easiest with a goto
+              } else {
+                flagged = false;
+              }
+              goto REFINE_CHILDREN;
+            }
+            if (edgeNeighbors[n].z != 0) break;
+          }
+          if (edgeNeighbors[n].y != 0) break;
+        }
+        if (edgeNeighbors[n].x != 0) break;
+      }
+    }
+  }
+  
+  REFINE_CHILDREN:
+  if (!isLeaf) {
+    for (int i = 0; i <= 1; i++) {
+      for (int j = 0; j <= 1; j++) {
+        for (int k = 0; k <= 1; k++) {
+          result &= myChildren[i][j][k]->refine();
+        }
+      }
+    }
+  }
+  return result;
+}
+  \end{lstlisting}
+
+  \item Once the previous step is complete, traverse the octree, deleting the children of any nodes which are still flagged. Since this step reaches all of the leaves of the updated octree structure, and does not create additional leaves, it is also where any regeneration of geometry that is required is detected (for example, if the geometry inside the chunk has been modified - see section \ref{section:modification_implementation}).
+  \begin{lstlisting}[language=C++,label={deleteregenphase},caption={The third stage in the octree refinement process, \texttt{deleteRegenPhase}}]
+void Octree::deleteRegenPhase() {
+  //chop chunks that shouldnt be there
+  if (flagged) {
+    chop();
+    flagged = false;
+  }
+  if (!isLeaf) {
+    for (int i = 0; i <= 1; i++) {
+      for (int j = 0; j <= 1; j++) {
+        for (int k = 0; k <= 1; k++) {
+          myChildren[i][j][k]->deleteRegenPhase();
+        }
+      }
+    }
+  }  
+}
+  \end{lstlisting}
   \item Traverse the octree a final time, generating geometry chunks for all new leaves, and all leaves that needed regeneration. Also regenerate geometry for all leaves where \texttt{edgeIndex} has changed, so that cracks do not appear after changing the level of detail of a neighboring chunk.
+  \begin{lstlisting}[language=C++,label={generateallchunks},caption={The fourth stage in the octree refinement process, \texttt{generateAllChunks}}]
+void Octree::generateAllChunks(bool force) {
+  //needed so we have the shape of the octree before generating chunks that rely on it
+  unsigned int E = getEdgeIndex();
+
+  if (isLeaf) {
+    if (!hasChunk || E != edgeIndex || force || needsRegen) {
+      edgeIndex = E;
+      generateMarchingChunk(edgeIndex);
+    }
+  } else {
+    for(int i = 0; i <= 1; i++) {
+      for(int j = 0; j <= 1; j++) {
+        for(int k = 0; k <= 1; k++) {
+          myChildren[i][j][k]->generateAllChunks();
+        }
+      }
+    }
+  }
+}
+  \end{lstlisting}
 \end{enumerate}
 Listing \ref{octree_refine} shows the code responsible for this:
 \begin{lstlisting}[language=C++,label={octree_refine},caption={Code showing the order of steps in the octree refinement process}]
@@ -358,7 +482,7 @@ void Octree::refresh(glm::vec3 inPos) {
       done = refine();
     }
   }
-  //Now delete flagged chunks. Since this reaches all leaves, also do editing regeneration here
+  //Now delete flagged chunks.
   deleteRegenPhase();
 
   generateAllChunks();
@@ -374,6 +498,59 @@ void Octree::refresh(glm::vec3 inPos) {
 \subsubsection{Method of Terrain Modification}
 Since the parallel Transvoxel algorithm runs so efficiently, it is possible to regenerate significant portions of geometry in between frames, and so real-time terrain editing is achievable.\\
 There are multiple different approaches to modifying the generated geometry. Modifying the generated geometry, for example by dragging or inserting vertices, edges and faces, is possible, however is a subsequent step applied after the Transvoxel algorithm, and the modifications would be ambiguous when the level of detail changes. Alternatively, the value of the SDF at sample points could be modified. This would give an effect of pushing the geometry in or pulling it out, at a point. However, this sort of modification would also be ambiguous when the level of detail changes. The approach we will use will be to add primitive shapes to the SDF itself, using the set-theoretical operations, and their representations as discussed in section \ref{section:sdf}. This means that the shape represented by the SDF changes, so the generated geometry also changes, regardless of the level of detail.
+\subsubsection{Implementation of Terrain Modification}
+\label{section:modification_implementation}
+% - TODO - more efficient than a list?
+To implement terrain modification, a global list of \texttt{Brush} objects is maintained. Each \texttt{Brush} object contains information about a shape that has been added to the world,and has 2 methods which are overridden for each type of shape. The first method is \texttt{getBoundingBox()}, which returns an axis-aligned bounding box such that the shape lies entirely within the box. The second is \texttt{getBrushParams()}, which returns a structure containing all of the information required to add this shape to the SDF. For example, it may contain the radius of a sphere, or the control points and thickness of a shape defined by a Bezier spline. An example is given in listing \ref{brushparams_glsl}.
+\begin{lstlisting}[language=C++,label={brushparams_glsl},caption={The \texttt{BrushParams} data structure, in GLSL. Common to all shapes are the values \texttt{bottom} and \texttt{top}, which correspond to diagonally opposite corners of the bounding box as given in \texttt{getBoundingBox}, the value \texttt{type}, which is a constant corresponding to the type of shape represented, and \texttt{mode}, which is a constant describing how the shape is to be added to the SDF, for example whether it should be added or subtracted}]
+struct BrushParams {
+  vec4 location;
+  vec4 size;
+
+  vec4 bottom;
+  vec4 top;
+
+  int type;
+  int mode;
+  float param1;
+  float param2;
+  vec4 data1;
+  vec4 data2;
+};
+\end{lstlisting}
+When a shape is added to the world, a new \texttt{Brush} object is created, and appended to a separate list. During the final iteration over the octree, as described in section \ref{section:octree_refinement}, the bounding box of the chunk at each leaf node of the octree is tested against the bounding box of each new \texttt{Brush} object. If these boxes intersect, then the geometry inside that chunk is regenerated. Listing \ref{edit_deleteregenphase} shows the code responsible for this.
+\begin{lstlisting}[language=C++,label={edit_deleteregenphase},caption={Modified \texttt{deleteRegenPhase()} method, accounting for regeneration of chunks where the geometry has been edited.}]
+void Octree::deleteRegenPhase() {
+  //chop chunks that shouldnt be there
+  if (flagged) {
+    chop();
+    flagged = false;
+  }
+  if (isLeaf) {
+    //Check if this leaf node needs a new marching chunk because of editing
+    if (Editing::newBrushes.size() > 0) {
+      BrushBoundingBox myBB = getBoundingBox();
+      for (Brush* b : Editing::newBrushes) {
+        if (b->getBoundingBox().intersects(myBB)) {
+          needsRegen = true;
+        }
+      }
+    }
+  } else {
+    for (int i = 0; i <= 1; i++) {
+      for (int j = 0; j <= 1; j++) {
+        for (int k = 0; k <= 1; k++) {
+          myChildren[i][j][k]->deleteRegenPhase();
+        }
+      }
+    }
+  }  
+}
+
+\end{lstlisting}
+
+
+
 \subsubsection{Implementation of Primitives}
  - how are they actually implemented\\
  - bounding boxes of primitives - dont need to evaluate parts not affected\\

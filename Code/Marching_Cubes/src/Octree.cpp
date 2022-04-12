@@ -221,8 +221,7 @@ Octree* Octree::getNeighbor(glm::ivec3 relativePosition) {
     }
 }
 
-void Octree::generateAllChunks(bool force)
-{
+void Octree::generateAllChunks(bool force) {
     //needed so we have the shape of the octree before generating chunks that rely on it
     unsigned int E = getEdgeIndex();
 
@@ -375,7 +374,6 @@ bool Octree::flagSplitPhase(glm::vec3 inPos) {
             }
         }
     }
-    
     return result;
 }
 
@@ -403,6 +401,23 @@ void Octree::deleteRegenPhase() {
                 }
             }
         }
-    }
-    
+    }  
 }
+
+
+// void Octree::deleteRegenPhase() {
+//     //chop chunks that shouldnt be there
+//     if (flagged) {
+//         chop();
+//         flagged = false;
+//     }
+//     if (!isLeaf) {
+//         for (int i = 0; i <= 1; i++) {
+//             for (int j = 0; j <= 1; j++) {
+//                 for (int k = 0; k <= 1; k++) {
+//                     myChildren[i][j][k]->deleteRegenPhase();
+//                 }
+//             }
+//         }
+//     }  
+// }

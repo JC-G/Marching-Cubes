@@ -86,10 +86,9 @@ bool Octree::shouldSplit(glm::vec3 inPos)
     }
 
     //physics objects
-    //if there is a physics object inside, or our center is less than "physics_object_lod_scale" away, split
-    for (auto pos : TestShape::getShapePositions()) {
-        if (getBoundingBox().contains(pos) || 
-            glm::length(pos-getCenter()) <= Config::get<float>("physics_object_lod_scale")) {
+    //if there is a physics object intersecting our bounding box, split down to maximum LOD
+    for (auto shape : TestShape::allShapes) {
+        if (getBoundingBox().intersects(shape->getBoundingBox())) {
             return true;
         }
     }
@@ -114,10 +113,8 @@ bool Octree::shouldChop(glm::vec3 inPos)
     }
 
     //physics objects
-    //if there is a physics object inside, or our center is less than "physics_object_lod_scale" away, do not chop
-    for (auto pos : TestShape::getShapePositions()) {
-        if (getBoundingBox().contains(pos) || 
-            glm::length(pos-getCenter()) <= Config::get<float>("physics_object_lod_scale")) {
+    for (auto shape : TestShape::allShapes) {
+        if (getBoundingBox().intersects(shape->getBoundingBox())) {
             return false;
         }
     }

@@ -64,5 +64,5 @@ void PhysicsWorld::step() {
     if (!Config::get<bool>("physics_generation_thread")) {
         MeshManager::manager->updateMeshes();
     }
-    dynamicsWorld->stepSimulation(1./600.); //maybe bad to do as fast as possible, we will see...
+    dynamicsWorld->stepSimulation(Config::get<float>("physics_speed")); //maybe bad to do as fast as possible, we will see...
 }

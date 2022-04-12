@@ -5,7 +5,7 @@
 std::vector<TestShape*> TestShape::allShapes;
 
 TestShape::TestShape(glm::vec3 pos) {
-    btCollisionShape* testShape = new btSphereShape(btScalar(0.1));
+    btCollisionShape* testShape = new btSphereShape(btScalar(Config::get<float>("physics_test_size")));
     btTransform testTransform;
     testTransform.setIdentity();
     btScalar mass(1.f);
@@ -18,6 +18,8 @@ TestShape::TestShape(glm::vec3 pos) {
     btDefaultMotionState* testMotionState = new btDefaultMotionState(testTransform);
     btRigidBody::btRigidBodyConstructionInfo testInfo(mass,testMotionState,testShape,localInertia);
     testBody = new btRigidBody(testInfo);
+    //move if the ground changes...
+    testBody->setActivationState(DISABLE_DEACTIVATION);
 
     PhysicsWorld::addRigidBody(testBody);
     allShapes.push_back(this);
@@ -32,7 +34,7 @@ void TestShape::draw() {
         trans.getOrigin().getY(),
         trans.getOrigin().getZ()
     );
-    Preview::drawPreviewSphere(glm::vec3(0.1),drawPos);
+    Preview::drawPreviewSphere(glm::vec3(Config::get<float>("physics_test_size")),drawPos);
 }
 
 void TestShape::drawAll() {
@@ -52,10 +54,14 @@ glm::vec3 TestShape::getPosition() {
     return pos;
 }
 
-std::vector<glm::vec3> TestShape::getShapePositions() {
-    std::vector<glm::vec3> poss;
-    for (auto shape : allShapes) {
-        poss.push_back(shape->getPosition());
-    }
-    return poss;
+// std::vector<glm::vec3> TestShape::getShapePositions() {
+//     std::vector<glm::vec3> poss;
+//     for (auto shape : allShapes) {
+//         poss.push_back(shape->getPosition());
+//     }
+//     return poss;
+// }
+
+BrushBoundingBox TestShape::getBoundingBox() {
+    return BrushBoundingBox(getPosition() - Config::get<float>("physics_test_size") - Config::get<float>("physics_box_buffer"),getPosition() + Config::get<float>("physics_test_size") + Config::get<float>("physics_box_buffer"));
 }

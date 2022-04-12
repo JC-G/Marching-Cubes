@@ -3,9 +3,9 @@
     "screen_height": 1080,
 
     "octree_size": 32768.0,
-    "octree_max_depth": 13,
+    "octree_max_depth": 12,
     "octree_lod_scale": 100000.0,
-    "update_octree": false,
+    "update_octree": true,
 
     "chunk_size": 4,
 
@@ -40,8 +40,10 @@
     "opengl_debug": false,
     "physics_debug": false,
     "enable_physics": true,
-    "physics_threshold": 13,
-    "physics_object_lod_scale": 20.0,
+    "physics_threshold": 12,
+    "physics_box_buffer": 1.0,
+    "physics_test_size": 1.0,
+    "physics_speed":0.05,
 
     "never_chop": false,
     "camera_lod": true,

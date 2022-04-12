@@ -161,7 +161,6 @@ void MarchingChunk::mapGeometry() {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexBuffer);
         mappedTriangles.resize(myGeometrySize);
         glGetBufferSubData(GL_SHADER_STORAGE_BUFFER,0,myGeometrySize * sizeof(glm::vec4),mappedTriangles.data());
-        //mappedTriangles = (glm::vec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,0,myGeometrySize,GL_MAP_READ_BIT);
         isMapped.store(true);
     }
 }

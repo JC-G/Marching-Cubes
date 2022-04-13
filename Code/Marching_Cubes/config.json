@@ -51,7 +51,7 @@
     "physics_generation_thread": true,
 
     "draw_text": true,
-    "draw_edit_preview": false,
+    "draw_edit_preview": true,
     "terrain_color": [0.1,0.5,0.1],
     "draw_crosshair": true
 

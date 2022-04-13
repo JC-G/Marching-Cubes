@@ -1,5 +1,6 @@
+//from https://iquilezles.org/www/articles/ellipsoids/ellipsoids.htm
+
 float ellipsoid_distance(vec3 inPos, vec4 location, vec4 radius) {
-    //from https://iquilezles.org/www/articles/ellipsoids/ellipsoids.htm
     float k1 = length((inPos-location.xyz)/radius.xyz);
     return (k1-1.0) * min(min(radius.x,radius.y),radius.z);
 }
@@ -77,6 +78,7 @@ float bezier_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, float r) {
 }
 
 vec3 bezier_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, float r) {
+    //numerical normal of more complex distance function
     float eps = 0.001;
     vec3 dx = inPos + vec3(eps,0,0);
     vec3 dy = inPos + vec3(0,eps,0);

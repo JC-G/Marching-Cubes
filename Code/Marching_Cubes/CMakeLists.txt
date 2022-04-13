@@ -101,6 +101,8 @@ add_executable(MarchingCubes
     src/Editing/Actions/RoadAction.h
     src/Editing/Actions/SingleSphereAction.cpp
     src/Editing/Actions/SingleSphereAction.h
+    src/Editing/Actions/EllipsoidAction.cpp
+    src/Editing/Actions/EllipsoidAction.h
 
     src/Physics/BulletTest.h
     src/Physics/ChunkMesh.cpp

@@ -7,6 +7,7 @@
 #include "InterpolationSplineAction.h"
 #include "RoadAction.h"
 #include "SingleSphereAction.h"
+#include "EllipsoidAction.h"
 
 #include "EllipsoidBrush.h"
 
@@ -16,6 +17,7 @@ int Editing::actionIndex = 0;
 std::vector<Action*> Editing::allActions = {
     new SphereAction(1.0),
     new SingleSphereAction(10.0),
+    new EllipsoidAction(glm::vec3(1.0,2.0,3.0)),
     new CylinderAction(1.0),
     new DigSphereAction(1.0),
     new BezierAction(1.0),

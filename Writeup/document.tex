@@ -48,7 +48,7 @@
 \newpage
 
 \section*{Abstract}
-This project explores a method for procedurally generating terrain by applying the a variation of the Marching Cubes algorithm known as the Transvoxel algorithm. We use an octree data structure to break down a large world into chunks at varying levels of detail, and apply the parallel processing power of the GPU to rapidly generate geometry on a per-chunk basis. We then explore applications of this approach, modifying the geometry in real-time by making localized changes to the underlying distance function. %Finally, we demonstrate the applicability of this approach by 
+This project explores a method for procedurally generating terrain by applying the a variation of the Marching Cubes algorithm known as the Transvoxel algorithm. We use an octree data structure to break down a large world into chunks at varying levels of detail, and apply the parallel processing power of the GPU to rapidly generate geometry on a per-chunk basis. We then explore applications of this approach, modifying the geometry in real-time by making localized changes to the underlying distance function. %TODO - Finally, we demonstrate the applicability of this approach by ...
 Finally, we use the meshes we have generated with a well-known physics library.
 \newpage
 
@@ -561,7 +561,7 @@ For efficiency reasons, the SDF of a shape is only considered when the sample po
 
 \subsection{Interactive Terrain Modification}
 %TODO - IQ reference
-User interaction with the terrain modification system uses a set of pre-defined actions, defined through classes derived from a base \texttt{Action} class. The methods defined in such a class are shown in listing \ref{action_methods}
+User interaction with the terrain modification system uses a set of pre-defined actions, defined through classes derived from a base \texttt{Action} class. The methods defined in this class are shown in listing \ref{action_methods}.
 
 \begin{lstlisting}[language=C++,label={edit_deleteregenphase},caption={The methods of the \texttt{Action} class responsible for handling user interaction}]
 virtual void onMouseDown(glm::vec3 pos) {};
@@ -573,7 +573,7 @@ virtual void decreaseSize() {};
 
 virtual void handleInput(glm::vec3 placePos);
 \end{lstlisting}
-The first 3 of these functions are designed to be overridden, to implement the action when the mouse is pressed, released, and held, respectively. The argument is the in-world position at which the mouse is pointing. The method \texttt{onCancel} is designed to be called when the action has been cancelled, to clean up any state that has been created, for example in a more complex action that may store intermediate control points. The methods \texttt{increaseSize} and \texttt{decreaseSize} are designed to provide a standard way of increasing and decreasing the size of a shape, for example changing the radius of a sphere, or thickness of a spline curve. The final method, \texttt{handleInput}, is designed for more general input for an action, which is useful for actions that require more input than the options given in the other functions. It has a default implementation, which calls the other functions, that can be overridden. This implementation is shown in listing \ref{action_handleinput}
+The first 3 of these functions are designed to be overridden, to implement the action when the mouse is pressed, released, and held, respectively. The argument is the in-world position at which the mouse is pointing. The method \texttt{onCancel} is designed to be called when the action has been cancelled, to clean up any state that has been created, for example in a more complex action that may store intermediate control points. The methods \texttt{increaseSize} and \texttt{decreaseSize} are designed to provide a standard way of increasing and decreasing the size of a shape, for example changing the radius of a sphere, or thickness of a spline curve. The final method, \texttt{handleInput}, is designed for more general input for an action, which is useful for actions that require more input than the options given in the other functions. It has a default implementation, which calls the other functions, that can be overridden. This implementation is shown in listing \ref{action_handleinput}.
 \begin{lstlisting}[language=C++,label={action_handleinput},caption={Default implementation of \texttt{handleInput}}]
 void Action::handleInput(glm::vec3 placePos) {
   //default input handling for an action
@@ -592,16 +592,60 @@ void Action::handleInput(glm::vec3 placePos) {
   }
 }
 \end{lstlisting}
-%Further user interaction
- - Example of simple shape, and more complex ones eg bezier\\
- - bezier approximation vs exact\\
+%TODO - Raycasting method goes HERE - relies on mapGeometry, currently explained in physics
+\subsubsection{Example Brush Implementations}
+%TODO - move normal computation information into the SDF section
+In principle, any shape for which an SDF and normal function can be derived may be implemented as a brush, using the method described in section \ref{section:modification_implementation}. A good resource for SDF implementations is the article by Inigo Quilez referenced in section \ref{section:sdf}\cite{quilez:sdf}. It is also necessary to provide a normal function for each SDF. For this, we use the normalised gradient of the SDF. In some cases, the partial derivatives can be computed exactly, particularly when the SDF has a simple form. For example, the SDF of a sphere with radius 1, centered at the origin, is $f\left(x,y,z\right) = \sqrt{x^2+y^2+z^2}-1$. The gradient vector at point $\left(x,y,z\right)$ is $\nabla f = \left(\frac{x}{\sqrt{x^2+y^2+z^2}},\frac{y}{\sqrt{x^2+y^2+z^2}},\frac{z}{\sqrt{x^2+y^2+z^2}}\right)$.In this case, the gradient happens to already be normalised, but if it is not, it can be normalised with the GLSL \texttt{normalize} function, so a vector of length 1 is always returned. In any case, it is possible to approximate the normal of an SDF numerically. Listing \ref{numerical_gradient} shows the GLSL code for approximating the normal, using the method of finite differences.
+
+\begin{lstlisting}[language=C++,label={numerical_gradient},caption={Approximation of the normal of an SDF. Note however, that this requires 4 evaluations of the SDF. The constant \texttt{eps} can be adjusted for precision as required.}]
+vec3 normal(vec3 inPos) {
+  //numerical normal of more complex distance function
+  float eps = 0.001;
+  vec3 dx = inPos + vec3(eps,0,0);
+  vec3 dy = inPos + vec3(0,eps,0);
+  vec3 dz = inPos + vec3(0,0,eps);
+
+  float f  = distance(inPos);
+  float fx = distance(dx);
+  float fy = distance(dy);
+  float fz = distance(dz);
+  return normalize(vec3((fx-f)/eps, (fy-f)/eps, (fz-f)/eps));
+}
+\end{lstlisting}
+
+\paragraph{Example Shape: Ellipsoid}
+%TODO - better ellipsoid SDF?
+Another article by Inigo Quilez\cite{quilez:ellipsoid} lists various approximate SDFs for ellipsoids. Listing \ref{ellipsoid_sdf} shows my transformation of the first SDF listed in this article into an SDF representing an ellipsoid at any given point in space, as well as a normal function, which has been derived by computing the gradient of this SDF.
+
+\begin{lstlisting}[language=C++,label={ellipsoid_sdf},caption={approximate SDF and normal function for an ellipsoid.}]
+float ellipsoid_distance(vec3 inPos, vec4 location, vec4 radius) {
+  float k1 = length((inPos-location.xyz)/radius.xyz);
+  return (k1-1.0) * min(min(radius.x,radius.y),radius.z);
+}
+
+vec3 ellipsoid_normal(vec3 inPos, vec4 location, vec4 radius) {
+  float k1 = length((inPos-location.xyz)/radius.xyz);
+  return normalize(1.0/k1 * (inPos.xyz - location.xyz) / (radius.xyz * radius.xyz));
+}
+\end{lstlisting}
+Figure \ref{fig:editing_ellipsoids} shows a number of ellipsoids of various sizes being placed.
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{editing_ellipsoids}
+  \caption{Multiple ellipsoid brushes of different sizes. Note that due to the sharp edges between an ellipsoid and a plane, small shading artifacts are visible.}
+  \label{fig:editing_ellipsoids}
+\end{figure}
+
+\paragraph{Shapes Using Bezier Curves}
+
+- bezier approximation vs exact
+
 \subsubsection{Regeneration of Chunks}
  - regenerating chunks\\
  - when to regenerate chunks, and which ones\\
 \subsubsection{Limits of terrain modification}
+%TODO limits of marching cubes - sharp edges? this could go in the MC section also. 
  - how many primitives is reasonable before slowdown due to SDF evaluation?\\
  %TODO - GUI
- %TODO - where to put raycasting? relies on mapGeometry, currently explained in physics
  
 \section{Physics}
 To implement physics collision with the generated geometry, we use a well-known library called Bullet Physics. This library is a general-purpose, CPU based physics library, containing many built-in optimisations for efficient collision detection between objects. %TODO - citation for this

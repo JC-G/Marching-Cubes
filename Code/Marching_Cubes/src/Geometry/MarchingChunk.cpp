@@ -130,28 +130,22 @@ void MarchingChunk::generateBoundary() {
 }
 
 float MarchingChunk::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction){
-    //TODO - do this with a shader rather than mapping?
     float tMin = std::numeric_limits<float>::max();
     if (!hasGeometry()) {
         return tMin;
     }
     mapGeometry();
-
-    for (int i = 0; i < myGeometrySize; i+=3) {        //for each triangle
-        //test intersection
+    for (int i = 0; i < myGeometrySize; i+=3) { //for each triangle
         glm::vec2 bary;
         float distance;
         if(glm::intersectRayTriangle(origin, direction, glm::vec3(mappedTriangles[i]), glm::vec3(mappedTriangles[i+1]), glm::vec3(mappedTriangles[i+2]),bary,distance)) {
             float t = distance;
             if (t >= 0 && t < tMin) {
                 tMin = t;
-
             }
         }
-
     }    
     return tMin;
-
 }
 
 void MarchingChunk::mapGeometry() {

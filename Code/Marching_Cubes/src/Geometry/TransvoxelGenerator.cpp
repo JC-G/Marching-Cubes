@@ -289,39 +289,8 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
 //Changes here may affect getArrID in transvoxel_common
 int TransvoxelGenerator::getDistanceBufferSize(glm::uvec3 chunkSize, int edgeIndex)
 {
-    //TODO - remove when getArrID is fixed
-    return (2*chunkSize.x + 1) * (2*chunkSize.y + 1) * (2*chunkSize.z + 1);
-
-    int total = (chunkSize.x - 1) * (chunkSize.y - 1) * (chunkSize.z - 1);
-    if (edgeIndex & 1) {
-        total += (2 * chunkSize.y + 1) * (2 * chunkSize.z + 1);
-    } else {
-        total += (chunkSize.y + 1) * (chunkSize.z + 1);
-    }
-    if (edgeIndex & 2) {
-        total += (2 * chunkSize.y + 1) * (2 * chunkSize.z + 1);
-    } else {
-        total += (chunkSize.y + 1) * (chunkSize.z + 1);
-    }
-    if (edgeIndex & 4) {
-        total += (2 * chunkSize.x + 1) * (2 * chunkSize.z + 1);
-    } else {
-        total += (chunkSize.x + 1) * (chunkSize.z + 1);
-    }
-    if (edgeIndex & 8) {
-        total += (2 * chunkSize.x + 1) * (2 * chunkSize.z + 1);
-    } else {
-        total += (chunkSize.x + 1) * (chunkSize.z + 1);
-    }
-    if (edgeIndex & 16) {
-        total += (2 * chunkSize.y + 1) * (2 * chunkSize.x + 1);
-    } else {
-        total += (chunkSize.y + 1) * (chunkSize.x + 1);
-    }
-    if (edgeIndex & 32) {
-        total += (2 * chunkSize.y + 1) * (2 * chunkSize.x + 1);
-    } else {
-        total += (chunkSize.y + 1) * (chunkSize.x + 1);
-    }
-    return total;
+    return (chunkSize.x - 1) * (chunkSize.y - 1) * (chunkSize.z - 1) +
+        2 * (2 * chunkSize.x + 1) * (2 * chunkSize.y + 1) +
+        2 * (2 * chunkSize.y + 1) * (2 * chunkSize.z + 1) +
+        2 * (2 * chunkSize.x + 1) * (2 * chunkSize.z + 1);
 }

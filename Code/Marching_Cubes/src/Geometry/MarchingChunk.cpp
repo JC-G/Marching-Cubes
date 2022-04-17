@@ -70,13 +70,16 @@ void MarchingChunk::draw(GLuint VAO) {
 }
 
 void MarchingChunk::drawBoundary(GLuint VAO) {
-    glBindVertexArray(VAO);
+    if (hasGeometry()) {
+        glBindVertexArray(VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER,boundaryBuffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT,GL_FALSE,0,NULL);
+        glBindBuffer(GL_ARRAY_BUFFER,boundaryBuffer);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 4, GL_FLOAT,GL_FALSE,0,NULL);
 
-    glDrawArrays(GL_LINES,0,24);
+        glDrawArrays(GL_LINES,0,24);
+
+    }
 }
 
 bool MarchingChunk::hasGeometry() {

@@ -37,120 +37,59 @@ const ivec3 gridOffset[8] = ivec3[](
 
 //Changes here may affect TransvoxelGenerator::getDistanceBufferSize
 uint getArrID(uvec3 gid, uvec3 halfXYZ) {
+    //Store the main volume like this
+    if (gid.x > 0 && gid.x < chunkSize.x &&
+        gid.y > 0 && gid.y < chunkSize.y &&
+        gid.z > 0 && gid.z < chunkSize.z) {
+        return (gid.x - 1) +
+               (gid.y - 1) * (chunkSize.x - 1) +
+               (gid.z - 1) * (chunkSize.x - 1) * (chunkSize.y - 1); 
+    }
 
-    //TODO - remove debug method for something better
+    uint offset = (chunkSize.x - 1) * (chunkSize.y - 1) * (chunkSize.z - 1);
+
     uvec3 temp = 2 * gid + halfXYZ;
-    return temp.x + temp.y * (2 * chunkSize.x + 1) + temp.z * (2 * chunkSize.x + 1) * (2 * chunkSize.y + 1);
+    uvec3 ts = 2 * chunkSize + uvec3(1);
+    //Store the faces as -x, +x, -y, +y, -z, +z in that order, edges and corners are stored in the first place in this ordering (some unpopulated values)
 
+    //point on the -x face
+    if (gid.x == 0 && halfXYZ.x == 0) {
+        return offset +
+            temp.y + ts.y * temp.z;
+    }
+    offset += ts.y * ts.z;
+    //point on the +x face
+    if (gid.x == chunkSize.x && halfXYZ.x == 0) {
+        return offset +
+            temp.y + ts.y * temp.z;
+    }
+    offset += ts.y * ts.z;
 
-    // //if cell is in the interior
-    // if (gid.x > 0 && gid.x < chunkSize.x && gid.y > 0 && gid.y < chunkSize.y && gid.z > 0 && gid.z < chunkSize.z) {
-    //     return (gid.x - 1)
-    //         + (gid.y - 1) * (chunkSize.x - 1)
-    //         + (gid.z - 1) * (chunkSize.x - 1) * (chunkSize.y - 1);
-    // }
+    //point on the -y face
+    if (gid.y == 0 && halfXYZ.y == 0) {
+        return offset +
+            temp.x + ts.x * temp.z;
+    }
+    offset += ts.x * ts.z;
+    //point on the +y face
+    if (gid.y == chunkSize.y && halfXYZ.y == 0) {
+        return offset +
+            temp.x + ts.x * temp.z;
+    }
+    offset += ts.x * ts.z;
 
-    // //if the cell is on the edge
-    // uint offset = (chunkSize.x - 1) * (chunkSize.y - 1) * (chunkSize.z - 1);
-
-    // // -x
-    // if ((edgeIndex & 1) != 0) {
-    //     if (gid.x == 0) {
-    //         return offset
-    //             + (2 * gid.y + halfXYZ.y)
-    //             + (2 * gid.z + halfXYZ.z) * (2 * chunkSize.y + 1);
-    //     }
-    //     offset += (2 * chunkSize.y + 1) * (2 * chunkSize.z + 1);
-    // } else {
-    //     if (gid.x == 0) {
-    //         return offset
-    //             + gid.y
-    //             + gid.z * (chunkSize.y + 1);
-    //     }
-    //     offset += (chunkSize.y + 1) * (chunkSize.z + 1);
-    // }
-    // // +x
-    // if ((edgeIndex & 2) != 0) {
-    //     if (gid.x == chunkSize.x) {
-    //         return offset
-    //             + (2 * gid.y + halfXYZ.y)
-    //             + (2 * gid.z + halfXYZ.z) * (2 * chunkSize.y + 1);
-    //     }
-    //     offset += (2 * chunkSize.y + 1) * (2 * chunkSize.z + 1);
-    // } else {
-    //     if (gid.x == chunkSize.x) {
-    //         return offset
-    //             + gid.y
-    //             + gid.z * (chunkSize.y + 1);
-    //     }
-    //     offset += (chunkSize.y + 1) * (chunkSize.z + 1);
-    // }
-
-    // // -y
-    // if ((edgeIndex & 4) != 0) {
-    //     if (gid.y == 0) {
-    //         return offset
-    //             + (2 * gid.x + halfXYZ.x)
-    //             + (2 * gid.z + halfXYZ.z) * (2 * chunkSize.x + 1);
-    //     }
-    //     offset += (2 * chunkSize.x + 1) * (2 * chunkSize.z + 1);
-    // } else {
-    //     if (gid.y == 0) {
-    //         return offset
-    //             + gid.x
-    //             + gid.z * (chunkSize.x + 1);
-    //     }
-    //     offset += (chunkSize.x + 1) * (chunkSize.z + 1);
-    // }
-    // // +y
-    // if ((edgeIndex & 8) != 0) {
-    //     if (gid.y == chunkSize.y) {
-    //         return offset
-    //             + (2 * gid.x + halfXYZ.x)
-    //             + (2 * gid.z + halfXYZ.z) * (2 * chunkSize.x + 1);
-    //     }
-    //     offset += (2 * chunkSize.x + 1) * (2 * chunkSize.z + 1);
-    // } else {
-    //     if (gid.y == chunkSize.y) {
-    //         return offset
-    //             + gid.x
-    //             + gid.z * (chunkSize.x + 1);
-    //     }
-    //     offset += (chunkSize.x + 1) * (chunkSize.z + 1);
-    // }
-
-    // // -z
-    // if ((edgeIndex & 16) != 0) {
-    //     if (gid.z == 0) {
-    //         return offset
-    //             + (2 * gid.y + halfXYZ.y)
-    //             + (2 * gid.x + halfXYZ.x) * (2 * chunkSize.y + 1);
-    //     }
-    //     offset += (2 * chunkSize.y + 1) * (2 * chunkSize.x + 1);
-    // } else {
-    //     if (gid.z == 0) {
-    //         return offset
-    //             + gid.y
-    //             + gid.x * (chunkSize.x + 1);
-    //     }
-    //     offset += (chunkSize.y + 1) * (chunkSize.x + 1);
-    // }
-    // // +z
-    // if ((edgeIndex & 32) != 0) {
-    //     if (gid.z == chunkSize.z) {
-    //         return offset
-    //             + (2 * gid.y + halfXYZ.y)
-    //             + (2 * gid.x + halfXYZ.x) * (2 * chunkSize.y + 1);
-    //     }
-    //     offset += (2 * chunkSize.y + 1) * (2 * chunkSize.x + 1);
-    // } else {
-    //     if (gid.z == chunkSize.z) {
-    //         return offset
-    //             + gid.y
-    //             + gid.x * (chunkSize.y + 1);
-    //     }
-    //     offset += (chunkSize.y + 1) * (chunkSize.x + 1);
-    // }
+    //point on the -z face
+    if (gid.z == 0 && halfXYZ.z == 0) {
+        return offset +
+            temp.x + ts.x * temp.y;
+    }
+    offset += ts.x * ts.y;
+    //point on the +z face
+    if (gid.z == chunkSize.z && halfXYZ.z == 0) {
+        return offset +
+            temp.x + ts.x * temp.y;
+    }
+    offset += ts.x * ts.y;
 
 }
 

@@ -82,7 +82,7 @@ It is worth noting that some literature chooses the terminology of signed \texti
 \subsection{Noise}
 A typical noise function takes as input a point in $\mathbb{R}^n$ and returns a pseudorandom value, usually between 0 and 1. The use of noise to generate convincing heightmaps is well-documented, and typical implementations are as a function of the form $y = h\left(x,z\right)$ giving the height of the terrain at a given $\left(x,z\right)$ coordinate. This can be simply extended to an approximate SDF, using the formula $f\left(x,y,z\right) = y - h\left(x,z\right)$. Note that this is in fact an approximate SDF, and that the distance approximation worsens as the steepness of the slope of $h\left(x,z\right)$ increases. This phenomenon can be seen in figure \ref{fig:Hill_SDF}.
 \\
-The use of 3 dimensional noise as a distance function is also possible, and yields interesting results. %TODO - implement  this
+The use of 3 dimensional noise as an SDF is also possible, and yields interesting results. In particular, this type of SDF is useful for generating terrain features such as caves. We will use this type of SDF for benchmarking purposes.
 
 \subsection{Marching Cubes Algorithm}
 \label{section:mc}
@@ -584,7 +584,6 @@ When a chunk of geometry is generated, an array of \texttt{BrushParams} structur
 For efficiency reasons, the SDF of a shape is only considered when the sample point lies within its bounding box. This introduces discontinuities in the overall SDF being computed, and for this reason, it is necessary that the bounding box really is a bounding box, such that any geometry that may be generated for the shape lies fully within it, and hence all vertices are properly generated. 
 
 \subsection{Interactive Terrain Modification}
-%TODO - IQ reference
 User interaction with the terrain modification system uses a set of pre-defined actions, defined through classes derived from a base \texttt{Action} class. The methods defined in this class are shown in listing \ref{action_methods}.
 
 \begin{lstlisting}[language=C++,label={action_methods},caption={The methods of the \texttt{Action} class responsible for handling user interaction}]

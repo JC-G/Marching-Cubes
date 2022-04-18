@@ -133,6 +133,7 @@ for (int tCount = 0; triTable[tCount+16*cubeIndex] != -1; tCount+=3)
 \end{enumerate}
 The choice to parallelise the algorithm in this way presents some downsides. Triangles are generated and placed into the vertex buffer in an order which is very unlikely to be coherent, meaning that there is no way to reliably use an index buffer for vertices that are generated in the same place, a common occurance. This results in many duplicate vertices in the vertex array. Nevertheless, this is a worthwhile tradeoff, with the GPU implementation greatly outperforming the CPU implementation. 
 \subsubsection{Comparison of CPU and GPU implementations}
+\label{section:GPUCPUcomparison}
 The SDF used for these comparison tests is a scaled 3D noise function. Pseudorandom numbers for this noise function are generated using combinations of built in floating point functions in GLSL in the GPU implementation, and functions from the GLM C++ library in the CPU implementation. An effort has been made to ensure these functions are equivalent, however due to floating point inaccuracies and differences between these implementations, the SDF occasionally produces slightly different values between implementations, and this results in the number of triangles generated being slightly different also. However, this difference is very small compared to the total number of triangles generated, so is unlikely to have a significant impact on the runtime comparison. For example, the largest test, generating 1000 chunks of size $32^3$, produces 4394195 triangles on the CPU, and 4394045 on the GPU.
 Table \ref{tab:cpu-gpu-comparison} shows the time taken to generate different numbers of chunks of 3D noise, of size $32^3$, using the reference CPU implementation, and this GPU implementation. All experiments were run using an Intel i9-9900k and Nvidia RTX 2080ti. Each experiment was run 5 times, and the average time is shown.
 \begin{table}[H]
@@ -283,7 +284,7 @@ Transition cells are handled completely separately from the regular cells, even 
 
 \end{enumerate}
 
-The original Transvoxel implementation contained optimizations for vertex sharing that relied on sequential generation of the geometry. This has been removed from my implementation, for the same reason as described at the end of section \ref{section:mc_gpu}.
+The original Transvoxel implementation was written for a standard CPU and contained information in the lookup tables for vertex sharing that relied on sequential generation of the geometry. This has been removed from my implementation, for the same reason as described at the end of section \ref{section:mc_gpu}.
 \subsubsection{Calculation of edgeIndex}
 \label{section:edgeIndex}
 For each generated chunk, the variable \texttt{edgeIndex} needs to be calculated. This is done using the octree data structure described in section \ref{section:octree}. For each octree node containing a chunk, the algorithm searches the octree using a recursive algorithm to find neighbor nodes in each direction that exist at the same level of detail. If a neighbor is a leaf, it contains a chunk, and this means the neighboring geometry is at the same level of detail. If no neighbor exists at the same level of detail in some direction, then the neighboring geometry is at a lower level of detail. \texttt{edgeIndex} is not modified in this case, since \texttt{edgeIndex} will be modified for the lower level of detail chunk. If the neighbor is not a leaf, then the neighboring geometry is at a higher level of detail, and edgeIndex is modified to record that transition cells should be generated in that direction. Listing \ref{octree_neighbor} shows the code responsible for finding the neighbors of an octree cell.
@@ -483,8 +484,38 @@ void Octree::refresh(glm::vec3 inPos) {
 
 
 \subsubsection{Efficiency compared to Marching Cubes}
-% todo - make this efficient
-- TODO: regardless, this is still pretty fast on the GPU\\
+
+To evaluate the efficiency of the Transvoxel algorithm compared to the standard algorithm, we will use the same setup and tests used in section \ref{section:GPUCPUcomparison}. Each of the Transvoxel chunks has been generated with size $32^3$, and transition cells have been generated on 3 of the 6 faces of each chunk, the +x, +y, and +z faces. This means that the number of triangles generated is also higher for the Transvoxel algorithm. Table \ref{tab:gpu-tv-comparison-tris} shows the difference in the number of triangled generated, and table \ref{tab:gpu-tv-comparison-time} shows the difference in time taken to generate.
+
+\begin{table}[H]
+  \begin{tabular}{|c|c|c|}
+    \hline
+    Test & Marching Cubes Triangle Count & Transvoxel Triangle Count\\
+    \hline
+    \hline
+    1 Chunk & 1054 & 1054\\
+    4x4x4 Chunks & 238999 & 262377\\
+    10x1x10 Chunks & 497845 & 545848\\
+    10x10x10 Chunks & 4394045 & 4816936\\
+    \hline
+  \end{tabular}
+  \caption{\label{tab:gpu-tv-comparison-tris}Difference in number of triangles between the Transvoxel and Marching Cubes GPU implementations.}
+\end{table}
+
+\begin{table}[H]
+  \begin{tabular}{|c|c|c|}
+    \hline
+    Test & Marching Cubes Time (ms) & Transvoxel Time (ms) \\
+    \hline
+    \hline
+    1 Chunk & 4.2 & 6.2\\
+    4x4x4 Chunks & 60.8 & 113.4\\
+    10x1x10 Chunks & 90.0 & 155.8\\
+    10x10x10 Chunks & 635.0 & 998.0\\
+    \hline
+  \end{tabular}
+  \caption{\label{tab:gpu-tv-comparison-time}Performance comparison between the Transvoxel and Marching Cubes GPU implementations.}
+\end{table}
 
 \section{Terrain Modification}
 \subsection{Method of Terrain Modification}

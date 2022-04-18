@@ -79,7 +79,7 @@ static void LoadObjects()
                             ),
                             glm::vec3(Config::get<float>("single_chunk_size")),
                             glm::vec3(Config::get<float>("single_chunk_stride")),
-                            G,0b000000
+                            G,0b010101
                         )
                     );
                 }

@@ -84,3 +84,8 @@ void PhysicsWorld::movePlayerFromControl(glm::vec3 movement) {
 btRigidBody* PhysicsWorld::getPlayerBody() {
     return player->rigidBody;
 }
+
+
+void PhysicsWorld::movePlayerToPosition(glm::vec3 position) {
+    player->moveToPosition(position);
+}

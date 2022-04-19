@@ -3,7 +3,7 @@
     "screen_height": 1080,
 
     "octree_size": 32768.0,
-    "octree_max_depth": 12,
+    "octree_max_depth": 11,
     "octree_lod_scale": 100000.0,
     "update_octree": true,
 
@@ -34,7 +34,7 @@
     "show_test_cube": false,
     "draw_chunk_boundaries": false,
 
-    "terrain_mode": "plane",
+    "terrain_mode": "scaled",
     "generator_mode": "transvoxel",
 
     "raycast_mode": "mesh",
@@ -43,10 +43,10 @@
     "opengl_debug": false,
     "physics_debug": false,
     "enable_physics": true,
-    "physics_threshold": 12,
+    "physics_threshold": 11,
     "physics_box_buffer": 1.0,
     "physics_test_size": 1.0,
-    "physics_speed":0.01,
+    "physics_speed":0.001,
 
     "never_chop": false,
     "camera_lod": true,

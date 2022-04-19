@@ -12,6 +12,7 @@ class PhysicsWorld {
         static void debugDraw();
         static void step(float time);
         static void movePlayerFromControl(glm::vec3 movement);
+        static void movePlayerToPosition(glm::vec3 position);
         static btRigidBody* getPlayerBody();
 
 

@@ -1,7 +1,7 @@
 #include "Config.h"
 nlohmann::json Config::configJson;
+std::unordered_map<std::string,bool> Config::toggles;
 bool Config::isInit = false;
-bool Config::wireframe = false;
 
 void Config::initConfig()
 {
@@ -9,8 +9,6 @@ void Config::initConfig()
     std::ifstream configFile("config.json");
     configFile >> configJson;
     isInit = true;
-
-    Config::wireframe = get<bool>("wireframe");
 }
 
 
@@ -29,3 +27,6 @@ btVector3 Config::getBtVec3(std::string vecName)
 
 
 
+void Config::setToggle(std::string configName, bool value) {
+    toggles[configName] = value;
+}

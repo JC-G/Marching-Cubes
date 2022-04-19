@@ -11,11 +11,7 @@ Camera::Camera()
     position = Config::getVec3("camera_start_position");
     rotation = glm::vec3(0.0);
     up = glm::vec3(0.0,1.0,0.0);
-    if (Config::get<bool>("player_physics")) {
-        speed = Config::get<float>("physics_move_speed");
-    } else {
-        speed = Config::get<float>("camera_move_speed");
-    }
+    
 }
 
 Camera::~Camera()
@@ -52,6 +48,11 @@ glm::vec3 Camera::getDirection() {
 }
 
 glm::vec3 Camera::getMovementVector(glm::vec3 movement) {
+    if (Config::get<bool>("player_physics")) {
+        speed = Config::get<float>("physics_move_speed");
+    } else {
+        speed = Config::get<float>("camera_move_speed");
+    }
     glm::vec3 hDirection = glm::vec3(sin(rotation[0]),0,cos(rotation[0]));
     glm::vec3 rightDirection = glm::vec3(-cos(rotation[0]),0,sin(rotation[0]));
 

@@ -61,7 +61,7 @@ void MarchingChunk::draw(GLuint VAO) {
     glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, NULL);
-    if (Config::wireframe) {
+    if (Config::get<bool>("wireframe")) {
         glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
     } else {
         glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);

@@ -179,19 +179,25 @@ void Window::handleInput()
         Editing::sphereRing(activeCamera->position,10,1000,1);
     }
     if (Controller::keyPressed(window,GLFW_KEY_F)) {
-        Config::wireframe = !Config::wireframe;
+        Config::setToggle("wireframe",!Config::get<bool>("wireframe"));
     }
 
     if (Controller::keyPressed(window,GLFW_KEY_V)) {
-        activeCamera->position = placePos;
+        activeCamera->position = placePos + glm::vec3(0,1.0,0);
+        PhysicsWorld::movePlayerToPosition(activeCamera->position);
     }
     
+    if (Controller::keyPressed(window,GLFW_KEY_Z)) {
+        Config::setToggle("player_physics",!Config::get<bool>("player_physics"));
+    }
+
     if (Config::get<bool>("player_physics")) {
         PhysicsWorld::movePlayerFromControl(activeCamera->getMovementVector(movement));
         activeCamera->moveToShape(PhysicsWorld::getPlayerBody());
 
     } else {
         activeCamera->moveFromVec3(movement,dt);
+        PhysicsWorld::movePlayerToPosition(activeCamera->position);
 
     }
 }

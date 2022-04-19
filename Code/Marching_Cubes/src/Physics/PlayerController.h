@@ -8,6 +8,7 @@ class PlayerController {
     public:
         PlayerController();
         void moveFromVec3(glm::vec3 movementVector);
+        void moveToPosition(glm::vec3 position);
         btRigidBody* rigidBody;
 
     private:

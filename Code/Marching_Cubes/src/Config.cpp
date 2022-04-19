@@ -20,6 +20,12 @@ glm::vec3 Config::getVec3(std::string vecName)
     return glm::vec3(arr[0],arr[1],arr[2]);
 }
 
+btVector3 Config::getBtVec3(std::string vecName)
+{
+    std::vector<float> arr = configJson[vecName];
+    return btVector3(arr[0],arr[1],arr[2]);
+}
+
 
 
 

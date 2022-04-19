@@ -10,6 +10,7 @@
 btAlignedObjectArray<btCollisionShape*> PhysicsWorld::collisionShapes;
 btDiscreteDynamicsWorld* PhysicsWorld::dynamicsWorld;
 btIDebugDraw* PhysicsWorld::debugDrawer;
+PlayerController* PhysicsWorld::player;
 
 bool PhysicsWorld::init() {
     //setup the bullet physics world
@@ -32,6 +33,11 @@ bool PhysicsWorld::init() {
     setDebug(Config::get<bool>("physics_debug"));
 
     MeshManager::manager = new MeshManager();
+    dynamicsWorld->setInternalTickCallback(tickCallback);
+
+    //Add the player controller
+    player = new PlayerController();
+
 
     return true;
 }
@@ -59,10 +65,22 @@ void PhysicsWorld::debugDraw() {
     dynamicsWorld->debugDrawWorld();
 }
 
-void PhysicsWorld::step() {
+void PhysicsWorld::step(float time) {
     MeshManager::manager->updateMeshesSingleThreaded();
     if (!Config::get<bool>("physics_generation_thread")) {
         MeshManager::manager->updateMeshes();
     }
-    dynamicsWorld->stepSimulation(Config::get<float>("physics_speed")); //maybe bad to do as fast as possible, we will see...
+    dynamicsWorld->stepSimulation(time * Config::get<float>("physics_speed")); 
+}
+
+void PhysicsWorld::tickCallback(btDynamicsWorld* world, btScalar timestep) {
+    //TODO
+}
+
+void PhysicsWorld::movePlayerFromControl(glm::vec3 movement) {
+    player->moveFromVec3(movement);
+}
+
+btRigidBody* PhysicsWorld::getPlayerBody() {
+    return player->rigidBody;
 }

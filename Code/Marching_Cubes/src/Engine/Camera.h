@@ -1,6 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <btBulletDynamicsCommon.h>
 #include "GL_headers.h"
 class Camera
 {
@@ -14,6 +15,10 @@ class Camera
 
         void rotateFromMouse(double dX, double dY, double dt);
         void moveFromVec3(glm::vec3 movement, double dt);
+
+        glm::vec3 getMovementVector(glm::vec3 movement);
+
+        void moveToShape(btRigidBody* body);
     protected:
 
     private:

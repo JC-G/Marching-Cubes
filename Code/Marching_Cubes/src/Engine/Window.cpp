@@ -5,6 +5,7 @@
 #include "Controller.h"
 #include "TestShape.h"
 // #include "Action.h"
+#include "PhysicsWorld.h"
 
 //initialise static members
 GLFWwindow* Window::window = NULL;
@@ -184,9 +185,15 @@ void Window::handleInput()
     if (Controller::keyPressed(window,GLFW_KEY_V)) {
         activeCamera->position = placePos;
     }
+    
+    if (Config::get<bool>("player_physics")) {
+        PhysicsWorld::movePlayerFromControl(activeCamera->getMovementVector(movement));
+        activeCamera->moveToShape(PhysicsWorld::getPlayerBody());
 
+    } else {
+        activeCamera->moveFromVec3(movement,dt);
 
-    activeCamera->moveFromVec3(movement,dt);
+    }
 }
 
 void APIENTRY Window::glDebugOutput(GLenum source, 

@@ -140,7 +140,7 @@ void AppMain() {
 
     //load objects after physics world
     LoadObjects();
-
+    Timing::timeDiff();
     // Main loop
     while(!glfwWindowShouldClose(Window::window)){
         // process pending events
@@ -154,7 +154,7 @@ void AppMain() {
             }
             // O->generateAllChunks();
         }
-        PhysicsWorld::step();
+        PhysicsWorld::step((float)Timing::timeDiff());
         // draw one frame
         Drawing::drawFrame();
     }

@@ -2,7 +2,7 @@
 #define PHYSICSWORLD_H
 
 #include <btBulletDynamicsCommon.h>
-
+#include "PlayerController.h"
 class PhysicsWorld {
     public:
         static bool init();
@@ -10,7 +10,9 @@ class PhysicsWorld {
         static void addRigidBody(btRigidBody* body);
         static void removeRigidBody(btRigidBody* body);
         static void debugDraw();
-        static void step();
+        static void step(float time);
+        static void movePlayerFromControl(glm::vec3 movement);
+        static btRigidBody* getPlayerBody();
 
 
     private:
@@ -18,6 +20,8 @@ class PhysicsWorld {
         static btAlignedObjectArray<btCollisionShape*> collisionShapes;
         static btDiscreteDynamicsWorld* dynamicsWorld;
         static btIDebugDraw* debugDrawer;
+        static PlayerController* player;
+        static void tickCallback(btDynamicsWorld* world, btScalar timestep);
 
 
 };

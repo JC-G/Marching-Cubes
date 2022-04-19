@@ -10,7 +10,10 @@
     "chunk_size": 32,
 
     "camera_move_speed": 5.0,
-    "camera_start_position": [0.0,1.0,0.0],
+    "physics_move_speed": 500.0,
+    "player_physics": true,
+    "camera_start_position": [0.0,2.0,0.0],
+    "player_height_offset": 0.6,
 
     "wireframe": false,
     "backface_culling": true,
@@ -20,8 +23,8 @@
     "generate_regular_cells": true,
     "interpolate": true,
 
-    "single_chunk_mode": true,
-    "load_octree": false,
+    "single_chunk_mode": false,
+    "load_octree": true,
 
     "single_chunk_size": 32,
     "single_chunk_stride":0.5,
@@ -31,7 +34,7 @@
     "show_test_cube": false,
     "draw_chunk_boundaries": false,
 
-    "terrain_mode": "test",
+    "terrain_mode": "plane",
     "generator_mode": "transvoxel",
 
     "raycast_mode": "mesh",
@@ -43,7 +46,7 @@
     "physics_threshold": 12,
     "physics_box_buffer": 1.0,
     "physics_test_size": 1.0,
-    "physics_speed":0.05,
+    "physics_speed":0.01,
 
     "never_chop": false,
     "camera_lod": true,

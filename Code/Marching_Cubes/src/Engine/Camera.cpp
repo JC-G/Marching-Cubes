@@ -11,7 +11,11 @@ Camera::Camera()
     position = Config::getVec3("camera_start_position");
     rotation = glm::vec3(0.0);
     up = glm::vec3(0.0,1.0,0.0);
-    speed = Config::get<float>("camera_move_speed");
+    if (Config::get<bool>("player_physics")) {
+        speed = Config::get<float>("physics_move_speed");
+    } else {
+        speed = Config::get<float>("camera_move_speed");
+    }
 }
 
 Camera::~Camera()
@@ -36,11 +40,7 @@ void Camera::rotateFromMouse(double dX, double dY, double dt)
 
 
 void Camera::moveFromVec3(glm::vec3 movement, double dt) {
-    glm::vec3 hDirection = glm::vec3(sin(rotation[0]),0,cos(rotation[0]));
-    glm::vec3 rightDirection = glm::vec3(-cos(rotation[0]),0,sin(rotation[0]));
-
-    position += (float)dt * speed * (hDirection * movement.x + up * movement.y + rightDirection * movement.z);
-
+    position += (float)dt * getMovementVector(movement);
 }
 
 glm::vec3 Camera::getDirection() {
@@ -49,4 +49,17 @@ glm::vec3 Camera::getDirection() {
         sin(rotation[1]),
         cos(rotation[1]) * cos(rotation[0])
     );
+}
+
+glm::vec3 Camera::getMovementVector(glm::vec3 movement) {
+    glm::vec3 hDirection = glm::vec3(sin(rotation[0]),0,cos(rotation[0]));
+    glm::vec3 rightDirection = glm::vec3(-cos(rotation[0]),0,sin(rotation[0]));
+
+    return speed * (hDirection * movement.x + up * movement.y + rightDirection * movement.z);
+
+}
+
+void Camera::moveToShape(btRigidBody* body) {
+    btVector3 newPos = body->getCenterOfMassPosition();
+    position = glm::vec3(newPos.x(),newPos.y() + Config::get<float>("player_height_offset"),newPos.z());
 }

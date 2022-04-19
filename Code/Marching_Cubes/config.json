@@ -10,6 +10,7 @@
     "chunk_size": 32,
 
     "camera_move_speed": 5.0,
+    "jump_speed": 10.0,
     "physics_move_speed": 500.0,
     "player_physics": true,
     "camera_start_position": [0.0,2.0,0.0],

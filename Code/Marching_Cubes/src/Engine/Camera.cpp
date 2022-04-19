@@ -56,7 +56,7 @@ glm::vec3 Camera::getMovementVector(glm::vec3 movement) {
     glm::vec3 hDirection = glm::vec3(sin(rotation[0]),0,cos(rotation[0]));
     glm::vec3 rightDirection = glm::vec3(-cos(rotation[0]),0,sin(rotation[0]));
 
-    return speed * (hDirection * movement.x + up * movement.y + rightDirection * movement.z);
+    return speed * (hDirection * movement.x + up * Config::get<float>("jump_speed") * movement.y + rightDirection * movement.z);
 
 }
 

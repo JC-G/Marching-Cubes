@@ -729,9 +729,10 @@ Figures \ref{fig:meshes2} and \ref{fig:meshes3} show this system in action.
   \label{fig:meshes3}
 \end{figure}
 
-% - TODO: player controller.
 \subsection{Player Controller}
-- TODO
+To handle player collision, we will use a capsule shape oriented along the y axis. To move the shape, we will apply a force in the direction we want to move. The direction of this force is determined by the directional keys being pressed. For example, if the forward key is being pressed, the force will be in the same direction as the x and z components of the look direction of the camera, and the collision shape is pushed in the direction the camera is looking. The other directional keys act similarly, applying a force relative to the direction of the camera. To move upwards, a large upwards force is applied. 
+\subsubsection{Editing geometry near the player}
+If geometry is edited near the player, it is possible for the collision shape to become stuck in the collision meshes, or even pass through it entirely, resulting in incorrect collisions. To prevent this from happening, there is the option of a simple camera mode, with no collision detection, and it is possible to restrict terrain editing to only be possible in this mode. In this case, the collision shape is moved to the new position of the camera when the mode is switched again. %TODO - check for collision before changing back to physics mode
 \subsection{Multithreading}
 Even when meshes are only generated for chunks at the very highest level of detail, mesh generation for a large chunk of geometry still takes long enough that generating a mesh between frames causes a noticable slowdown. Therefore, to enable physics meshes to be generated whilst maintaining an interactive framerate, they are generated on a separate thread. All of the information about the collision mesh for a chunk is stored in a \texttt{ChunkMesh} object. There are numerous ways in which race conditions can occur as a result of this multithreading, for example:
 \begin{itemize}

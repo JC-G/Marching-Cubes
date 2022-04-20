@@ -171,6 +171,9 @@ void Window::handleInput()
     if (Controller::keyPressed(window,GLFW_KEY_Y)) {
         new TestShape(activeCamera->position);
     }
+    if (Controller::keyPressed(window,GLFW_KEY_O)) {
+        Config::setToggle("update_octree",!Config::get<bool>("update_octree"));
+    }
 
     Editing::currentAction()->handleInput(placePos);
     
@@ -265,6 +268,7 @@ std::string Window::getControlString(bool full) {
                "(F) Show/Hide Wireframe\n"
                "(V) Teleport to Mouse\n"
                "(Z) Toggle Player Physics\n"
+               "(O) Toggle Octree Updates\n"
                "(H) Hide Controls\n";
     } else {
         return "Press (H) to view controls";

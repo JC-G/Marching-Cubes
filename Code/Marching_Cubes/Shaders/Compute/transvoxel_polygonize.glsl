@@ -183,6 +183,17 @@ void generateCell() {
 
         vertices[vertexIndex] = vec4(vertPos,1);
         normals[vertexIndex] = vec4(modified_normal(vertPos),0);
+        // if (i % 3 == 2) {
+        //     vec3 v1,v2,v3;
+        //     v1 = vertices[index * 3].xyz;
+        //     v2 = vertices[index * 3 + 1].xyz;
+        //     v3 = vertices[index * 3 + 2].xyz;
+        //     //per-triangle normals
+        //     vec4 normal = vec4(normalize(cross(v2-v1,v3-v1)),0);
+        //     normals[index * 3] = normal;
+        //     normals[index * 3 + 1] = normal;
+        //     normals[index * 3 + 2] = normal;
+        // }
     }
 }
 
@@ -326,6 +337,18 @@ void generateTransitionCell() {
 
             vertices[vertexIndex] = vec4(vertPos,1);
             normals[vertexIndex] = vec4(modified_normal(vertPos),0);
+
+            // if (i % 3 == 2) {
+            //     vec3 v1,v2,v3;
+            //     v1 = vertices[3 * index].xyz;
+            //     v2 = vertices[3 * index + 1].xyz;
+            //     v3 = vertices[3 * index + 2].xyz;
+            //     //per-triangle normals
+            //     vec4 normal = vec4(normalize(cross(v2-v1,v3-v1)),0);
+            //     normals[3 * index]     = normal;
+            //     normals[3 * index + 1] = normal;
+            //     normals[3 * index + 2] = normal;
+            // }
         }
 
 	}

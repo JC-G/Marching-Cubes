@@ -164,3 +164,7 @@ bool doGenerateTransitionCell(uvec3 gid, int mask) {
         return gid.z == chunkSize.z-1;
     }
 }
+
+bool inBox(vec4 bottom, vec4 top, vec3 inPos) {
+    return all(lessThanEqual(bottom.xyz,inPos + 2.0 * chunkStride)) && all(lessThanEqual(inPos - 2.0 * chunkStride,top.xyz));
+}

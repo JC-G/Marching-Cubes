@@ -8,6 +8,11 @@ RoadBrush::RoadBrush(glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 D, float r
 BrushBoundingBox RoadBrush::getBoundingBox() {
     glm::vec3 min = glm::min(glm::min(A,B),glm::min(C,D));
     glm::vec3 max = glm::max(glm::max(A,B),glm::max(C,D));
+
+    return BrushBoundingBox(
+        glm::vec4(min - glm::vec3(radius),0),
+        glm::vec4(max+glm::vec3(radius),0)
+    );
     float roadOffset = radius - (H2-H1)*(K2*K1)/(K2-K1);
     glm::vec3 offsetTop = glm::vec3(
         radius+roadOffset,

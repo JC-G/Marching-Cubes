@@ -23,9 +23,6 @@ layout (std140, binding = 16) buffer BrushList {
 
 uniform int brushCount;
 
-bool inBox(vec4 bottom, vec4 top, vec3 inPos) {
-    return all(lessThanEqual(bottom.xyz,inPos + chunkStride)) && all(lessThanEqual(inPos - chunkStride,top.xyz));
-}
 
 const float F_MAX = 1e20;
 

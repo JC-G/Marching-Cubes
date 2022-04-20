@@ -686,8 +686,15 @@ A smooth interpolation spline between given points can be defined using Bezier i
 There is no simple form for the gradient of this SDF, and so we are forced to use the numerical derivative as implemented in listing \ref{numerical_gradient}. Note however that this now requires solving 5 cubics for every SDF sample point.
 
 \subparagraph{Approximate Method}
+To avoid the complex computation that comes with finding the roots of a quintic, a Bezier spline can be approximated by a number of line segments. Each line segment can then be associated with an SDF that is simple to evaluate. For example, figure \ref{fig:spline_approximation} shows a comparison between an approximated spline, and a spline using the exact SDF.
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{spline_approximation_2.png}
+  \caption{Two similar interpolation splines. The nearest spline uses the approximation, whereas the farthest away spline uses the exact SDF. The linear segments of the approximation are more visible where the spline is most curved.}
+  \label{fig:spline_approximation}
+\end{figure}
 
-- TODO: write up approximation using a large number of capsules - comparison, and how we can generate better "road" like shapes
+Using approximations like this also allows for splines to be used to define more complex shapes, where calculating an exact SDF may be infeasible.
+TODO - for example... ?
 
 \subsubsection{Limits of terrain modification}
  - TODO limits of marching cubes - sharp edges? this could go in the MC section also. 

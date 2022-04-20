@@ -22,8 +22,8 @@ std::vector<Action*> Editing::allActions = {
     new DigSphereAction(1.0),
     new BezierAction(1.0),
     new CubicBezierAction(1.0),
-    new InterpolationSplineAction(1.0),
-    new RoadAction(0.1),
+    new InterpolationSplineAction(2.0),
+    new RoadAction(2.0),
 };
 
 void Editing::sphereRing(glm::vec3 pos, float ringR, int ringN, float r) {

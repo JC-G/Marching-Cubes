@@ -309,7 +309,7 @@ vec3 cubic_bezier_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
 float sdCapsule( vec3 p, vec3 a, vec3 b, float r )
 {
     vec3 pa = p - a, ba = b - a;
-    pa *= vec3(1.,5.,1.); ba *=vec3(1.,5.,1.);
+    // pa *= vec3(1.,5.,1.); ba *=vec3(1.,5.,1.);
     float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
   return length( pa - ba*h ) - r;
 }
@@ -335,7 +335,7 @@ float road_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
         vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
         vec4 bottom = min(a,b).xyzz - vec4(r * 1.1);
         vec4 top = max(a,b).xyzz + vec4(r * 1.1);
-        if (all(lessThanEqual(bottom.xyz,inPos)) && all(lessThanEqual(inPos,top.xyz))) {
+        if (inBox(bottom,top,inPos)) {
             dMin = min(dMin,sdCapsule(inPos,a,b,r));
 
         }
@@ -457,28 +457,38 @@ float road_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
 }
 
 vec3 road_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
-    float dMin = 1e4;
-    int bestI = 0;
-    for (int i = 0; i < roadResolution; i++) {
-        float nt = i/float(roadResolution);
-        float nt1 = (i+1.)/float(roadResolution);
-        vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
-        vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
-        vec4 bottom = min(a,b).xyzz - vec4(r * 1.1);
-        vec4 top = max(a,b).xyzz + vec4(r * 1.1);
+    float eps = 0.001;
+    vec3 dx = inPos + vec3(eps,0,0);
+    vec3 dy = inPos + vec3(0,eps,0);
+    vec3 dz = inPos + vec3(0,0,eps);
+
+    float f  = road_distance(inPos,A,B,C,D,r);
+    float fx = road_distance(dx,A,B,C,D,r);
+    float fy = road_distance(dy,A,B,C,D,r);
+    float fz = road_distance(dz,A,B,C,D,r);
+    return normalize(vec3((fx-f)/eps, (fy-f)/eps, (fz-f)/eps));
+    // float dMin = 1e4;
+    // int bestI = 0;
+    // for (int i = 0; i < roadResolution; i++) {
+    //     float nt = i/float(roadResolution);
+    //     float nt1 = (i+1.)/float(roadResolution);
+    //     vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
+    //     vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
+    //     vec4 bottom = min(a,b).xyzz - vec4(r * 1.1);
+    //     vec4 top = max(a,b).xyzz + vec4(r * 1.1);
 
         
-        if (all(lessThanEqual(bottom.xyz,inPos)) && all(lessThanEqual(inPos,top.xyz))) {
-            float dNew = sdCapsule(inPos,a,b,r);
-            if (dNew < dMin) {
-                dMin = dNew;
-                bestI = i;
-            }
-        }
-    }
-    float nt = bestI/float(roadResolution);
-    float nt1 = (bestI+1.)/float(roadResolution);
-    vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
-    vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
-    return capsuleDerivative(inPos,a,b,r);
+    //     if (inBox(bottom,top,inPos)) {
+    //         float dNew = sdCapsule(inPos,a,b,r);
+    //         if (dNew < dMin) {
+    //             dMin = dNew;
+    //             bestI = i;
+    //         }
+    //     }
+    // }
+    // float nt = bestI/float(roadResolution);
+    // float nt1 = (bestI+1.)/float(roadResolution);
+    // vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
+    // vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
+    // return capsuleDerivative(inPos,a,b,r);
 }

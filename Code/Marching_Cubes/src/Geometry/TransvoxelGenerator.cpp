@@ -6,8 +6,8 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* distanceFunction)
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
         distanceFunction->getShaderCode(),
-        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_common.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_generate.glsl")})
     ),
@@ -15,8 +15,8 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* distanceFunction)
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
         distanceFunction->getShaderCode(),
-        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_common.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_count.glsl")})
     ),
@@ -24,8 +24,8 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* distanceFunction)
         Shader::ReadShaderFile("Shaders/Compute/shadertop.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_common.glsl"),
         distanceFunction->getShaderCode(),
-        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_common.glsl"),
+        Shader::ReadShaderFile("Shaders/Compute/brush_functions.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/terrain_modification.glsl"),
         Shader::ReadShaderFile("Shaders/Compute/transvoxel_polygonize.glsl")})
     )

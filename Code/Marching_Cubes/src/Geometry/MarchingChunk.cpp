@@ -3,8 +3,8 @@
 
 std::vector<MarchingChunk*> MarchingChunk::loadedChunks;
 
-MarchingChunk* MarchingChunk::createMarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex, int detailLevel) {
-    MarchingChunk* chunk = new MarchingChunk(chunkLocation,chunkSize,chunkStride,Generator, edgeIndex,detailLevel);
+MarchingChunk* MarchingChunk::createMarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex, int detailLevel,const std::vector<BrushParams>& brushes) {
+    MarchingChunk* chunk = new MarchingChunk(chunkLocation,chunkSize,chunkStride,Generator, edgeIndex,detailLevel,brushes);
     chunk->attachMesh();
     return chunk;
 }
@@ -29,27 +29,38 @@ void MarchingChunk::attachMesh() {
     }
 }
 
-MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex, int detailLevel)
+MarchingChunk::MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex, int detailLevel,const std::vector<BrushParams>& brushes)
    :myLocation(chunkLocation),mySize(chunkSize),myStride(chunkStride),Generator(Generator), myDetailLevel(detailLevel)
 {
-    //ctor
-    Generator->GenerateGeometry(myLocation,mySize,myStride,&vertexBuffer,&normalBuffer, &myGeometrySize, edgeIndex);
+    //ctor    
     if (Config::get<bool>("draw_chunk_boundaries")) {
         generateBoundary();
     }
+    if (Config::get<bool>("only_generate_brushes") && brushes.size() == 0) {
+        myGeometrySize = 0;
+        return;
+    } 
+    Generator->GenerateGeometry(myLocation,mySize,myStride,&vertexBuffer,&normalBuffer, &myGeometrySize, edgeIndex,brushes);
+
 
 }
 
 MarchingChunk::~MarchingChunk() {
     //dtor
-    glDeleteBuffers(1,&vertexBuffer);
-    glDeleteBuffers(1,&normalBuffer);
+    if (hasGeometry()) {
+        glDeleteBuffers(1,&vertexBuffer);
+        glDeleteBuffers(1,&normalBuffer);
+
+    }
     if (Config::get<bool>("draw_chunk_boundaries")) {
         glDeleteBuffers(1,&boundaryBuffer);
     }
 }
 
 void MarchingChunk::draw(GLuint VAO) {
+    if (!hasGeometry()) {
+        return;
+    }
     glBindVertexArray(VAO);
 
     //bind buffer and set VAO to use this at location 0
@@ -152,6 +163,9 @@ float MarchingChunk::getIntersectionPoint(glm::vec3 origin, glm::vec3 direction)
 }
 
 void MarchingChunk::mapGeometry() {
+    if (!hasGeometry()) {
+        return;
+    }
     //Rare crash here if a raycast and a physics generation try to resize the vector in parallel, so use a lock
     static std::lock_guard<std::mutex> lk(mapMutex);
     if (!isMapped.load()) {

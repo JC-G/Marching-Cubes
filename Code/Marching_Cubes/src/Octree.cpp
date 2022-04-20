@@ -41,7 +41,15 @@ void Octree::split()
         for(int i = 0; i <= 1; i++) {
             for(int j = 0; j <= 1; j++) {
                 for(int k = 0; k <= 1; k++) {
-                    myChildren[i][j][k] = new Octree(0.5f * mySize,myPosition + mySize * 0.5f * glm::vec3(i,j,k), myDetailLevel + 1,myGenerator,this,glm::uvec3(i,j,k));
+                    Octree* thisChild = new Octree(0.5f * mySize,myPosition + mySize * 0.5f * glm::vec3(i,j,k), myDetailLevel + 1,myGenerator,this,glm::uvec3(i,j,k));
+                    auto it = myBrushes.begin();
+                    while (it != myBrushes.end()) {
+                        if ((*it)->getBoundingBox().intersects(thisChild->getBoundingBox())) {
+                            thisChild->insertBrush(*it);
+                        }
+                        it++;
+                    }
+                    myChildren[i][j][k] = thisChild;
                 }
             }
         }
@@ -131,7 +139,11 @@ void Octree::generateMarchingChunk(int edgeIndex)
     if (myChunk) {
         myChunk->tryDelete();
     }
-    myChunk = MarchingChunk::createMarchingChunk(myPosition,glm::vec3(stride),mySize/stride,myGenerator,edgeIndex, myDetailLevel);
+    std::vector<BrushParams> myParams;
+    for (Brush* b : myBrushes) {
+        myParams.push_back(b->getBrushParams());
+    }
+    myChunk = MarchingChunk::createMarchingChunk(myPosition,glm::vec3(stride),mySize/stride,myGenerator,edgeIndex, myDetailLevel,myParams);
     hasChunk = true;
     needsRegen = false;
 }
@@ -402,14 +414,6 @@ void Octree::deleteRegenPhase() {
     }
     if (isLeaf) {
         //Check if this leaf node needs a new marching chunk because of editing
-        if (Editing::newBrushes.size() > 0) {
-            BrushBoundingBox myBB = getBoundingBox();
-            for (Brush* b : Editing::newBrushes) {
-                if (b->getBoundingBox().intersects(myBB)) {
-                    needsRegen = true;
-                }
-            }
-        }
     } else {
         for (int i = 0; i <= 1; i++) {
             for (int j = 0; j <= 1; j++) {
@@ -438,3 +442,27 @@ void Octree::deleteRegenPhase() {
 //         }
 //     }  
 // }
+
+Octree* Octree::child(int i, int j, int k) {
+    return myChildren[i][j][k];
+}
+
+void Octree::insertBrush(Brush* b) {
+
+    //if it does not fit inside any child, place here,also place in child
+    myBrushes.push_back(b);
+    if (isLeaf) {
+        needsRegen = true;
+        return;
+    }
+    for (int i = 0; i <= 1; i++) {
+        for (int j = 0; j <= 1; j++) {
+            for (int k = 0; k <= 1; k++) {
+                Octree* thisChild = child(i,j,k);
+                if (b->getBoundingBox().intersects(thisChild->getBoundingBox())) {
+                    thisChild->insertBrush(b);
+                }
+            }
+        }
+    }
+}

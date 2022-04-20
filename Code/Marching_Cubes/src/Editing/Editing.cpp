@@ -32,8 +32,7 @@ void Editing::sphereRing(glm::vec3 pos, float ringR, int ringN, float r) {
         float theta = float(i)*glm::two_pi<float>()/float(ringN);
         glm::vec3 posi = pos + ringR * glm::vec3(cos(theta),0,sin(theta));
         Brush* b = new EllipsoidBrush(posi,glm::vec3(r));
-        allBrushes.push_back(b);
-        newBrushes.push_back(b);
+        placeBrush(b,Window::mainOctree);
     }
 }
 
@@ -74,14 +73,6 @@ Action* Editing::currentAction() {
     return allActions[actionIndex];
 }
 
-std::vector<BrushParams> Editing::getBrushesInBox(BrushBoundingBox box) {
-    
-    std::vector<BrushParams> result;
-    for (Brush* b : Editing::allBrushes) {
-        if (b->getBoundingBox().intersects(box)) {
-            result.push_back(b->getBrushParams());
-        }
-    }
-    return result;
+void Editing::placeBrush(Brush* b, Octree* O) {
+    O->insertBrush(b);
 }
-

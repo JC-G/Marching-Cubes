@@ -8,6 +8,8 @@
 #include "Editing.h"
 #include "BrushBoundingBox.h"
 #include "Timing.h"
+class GeometryGenerator;
+class MarchingChunk;
 class Octree
 {
     public:
@@ -22,6 +24,8 @@ class Octree
         BrushBoundingBox getBoundingBox();
 
         float getIntersectionPoint(glm::vec3 origin, glm::vec3 direction);
+        Octree* child(int i, int j, int k);
+        void insertBrush(Brush* b);
     protected:
 
     private:
@@ -68,6 +72,11 @@ class Octree
         void deleteRegenPhase();
 
         static Timing chunkTimer;
+
+        std::vector<Brush*> myBrushes;
+
+        // std::vector<Brush*> getAllBrushesBelow();
+        // std::vector<BrushParams> getRenderedBrushes();
 
 };
 

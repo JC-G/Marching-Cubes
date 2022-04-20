@@ -16,8 +16,7 @@ void SphereAction::onMouseUp(glm::vec3 pos){};
 
 void SphereAction::onMouseHold(glm::vec3 pos){
     Brush* b = new EllipsoidBrush(pos,glm::vec3(radius));
-    Editing::allBrushes.push_back(b);
-    Editing::newBrushes.push_back(b);
+    Editing::placeBrush(b,Window::mainOctree);
 };
 
 void SphereAction::onCancel(){};

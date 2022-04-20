@@ -95,7 +95,7 @@ GPUMarchingCubesGenerator::~GPUMarchingCubesGenerator()
 
 
 
-void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex)
+void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex, const std::vector<BrushParams>& brushes)
 {
     glGenBuffers(1, vertexBuffer);
     glGenBuffers(1, normalBuffer);
@@ -110,10 +110,10 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     glBufferData(GL_SHADER_STORAGE_BUFFER,256*sizeof(int),totalTable,GL_DYNAMIC_DRAW);
 
     //Terrain Modification Buffer
-    BrushBoundingBox myBox = BrushBoundingBox::getChunkBox(chunkLocation,chunkSize,chunkStride);
-    std::vector<BrushParams> brushList = Editing::getBrushesInBox(myBox);
+    // BrushBoundingBox myBox = BrushBoundingBox::getChunkBox(chunkLocation,chunkSize,chunkStride);
+    // std::vector<BrushParams> brushList = Editing::getBrushesInBox(myBox);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,16,brushBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER,brushList.size() * sizeof(BrushParams),&brushList[0],GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,brushes.size() * sizeof(BrushParams),&brushes[0],GL_DYNAMIC_DRAW);
 
     //Stage 1
 
@@ -127,7 +127,7 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     glUniform3fv(stage1Shader.getUniform("chunkStride"),1,&chunkStride[0]);
     glUniform3uiv(stage1Shader.getUniform("chunkSize"),1,&chunkSize[0]);
     
-    glUniform1i(stage1Shader.getUniform("brushCount"),brushList.size());
+    glUniform1i(stage1Shader.getUniform("brushCount"),brushes.size());
 
     glDispatchCompute(1+chunkSize.x/8, 1+chunkSize.y/8, 1+chunkSize.z/8);
     //std::cout << "Stage 1 Complete" << std::endl;
@@ -186,7 +186,7 @@ void GPUMarchingCubesGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::u
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,6,*normalBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,pointCount*sizeof(glm::vec4),NULL,GL_DYNAMIC_DRAW);
     
-    glUniform1i(stage3Shader.getUniform("brushCount"),brushList.size());
+    glUniform1i(stage3Shader.getUniform("brushCount"),brushes.size());
 
     glDispatchCompute(jobCount,1,1);
 

@@ -7,8 +7,7 @@ EllipsoidAction::EllipsoidAction(glm::vec3 r3) :r3(r3){};
 
 void EllipsoidAction::onMouseDown(glm::vec3 pos) {
     Brush* b = new EllipsoidBrush(pos,r3);
-    Editing::allBrushes.push_back(b);
-    Editing::newBrushes.push_back(b);
+    Editing::placeBrush(b,Window::mainOctree);
 }
 
 std::string EllipsoidAction::getDescription() {

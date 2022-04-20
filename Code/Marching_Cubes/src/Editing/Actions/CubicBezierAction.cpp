@@ -25,8 +25,7 @@ void CubicBezierAction::onMouseDown(glm::vec3 pos) {
         D = pos;
         placingStep = 0;
         Brush* b = new CubicBezierBrush(A,B,C,D,radius);
-        Editing::allBrushes.push_back(b);
-        Editing::newBrushes.push_back(b);
+        Editing::placeBrush(b,Window::mainOctree);
     }
 }
 

@@ -13,6 +13,7 @@ class BrushBoundingBox {
         bool intersects(BrushBoundingBox other);
         bool intersectsRay(glm::vec3 origin, glm::vec3 direction);
         bool contains(glm::vec3 point);
+        bool isInside(BrushBoundingBox other);
     private:
 
 };

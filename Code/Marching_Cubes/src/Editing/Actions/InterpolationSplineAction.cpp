@@ -33,8 +33,7 @@ void InterpolationSplineAction::finishSpline() {
             controlPoints[3 * i + 3],
             radius
         );
-        Editing::newBrushes.push_back(b);
-        Editing::allBrushes.push_back(b);
+        Editing::placeBrush(b,Window::mainOctree);
     }
     points.clear();
 }

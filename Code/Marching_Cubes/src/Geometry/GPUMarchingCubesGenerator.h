@@ -12,7 +12,7 @@ class GPUMarchingCubesGenerator : public GeometryGenerator
         virtual ~GPUMarchingCubesGenerator();
 
 
-        void GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex = 0) override;
+        void GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex = 0,const std::vector<BrushParams>& brushes = std::vector<BrushParams>()) override;
     protected:
 
     private:

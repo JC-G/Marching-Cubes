@@ -21,8 +21,7 @@ void BezierAction::onMouseDown(glm::vec3 pos) {
         C = pos;
         placingStep = 0;
         Brush* b = new BezierBrush(A,B,C,radius);
-        Editing::allBrushes.push_back(b);
-        Editing::newBrushes.push_back(b);
+        Editing::placeBrush(b,Window::mainOctree);
     }
 }
 

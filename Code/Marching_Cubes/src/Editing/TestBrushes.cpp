@@ -10,14 +10,13 @@ void TestBrushes::generateRandomSpheres() {
         //already generated
         return;
     }
-    //generate lots of random ellipsoids
+    //generate lots of random ellipsoids      
     for (int i = 0; i < 100000; i++) {
         Brush* b = new EllipsoidBrush(
             glm::vec3(randFloat(-500,500),randFloat(0,100),randFloat(-500,500)),
             glm::vec3(randFloat(5,15),randFloat(5,15),randFloat(5,15))
         );
-        Editing::newBrushes.push_back(b);
-        Editing::allBrushes.push_back(b);
+        Editing::placeBrush(b,Window::mainOctree);
     }
 }
 

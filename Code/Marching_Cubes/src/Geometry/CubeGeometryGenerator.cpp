@@ -13,7 +13,7 @@ CubeGeometryGenerator::~CubeGeometryGenerator()
 {
     //dtor
 }
-void CubeGeometryGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex = 0)
+void CubeGeometryGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex = 0,const std::vector<BrushParams>& brushes)
 {
     GLfloat vertexData[] = {
 

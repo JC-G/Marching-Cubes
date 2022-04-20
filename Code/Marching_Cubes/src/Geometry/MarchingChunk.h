@@ -19,10 +19,12 @@ it obtains its geometry from a GeometryGenerator, written into vertexBuffer and 
 #include "Config.h"
 #include "ChunkMesh.h"
 #include <glm/gtx/intersect.hpp>
+#include "Brush.h"
 class ChunkMesh;
+class GeometryGenerator;
 class MarchingChunk {
     public:
-        static MarchingChunk* createMarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex = 0, int detailLevel = 0);
+        static MarchingChunk* createMarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex = 0, int detailLevel = 0,const std::vector<BrushParams>& brushes = std::vector<BrushParams>());
         virtual ~MarchingChunk();
         void tryDelete();
         void draw(GLuint VAO);
@@ -45,7 +47,7 @@ class MarchingChunk {
     protected:
 
     private:
-        MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex = 0, int detailLevel = 0);
+        MarchingChunk(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GeometryGenerator* Generator, int edgeIndex = 0, int detailLevel = 0,const std::vector<BrushParams>& brushes = std::vector<BrushParams>());
         void attachMesh();
         glm::vec3 myLocation;
         glm::vec3 mySize;

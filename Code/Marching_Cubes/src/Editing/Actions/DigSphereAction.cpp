@@ -16,8 +16,7 @@ void DigSphereAction::onMouseUp(glm::vec3 pos){};
 
 void DigSphereAction::onMouseHold(glm::vec3 pos){
     Brush* b = new EllipsoidBrush(pos,glm::vec3(radius),MODE_DELETE);
-    Editing::allBrushes.push_back(b);
-    Editing::newBrushes.push_back(b);
+    Editing::placeBrush(b,Window::mainOctree);
 };
 
 void DigSphereAction::onCancel(){};

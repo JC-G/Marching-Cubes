@@ -47,3 +47,7 @@ bool BrushBoundingBox::contains(glm::vec3 point) {
         && bottom.y <= point.y && point.y <= top.y
         && bottom.z <= point.z && point.z <= top.z;
 }
+
+bool BrushBoundingBox::isInside(BrushBoundingBox other) {
+    return glm::all(glm::lessThan(other.bottom,bottom)) && glm::all(glm::greaterThan(other.top,top));
+}

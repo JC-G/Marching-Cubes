@@ -26,8 +26,7 @@ void CylinderAction::onMouseUp(glm::vec3 pos){
     pos2 = pos;
     
     Brush* b = new CylinderBrush(pos1,pos2,radius);
-    Editing::allBrushes.push_back(b);
-    Editing::newBrushes.push_back(b);
+    Editing::placeBrush(b,Window::mainOctree);
 
 };
 void CylinderAction::onMouseHold(glm::vec3 pos){};

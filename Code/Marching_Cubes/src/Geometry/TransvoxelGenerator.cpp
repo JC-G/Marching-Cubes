@@ -1,5 +1,4 @@
 #include "TransvoxelGenerator.h"
-
 TransvoxelGenerator::TransvoxelGenerator(SDF* distanceFunction)
     :distanceFunction(distanceFunction),
     generateShader(Shader::ComputeShaderFromVector(std::vector<std::string>{
@@ -53,6 +52,9 @@ TransvoxelGenerator::TransvoxelGenerator(SDF* distanceFunction)
     glGenBuffers(1,&transitionVertexDataBuffer);
     glGenBuffers(1,&transitionTotalTableBuffer);
 
+    // glGenBuffers(1,&hasNegative);
+    // glGenBuffers(1,&hasPositive);
+
 
 
 }
@@ -66,7 +68,6 @@ TransvoxelGenerator::~TransvoxelGenerator()
 void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 chunkSize, glm::vec3 chunkStride, GLuint* vertexBuffer, GLuint* normalBuffer, GLuint* geometrySize, int edgeIndex,const std::vector<BrushParams>& brushes)
 {
     //BEGIN DEBUG REGION
-
 
 //    int debugCellIndex = 16;
 //    std::cout << "Cell Index: " << debugCellIndex << std::endl;
@@ -84,10 +85,9 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
 //    }
 
 
+    GLuint zero = 0;
 
     //END DEBUG REGION
-    glGenBuffers(1,vertexBuffer);
-    glGenBuffers(1,normalBuffer);
 
     //transvoxel algorithm tables
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,8,regularCellClassBuffer);
@@ -113,13 +113,19 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,15,transitionTotalTableBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,56*sizeof(int),TransvoxelTables::transitionTotalTable,GL_DYNAMIC_DRAW);
-
     //Terrain Modification buffer
-    
+
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,16,brushBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER,brushes.size() * sizeof(BrushParams),&brushes[0],GL_DYNAMIC_DRAW);
 
     //Stage 1
+
+    // //Positive + Negative Checks
+    // glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER,4,hasNegative);
+    // glBufferData(GL_ATOMIC_COUNTER_BUFFER,sizeof(GLuint),&zero,GL_DYNAMIC_READ);
+
+    // glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER,5,hasPositive);
+    // glBufferData(GL_ATOMIC_COUNTER_BUFFER,sizeof(GLuint),&zero,GL_DYNAMIC_READ);
 
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER,distanceValuesBuffer);
@@ -150,10 +156,29 @@ void TransvoxelGenerator::GenerateGeometry(glm::vec3 chunkLocation, glm::uvec3 c
 
     //END DEBUG REGION
 
-    //Stage 2
 
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
-    GLuint zero = 0;
+    //Optional early exit...
+
+    // GLuint hasNegativeVal;
+    // glBindBuffer(GL_ATOMIC_COUNTER_BUFFER,hasNegative);
+    // glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER,0,sizeof(GLuint),&hasNegativeVal);
+
+    // GLuint hasPositiveVal;
+    // glBindBuffer(GL_ATOMIC_COUNTER_BUFFER,hasPositive);
+    // glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER,0,sizeof(GLuint),&hasPositiveVal);
+
+    // if (!hasNegativeVal || !hasPositiveVal) {
+    //     *geometrySize = 0;
+    //     return;
+    // }
+
+    //actually generate the buffers...
+    glGenBuffers(1,vertexBuffer);
+    glGenBuffers(1,normalBuffer);
+    
+
+    //Stage 2
 
     glUseProgram(countShader.getID());
 

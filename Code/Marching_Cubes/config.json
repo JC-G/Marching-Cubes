@@ -63,6 +63,6 @@
 
     "load_test_brushes": true,
     "log_chunk_time": true,
-    "only_generate_brushes": true
+    "only_generate_brushes": false
 
 }               

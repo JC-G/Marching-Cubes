@@ -4,12 +4,22 @@ layout(binding = 1) buffer Grid {
     float distanceValues[];
 };
 
+// layout(binding = 4) uniform atomic_uint has_negative;
+// layout(binding = 5) uniform atomic_uint has_positive;
+
 //TODO - change this from 8 to ? - maybe better performance?
 layout(local_size_x=8,local_size_y=8,local_size_z=8) in;
 
 void generate(uvec3 gid, uvec3 halfXYZ) {
     uint arrID = getArrID(gid, halfXYZ);
-    distanceValues[arrID] = modified_distance((gid + 0.5 * vec3(halfXYZ)) * chunkStride + chunkPosition);
+    float value = modified_distance((gid + 0.5 * vec3(halfXYZ)) * chunkStride + chunkPosition);
+    // if (value < 0) {
+    //     atomicCounterIncrement(has_negative);
+    // }
+    // if (value >= 0) {
+    //     atomicCounterIncrement(has_positive);
+    // }
+    distanceValues[arrID] = value;
 }
 
 void main() {

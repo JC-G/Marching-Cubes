@@ -434,7 +434,7 @@ void Octree::deleteRegenPhase() {
   }  
 }
   \end{lstlisting}
-  \item Traverse the octree a final time, generating geometry chunks for all new leaves, and all leaves that needed regeneration. Also regenerate geometry for all leaves where \texttt{edgeIndex} has changed, so that cracks do not appear after changing the level of detail of a neighboring chunk.
+  \item Traverse the octree a final time, generating geometry chunks for all new leaves, and all leaves that needed regeneration, for example if the geometry inside them has changed. Also regenerate geometry for all leaves where \texttt{edgeIndex} has changed, so that cracks do not appear after changing the level of detail of a neighboring chunk.
   \begin{lstlisting}[language=C++,label={generateallchunks},caption={The fourth stage in the octree refinement process, \texttt{generateAllChunks}}]
 void Octree::generateAllChunks(bool force) {
   //needed so we have the shape of the octree before generating chunks that rely on it
@@ -524,8 +524,7 @@ There are multiple different approaches to modifying the generated geometry. Mod
 
 \subsection{Adding Primitives to the SDF}
 \label{section:modification_implementation}
-% - TODO - more efficient than a list?
-To implement terrain modification, a global list of \texttt{Brush} objects is maintained. Each \texttt{Brush} object contains information about a shape that has been added to the world,and has 2 methods which are overridden for each type of shape. The first method is \texttt{getBoundingBox()}, which returns an axis-aligned bounding box such that the shape lies entirely within the box. The second is \texttt{getBrushParams()}, which returns a structure containing all of the information required to add this shape to the SDF. For example, it may contain the radius of a sphere, or the control points and thickness of a shape defined by a Bezier spline. An example is given in listing \ref{brushparams_glsl}.
+To implement terrain modification, \texttt{Brush} objects are used. Each \texttt{Brush} object contains information about a shape that has been added to the world,and has 2 methods which are overridden for each type of shape. The first method is \texttt{getBoundingBox()}, which returns an axis-aligned bounding box such that the shape lies entirely within the box. The second is \texttt{getBrushParams()}, which returns a structure containing all of the information required to add this shape to the SDF. For example, it may contain the radius of a sphere, or the control points and thickness of a shape defined by a Bezier spline. An example is given in listing \ref{brushparams_glsl}.
 \begin{lstlisting}[language=C++,label={brushparams_glsl},caption={The \texttt{BrushParams} data structure, in GLSL. Common to all shapes are the values \texttt{bottom} and \texttt{top}, which correspond to diagonally opposite corners of the bounding box as given in \texttt{getBoundingBox}, the value \texttt{type}, which is a constant corresponding to the type of shape represented, and \texttt{mode}, which is a constant describing how the shape is to be added to the SDF, for example whether it should be added or subtracted. In principle, the other values may be used however they are needed, but typically the \texttt{location} and \texttt{size} variables represent the location and size of the shape to be added.}]
 struct BrushParams {
   vec4 location;
@@ -542,38 +541,50 @@ struct BrushParams {
   vec4 data2;
 };
 \end{lstlisting}
-When a shape is added to the world, a new \texttt{Brush} object is created, and appended the main list, as well as a separate list of new brushes. During the final iteration over the octree, as described in section \ref{section:octree_refinement}, the bounding box of the chunk at each leaf node of the octree is tested against the bounding box of each new \texttt{Brush} object. If these boxes intersect, then the geometry inside that chunk is regenerated, so the geometry being rendered reflects the updated SDF. Listing \ref{edit_deleteregenphase} shows the code responsible for this.
-\begin{lstlisting}[language=C++,label={edit_deleteregenphase},caption={Modified \texttt{deleteRegenPhase()} method, accounting for regeneration of chunks where the geometry has been edited.}]
-void Octree::deleteRegenPhase() {
-  //chop chunks that shouldnt be there
-  if (flagged) {
-    chop();
-    flagged = false;
-  }
-  if (isLeaf) {
-    //Check if this leaf node needs a new marching chunk because of editing
-    if (Editing::newBrushes.size() > 0) {
-      BrushBoundingBox myBB = getBoundingBox();
-      for (Brush* b : Editing::newBrushes) {
-        if (b->getBoundingBox().intersects(myBB)) {
-          needsRegen = true;
-        }
-      }
-    }
-  } else {
-    for (int i = 0; i <= 1; i++) {
-      for (int j = 0; j <= 1; j++) {
-        for (int k = 0; k <= 1; k++) {
-          myChildren[i][j][k]->deleteRegenPhase();
-        }
-      }
-    }
-  }  
-}
+When a shape is added to the world, a new \texttt{Brush} object is created, containing the information about the shape. Each \texttt{Octree} node stores a list of pointers to \texttt{Brush} objects that have bounding boxes intersecting the node. When geometry is generated for a leaf node, a list of \texttt{BrushParams} objects corresponding to these brushes is passed as a parameter to the generation algorithm. Listing \ref{edit_add} shows the code responsible for this.
 
+\begin{lstlisting}[language=C++,label={edit_add},caption={Code to add a new brush into the octree. The brush is added recursively to lists at all levels, so that each leaf has a list of exactly the brushes that are partially inside it. The flag \texttt{needsRegen} indicates to the octree updating algorithm that the geometry within the chunk has changed, and needs to be regenerated.}]
+void Octree::insertBrush(Brush* b) {
+  myBrushes.push_back(b);
+  if (isLeaf) {
+    needsRegen = true;
+    return;
+  }
+  for (int i = 0; i <= 1; i++) {
+    for (int j = 0; j <= 1; j++) {
+      for (int k = 0; k <= 1; k++) {
+        Octree* thisChild = myChildren[i][j][k];
+        if (b->getBoundingBox().intersects(thisChild->getBoundingBox())) {
+          thisChild->insertBrush(b);
+        }
+      }
+    }
+  }
+}
 \end{lstlisting}
+
+When the octree is modified with new leaf nodes near a brush, it is necessary to update the lists of the newly created nodes. To do this, the \texttt{split()} function is modified so that the appropriate brushes are added to each child, when it is created. Listing \ref{edit_split} shows the code responsible for this.
+
+\begin{lstlisting}[language=C++,label={edit_split},caption={Snippet from \texttt{split}, showing how brushes are associated with child nodes, when they are created.}]
+for(int i = 0; i <= 1; i++) {
+  for(int j = 0; j <= 1; j++) {
+    for(int k = 0; k <= 1; k++) {
+      Octree* thisChild = new Octree(0.5f * mySize,myPosition + mySize * 0.5f * glm::vec3(i,j,k), myDetailLevel + 1,myGenerator,this,glm::uvec3(i,j,k));
+      auto it = myBrushes.begin();
+      while (it != myBrushes.end()) {
+        if ((*it)->getBoundingBox().intersects(thisChild->getBoundingBox())) {
+          thisChild->insertBrush(*it);
+        }
+        it++;
+      }
+      myChildren[i][j][k] = thisChild;
+    }
+  }
+}
+\end{lstlisting}
+
 % TODO - modify so normal and sdf are produced at the same time
-When a chunk of geometry is generated, an array of \texttt{BrushParams} structures corresponding to the shapes with bounding boxes intersecting the chunk is passed as a buffer to the Transvoxel algorithm shaders. Each type of shape that may be used to modify the terrain has an SDF and normal function implementation in GLSL. The shapes represented in this array are used, in the order they are passed, to modify the SDF via the interpretations of set union and subtraction using the \texttt{min} and \texttt{max} functions. The normal function is computed by taking the shape which produces the smallest value of the SDF, and returning the normal function for that shape. Both the SDF and normal suffer from inaccuracies when a non-exact SDF is very far from the actual distance value, and in extreme cases, the resulting inaccurate interpolation can lead to cracks appearing in the geometry. Figure \ref{fig:inaccurate_sdf} shows an example of an SDF that exhibits this problem. However, with careful choices of SDF, in most cases it produces an acceptable result.
+Each type of shape that may be used to modify the terrain has an SDF and normal function implementation in GLSL. The shapes represented in the array passed to the generation algorithm are used in the order they are passed, to modify the SDF via the interpretations of set union and subtraction using the \texttt{min} and \texttt{max} functions. The normal function is computed by taking the shape which produces the smallest value of the SDF, and returning the normal function for that shape. Both the SDF and normal suffer from inaccuracies when a non-exact SDF is very far from the actual distance value, and in extreme cases, the resulting inaccurate interpolation can lead to cracks appearing in the geometry. Figure \ref{fig:inaccurate_sdf} shows an example of an SDF that exhibits this problem. However, with careful choices of SDF, in most cases it produces an acceptable result.
 
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{inaccurate_sdf.png}
@@ -800,7 +811,13 @@ Furthermore, collision between an SDF and a different shape is more complicated,
 The full implementation can be found at \url{https://github.com/JC-G/Marching-Cubes}.
  - demonstration of final product\\
  - conclusion\\
- - somehting about future work?
+
+\subsection{Future Work}
+In this project, we have not considered numerous standard techniques for rendering, such as frustrum culling or occlusion culling, since the bulk of the computation has been in generating the geometry on the GPU, rather than rendering it. Nevertheless, these are common, well-documented techniques that would yield some performance improvement.
+As implemented here, there is no equivalent to a bounding box for the main SDF, which would enable improvements similar to those described in \label{section:modification_implementation}, preventing SDF computation at a point that is clearly not near the boundary. For a simple SDF such as a plane, this would be trivial to implement, however for functions such as noise, this becomes much more difficult, since there could be large regions within the area affected by the SDF, which do not contain any of the surface. If some bound were to be used for this main SDF, then it would completely eliminate all of the geometry generation steps in chunks that do not actually have any geometry in them.
+It would also be beneficial to separate the geometry generation from the rendering; although there is not nearly as much of a performance hit when compared to the physics mesh generation, which necessitated a separate thread, when the octree is updated rapidly, such as when moving quickly, some slowdown is still noticable.
+Alongside a distance and normal function, a material function could also be defined. Such a function would describe the type of geometry at some point, for example distinguishing between grass and rock, in terrain generation. Marching Cubes cells could then be shaded according to the materials function at their vertices. Care would have to be taken when deciding how to shade cells where different materials are present at different vertices.
+Using a blend function rather than set union or subtraction to modify the geometry would reduce the number of places where sharp corners appear in the SDF. However, care would have to be taken that the blend function does not result in geometry being modified outside of the bounding box of the shape being added, or this would result in incorrect generation.
 
 %\paragraph{paragraph}
 %\subparagraph{subparagraph}

@@ -50,6 +50,9 @@ class TransvoxelGenerator : public GeometryGenerator
         GLuint transitionCellDataBuffer;
         GLuint transitionVertexDataBuffer;
         GLuint transitionTotalTableBuffer;
+
+        // GLuint hasNegative;
+        // GLuint hasPositive;
 };
 
 #endif // TRANSVOXELGENERATOR_H

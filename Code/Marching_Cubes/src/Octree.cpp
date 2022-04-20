@@ -412,9 +412,7 @@ void Octree::deleteRegenPhase() {
         chop();
         flagged = false;
     }
-    if (isLeaf) {
-        //Check if this leaf node needs a new marching chunk because of editing
-    } else {
+    if (!isLeaf) {
         for (int i = 0; i <= 1; i++) {
             for (int j = 0; j <= 1; j++) {
                 for (int k = 0; k <= 1; k++) {
@@ -422,34 +420,15 @@ void Octree::deleteRegenPhase() {
                 }
             }
         }
-    }  
+    } 
 }
 
-
-// void Octree::deleteRegenPhase() {
-//     //chop chunks that shouldnt be there
-//     if (flagged) {
-//         chop();
-//         flagged = false;
-//     }
-//     if (!isLeaf) {
-//         for (int i = 0; i <= 1; i++) {
-//             for (int j = 0; j <= 1; j++) {
-//                 for (int k = 0; k <= 1; k++) {
-//                     myChildren[i][j][k]->deleteRegenPhase();
-//                 }
-//             }
-//         }
-//     }  
-// }
 
 Octree* Octree::child(int i, int j, int k) {
     return myChildren[i][j][k];
 }
 
 void Octree::insertBrush(Brush* b) {
-
-    //if it does not fit inside any child, place here,also place in child
     myBrushes.push_back(b);
     if (isLeaf) {
         needsRegen = true;
@@ -458,7 +437,7 @@ void Octree::insertBrush(Brush* b) {
     for (int i = 0; i <= 1; i++) {
         for (int j = 0; j <= 1; j++) {
             for (int k = 0; k <= 1; k++) {
-                Octree* thisChild = child(i,j,k);
+                Octree* thisChild = myChildren[i][j][k];
                 if (b->getBoundingBox().intersects(thisChild->getBoundingBox())) {
                     thisChild->insertBrush(b);
                 }

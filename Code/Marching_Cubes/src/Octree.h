@@ -7,6 +7,7 @@
 #include <memory>
 #include "Editing.h"
 #include "BrushBoundingBox.h"
+#include "Timing.h"
 class Octree
 {
     public:
@@ -65,6 +66,8 @@ class Octree
         bool flagSplitPhase(glm::vec3 inPos);
         // void splitPhase(glm::vec3 inPos);
         void deleteRegenPhase();
+
+        static Timing chunkTimer;
 
 };
 

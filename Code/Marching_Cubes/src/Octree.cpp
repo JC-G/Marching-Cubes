@@ -2,6 +2,7 @@
 #include "TestShape.h"
 
 #include <iostream>
+Timing Octree::chunkTimer;
 Octree::~Octree()
 {
     // std::cout << "Deleting Chunk:" << myDetailLevel << ":" << glm::to_string(myPosition) << std::endl;
@@ -272,6 +273,11 @@ void Octree::refresh(glm::vec3 inPos) {
     //Initially, pass through the entire octree and flag chunks that should be deleted, according to the chop condition
     //Or split, according to split condition
     //return true if something has split
+
+    if (Config::get<bool>("log_chunk_time")) {
+        chunkTimer.timeDiff();
+    }
+
     bool needsRefinement = flagSplitPhase(inPos);
 
     //Refine, undoing flags rather than splitting
@@ -287,7 +293,18 @@ void Octree::refresh(glm::vec3 inPos) {
     //Now delete flagged chunks. Since this reaches all leaves, also do editing regeneration here
     deleteRegenPhase();
 
+    if (Config::get<bool>("log_chunk_time")) {
+        long t = chunkTimer.timeDiff();
+        std::cout << "Octree took: " << t;
+    }
+
     generateAllChunks();
+    
+    Editing::newBrushes.clear();
+    if (Config::get<bool>("log_chunk_time")) {
+        long t = chunkTimer.timeDiff();
+        std::cout << ", Chunk took: " << t << std::endl;
+    }
 
 }
 

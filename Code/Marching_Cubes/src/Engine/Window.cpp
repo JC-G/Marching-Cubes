@@ -161,7 +161,6 @@ void Window::handleInput()
     } else {
         placePos = Editing::rayCast( activeCamera->position,activeCamera->getDirection(),Window::mainOctree);
     }
-    Editing::newBrushes.clear();
     if (Controller::keyPressed(window,GLFW_KEY_P)) {
         Editing::allBrushes.clear();
     }

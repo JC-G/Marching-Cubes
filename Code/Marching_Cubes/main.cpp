@@ -63,10 +63,11 @@ static void LoadObjects()
         G = new GPUMarchingCubesGenerator(usedSDF);
     }
     if (Config::get<bool>("single_chunk_mode")) {
+        Timing chunkTimer;
         //test code to generate a single chunk
         usedSDF = new TestSDF(50.0,0.6);
         std::cout << "Beginning chunk timing..." << std::endl;
-        Timing::timeDiff();
+        chunkTimer.timeDiff();
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
                 for (int k = 0; k < 10; k++) {
@@ -85,7 +86,7 @@ static void LoadObjects()
                 }
             }
         }
-        long t = Timing::timeDiff();
+        long t = chunkTimer.timeDiff();
         std::cout << "Finished chunk timing: " << t << "ms" << std::endl;
         int total = 0;
         for (MarchingChunk* c : MarchingChunk::loadedChunks) {
@@ -140,7 +141,11 @@ void AppMain() {
 
     //load objects after physics world
     LoadObjects();
-    Timing::timeDiff();
+    Timing physicsTimer;
+    physicsTimer.timeDiff();
+    if (Config::get<bool>("load_test_brushes")) {
+        TestBrushes::generateRandomSpheres();
+    }
     // Main loop
     while(!glfwWindowShouldClose(Window::window)){
         // process pending events
@@ -154,7 +159,7 @@ void AppMain() {
             }
             // O->generateAllChunks();
         }
-        PhysicsWorld::step((float)Timing::timeDiff());
+        PhysicsWorld::step((float)physicsTimer.timeDiff());
         // draw one frame
         Drawing::drawFrame();
     }

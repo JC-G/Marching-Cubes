@@ -3,11 +3,14 @@
 
 #include <chrono>
 
-namespace Timing {
-    long timeDiff();
-    extern long lastTime;
+class Timing {
+    public:
+        Timing();
+        long timeDiff();
+    private:
+        long lastTime;
 
-}
+};
 
 
 #endif

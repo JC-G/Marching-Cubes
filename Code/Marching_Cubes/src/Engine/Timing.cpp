@@ -1,5 +1,8 @@
 #include "Timing.h"
-long Timing::lastTime = timeDiff();
+Timing::Timing() {
+    lastTime = 0;
+    timeDiff();
+}
 
 long Timing::timeDiff() {
     //https://stackoverflow.com/a/19555298

@@ -1,6 +1,7 @@
 #include "TestBrushes.h"
 #include "EllipsoidBrush.h"
 #include "CylinderBrush.h"
+#include "Editing.h"
 
 std::vector<Brush*> TestBrushes::randomSpheres;
 std::vector<Brush*> TestBrushes::randomCylinders;
@@ -10,30 +11,30 @@ void TestBrushes::generateRandomSpheres() {
         return;
     }
     //generate lots of random ellipsoids
-    for (int i = 0; i < 10000; i++) {
-        randomSpheres.push_back(
-            new EllipsoidBrush(
-                glm::vec3(randFloat(-500,500),5,randFloat(-500,500)),
-                glm::vec3(randFloat(.1,1),randFloat(.1,1),randFloat(.1,1))
-            )
+    for (int i = 0; i < 100000; i++) {
+        Brush* b = new EllipsoidBrush(
+            glm::vec3(randFloat(-500,500),randFloat(0,100),randFloat(-500,500)),
+            glm::vec3(randFloat(5,15),randFloat(5,15),randFloat(5,15))
         );
+        Editing::newBrushes.push_back(b);
+        Editing::allBrushes.push_back(b);
     }
 }
 
 void TestBrushes::generateRandomCylinders() {
-    if (randomCylinders.size() > 0) {
-        return;
-    }
+    // if (randomCylinders.size() > 0) {
+    //     return;
+    // }
 
-    for (int i = 0; i < 10000; i++) {
-        glm::vec3 p1(randFloat(-500,500),3,randFloat(-500,500));
-        glm::vec3 p2 = p1 + glm::vec3(randFloat(-1,1), randFloat(-1,1),randFloat(-1,1));
-        randomCylinders.push_back(
-            new CylinderBrush(
-                p1,p2,randFloat(0.1,0.9)
-            )
-        );
-    }
+    // for (int i = 0; i < 10000; i++) {
+    //     glm::vec3 p1(randFloat(-500,500),3,randFloat(-500,500));
+    //     glm::vec3 p2 = p1 + glm::vec3(randFloat(-1,1), randFloat(-1,1),randFloat(-1,1));
+    //     randomCylinders.push_back(
+    //         new CylinderBrush(
+    //             p1,p2,randFloat(0.1,0.9)
+    //         )
+    //     );
+    // }
 }
 
 float TestBrushes::randFloat(float min, float max) {

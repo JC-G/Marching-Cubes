@@ -59,3 +59,10 @@ void CylinderAction::drawPreview() {
     }
     Preview::drawPreviewCylinder(radius,pos1,Window::placePos);
 }
+
+std::string CylinderAction::getDetails() {
+    return "Brush Controls:\n"
+           "([) Decrease Radius\n"
+           "(]) Increase Radius\n"
+           "(Click and Drag) Place Cylinder";
+}

@@ -22,6 +22,7 @@ class Text {
         static std::map<GLchar, Character> Characters;
 
         static Shader* textShader;
+        static float scaledHeight;
 };
 
 #endif

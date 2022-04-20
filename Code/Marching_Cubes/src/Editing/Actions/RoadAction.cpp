@@ -81,3 +81,11 @@ void RoadAction::drawPreview() {
         );
     }
 }
+
+std::string RoadAction::getDetails() {
+    return "Brush Controls:\n"
+           "([) Decrease Radius\n"
+           "(]) Increase Radius\n"
+           "(Click) Place Interpolation Point\n"
+           "(X) Finish Spline";
+}

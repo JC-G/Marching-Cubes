@@ -14,6 +14,7 @@ class DigSphereAction : public Action {
         void increaseSize() override;
         void decreaseSize() override;
         void drawPreview() override;
+        std::string getDetails() override;
 
         float radius;
 };

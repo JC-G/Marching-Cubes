@@ -36,3 +36,10 @@ void SphereAction::decreaseSize() {
 void SphereAction::drawPreview() {
     Preview::drawPreviewSphere(glm::vec3(radius),Window::placePos);
 }
+
+std::string SphereAction::getDetails() {
+    return "Brush Controls:\n"
+           "([) Decrease Size\n"
+           "(]) Increase Size\n"
+           "(Click) Place Spheres";
+}

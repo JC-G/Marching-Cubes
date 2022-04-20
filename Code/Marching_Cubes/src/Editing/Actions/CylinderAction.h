@@ -16,6 +16,8 @@ class CylinderAction : public Action {
         void decreaseSize() override;
         void drawPreview() override;
 
+        std::string getDetails() override;
+
         float radius;
         bool placing = false;
     private:

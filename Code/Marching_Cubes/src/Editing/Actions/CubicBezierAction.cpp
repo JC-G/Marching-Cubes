@@ -68,3 +68,11 @@ void CubicBezierAction::drawPreview() {
         Preview::drawPreviewLine(C,Window::placePos);
     }
 }
+
+std::string CubicBezierAction::getDetails() {
+    return "Brush Controls:\n"
+           "([) Decrease Radius\n"
+           "(]) Increase Radius\n"
+           "(Click) Place Control Point\n"
+           "Place 4 Control Points to form a Cubic Bezier";
+}

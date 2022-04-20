@@ -18,6 +18,8 @@ class InterpolationSplineAction : public Action {
 
         void finishSpline();
 
+        std::string getDetails() override;
+
     private:
         float radius;
         std::vector<glm::vec3> points;

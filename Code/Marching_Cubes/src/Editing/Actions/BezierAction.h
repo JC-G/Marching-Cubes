@@ -15,6 +15,8 @@ class BezierAction : public Action {
         void decreaseSize() override;
         void drawPreview() override;
 
+        std::string getDetails() override;
+
         float radius;
         int placingStep = 0;
     private:

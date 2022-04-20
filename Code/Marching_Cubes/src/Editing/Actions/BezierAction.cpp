@@ -60,3 +60,11 @@ void BezierAction::drawPreview() {
     }
 }
 
+std::string BezierAction::getDetails() {
+    return "Brush Controls:\n"
+           "([) Decrease Radius\n"
+           "(]) Increase Radius\n"
+           "(Click) Place Control Point\n"
+           "Place 3 Control Points to form a Quadratic Bezier";
+}
+

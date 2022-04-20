@@ -13,6 +13,7 @@ class EllipsoidAction : public Action {
         void handleInput(glm::vec3 placePos) override;
 
         std::string getDescription() override;
+        std::string getDetails() override;
 
         void drawPreview() override;
     private:

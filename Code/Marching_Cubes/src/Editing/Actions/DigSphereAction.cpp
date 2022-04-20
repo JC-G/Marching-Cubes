@@ -37,3 +37,11 @@ void DigSphereAction::decreaseSize() {
 void DigSphereAction::drawPreview() {
     Preview::drawPreviewSphere(glm::vec3(radius),Window::placePos);
 }
+
+
+std::string DigSphereAction::getDetails() {
+    return "Brush Controls:\n"
+           "([) Decrease Radius\n"
+           "(]) Increase Radius\n"
+           "(Click) Dig Sphere";
+}

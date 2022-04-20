@@ -35,6 +35,7 @@ class Window
         static Octree* mainOctree;
 
         static glm::vec3 placePos;
+        static std::string getControlString(bool full);
 
     protected:
 

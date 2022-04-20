@@ -15,7 +15,8 @@ class Action {
 
         virtual void handleInput(glm::vec3 placePos);
 
-        virtual std::string getDescription() {return "";};
+        virtual std::string getDescription() {return "UNIMPLEMENTED";};
+        virtual std::string getDetails() {return "UNIMPLEMENTED";};
         
         virtual void drawPreview() {};
 };

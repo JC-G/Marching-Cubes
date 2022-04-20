@@ -4,6 +4,8 @@
 GLuint Text::textVAO = 0;
 Shader* Text::textShader;
 GLuint Text::textBuffer = 0;
+float Text::scaledHeight;
+
 std::map<GLchar, Text::Character> Text::Characters;
 
 bool Text::initText() { //Setup for text rendering
@@ -26,7 +28,7 @@ bool Text::initText() { //Setup for text rendering
         return false;
     }
 
-    FT_Face face;
+    FT_Face face; 
     if (FT_New_Face(ft,"fonts/arial.ttf", 0, &face)) {
         std::cout << "Could not load font" << std::endl;
         return false;
@@ -73,6 +75,9 @@ bool Text::initText() { //Setup for text rendering
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+    //measured in 1/64 pixels
+    scaledHeight = face->size->metrics.height/64.0;
+
     // destroy FreeType once we're finished
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
@@ -94,9 +99,17 @@ void Text::renderText(std::string text, float x, float y, float scale, glm::vec3
 	
     // iterate through all characters
     std::string::const_iterator c;
+    float xOrig = x;
 	for (c = text.begin(); c != text.end(); c++) 
     {
+        
         Character ch = Characters[*c];
+
+        if (*c=='\n') {
+            y -= scale * scaledHeight;
+            x = xOrig;
+            continue;
+        }
 
         float xpos = x + ch.Bearing.x * scale;
         float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;

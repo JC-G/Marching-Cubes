@@ -74,3 +74,11 @@ void InterpolationSplineAction::drawPreview() {
     }
     Preview::drawPreviewLine(points[points.size()-1], Window::placePos);
 }
+
+std::string InterpolationSplineAction::getDetails() {
+    return "Brush Controls:\n"
+           "([) Decrease Radius\n"
+           "(]) Increase Radius\n"
+           "(Click) Place Interpolation Point\n"
+           "(X) Finish Spline";
+}

@@ -12,7 +12,7 @@ void EllipsoidAction::onMouseDown(glm::vec3 pos) {
 }
 
 std::string EllipsoidAction::getDescription() {
-    return "Ellipsoid: " + glm::to_string(r3) + ", Editing Component " + std::to_string(editComponent);
+    return "Ellipsoid: " + glm::to_string(r3) + ", Editing Component (" + "XYZ"[editComponent] + ")";
 }
 
 
@@ -37,4 +37,12 @@ void EllipsoidAction::handleInput(glm::vec3 placePos) {
 void EllipsoidAction::drawPreview() {
     Preview::drawPreviewSphere(r3,Window::placePos);
     
+}
+
+std::string EllipsoidAction::getDetails() {
+    return "Brush Controls:\n"
+           "([) Decrease Size in Direction\n"
+           "(]) Increase Size in Direction\n"
+           "(') Change Modified Direction\n"
+           "(Click) Place Ellipsoid";
 }

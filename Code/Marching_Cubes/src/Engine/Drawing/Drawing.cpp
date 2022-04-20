@@ -325,9 +325,11 @@ bool Drawing::drawGUI() {
 		drawGUIBox(glm::vec2(Window::width/2, Window::height/2)-glm::vec2(16),glm::vec2(32),crosshairTexture);
 	}
 	if (Config::get<bool>("draw_text")) {
-		Text::renderText(Editing::currentAction()->getDescription(), 25.0f, 25.0f, 0.5, glm::vec3(0.0));
+		Text::renderText(Editing::currentAction()->getDescription(), 25.0f, 25.0f, 0.5f, glm::vec3(0.0));
 		Text::renderText(glm::to_string(Window::activeCamera->position),25.0f,50.0f,0.5f,glm::vec3(0.0));
+		Text::renderText(Editing::currentAction()->getDetails(),25.0f,Window::height - 50.0f,0.5f,glm::vec3(0.0));
 
+		Text::renderText(Window::getControlString(Config::get<bool>("show_full_controls")),Window::width - 300.0, Window::height - 50.0,0.5,glm::vec3(0.0));
 	}
     return true;
 }

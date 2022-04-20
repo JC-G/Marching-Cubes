@@ -191,6 +191,10 @@ void Window::handleInput()
         Config::setToggle("player_physics",!Config::get<bool>("player_physics"));
     }
 
+    if (Controller::keyPressed(window,GLFW_KEY_H)) {
+        Config::setToggle("show_full_controls", !Config::get<bool>("show_full_controls"));
+    }
+
     if (Config::get<bool>("player_physics")) {
         PhysicsWorld::movePlayerFromControl(activeCamera->getMovementVector(movement));
         activeCamera->moveToShape(PhysicsWorld::getPlayerBody());
@@ -247,4 +251,22 @@ void APIENTRY Window::glDebugOutput(GLenum source,
         case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "Severity: notification"; break;
     } std::cout << std::endl;
     std::cout << std::endl;
+}
+
+std::string Window::getControlString(bool full) {
+    if (full) {
+        return "(WASD) Move\n"
+               "(Space) Move Upwards\n"
+               "(Shift) Move Downwards\n"
+               "(P) Delete All Brushes\n"
+               "(B) Next Brush Type\n"
+               "(Y) Spawn Physics Object\n"
+               "(T) Torus\n"
+               "(F) Show/Hide Wireframe\n"
+               "(V) Teleport to Mouse\n"
+               "(Z) Toggle Player Physics\n"
+               "(H) Hide Controls\n";
+    } else {
+        return "Press (H) to view controls";
+    }
 }

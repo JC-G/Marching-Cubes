@@ -17,6 +17,8 @@ class CubicBezierAction : public Action {
         float radius;
         int placingStep = 0;
 
+        std::string getDetails() override;
+
     private:
         glm::vec3 A;
         glm::vec3 B;

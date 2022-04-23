@@ -42,7 +42,7 @@
 \newpage
 
 \section*{Abstract}
-This project explores a method for procedurally generating terrain by applying the a variation of the Marching Cubes algorithm known as the Transvoxel algorithm. We use an octree data structure to break down a large world into chunks at varying levels of detail, and apply the parallel processing power of the GPU to rapidly generate geometry on a per-chunk basis. We then explore applications of this approach, modifying the geometry in real-time by making localized changes to the underlying distance function. %TODO - Finally, we demonstrate the applicability of this approach by ...
+This project explores a method for procedurally generating terrain by applying a variation of the Marching Cubes algorithm known as the Transvoxel algorithm. We use an octree data structure to break down a large world into chunks at varying levels of detail, and apply the parallel processing power of the GPU to rapidly generate geometry on a per-chunk basis. We then explore applications of this approach, modifying the geometry in real-time by making localized changes to the underlying distance function. %TODO - Finally, we demonstrate the applicability of this approach by ...
 Finally, we use the meshes we have generated with a well-known physics library.
 \newpage
 
@@ -50,7 +50,14 @@ Finally, we use the meshes we have generated with a well-known physics library.
 
 \newpage
 \section{Introduction}
-- project and report overview
+
+
+The Marching Cubes algorithm is an algorithm for polygonising a scalar field. Originally designed by William E. Lorensen and Harvey E. Cline in 1987\cite{10.1145/37402.37422}, the original application of the algorithm was in medical imaging, to create anatomical models using data from 3D scans such as CT scans. %At the time it was written... ?
+ 
+Procedural terrain generation is a popular technique seen within the video game industry, allowing for large areas of geometry to be created, according to mathematical rules, rather than the traditional method of 3D modelling, which is time-consuming for the modeller, and takes up a large amount of storage space.
+
+The enormous increase in processing power available, as well as the massively parallel design of the modern GPU, means that it is achievable to use the Marching Cubes algorithm to generate large amounts of geometry between frames, at an interactive framerate. When combined with a level-of-detail system, and a method of modifying the data passed to the algorithm, it is possible to render very large regions of terrain, that can be interacted with and modified in real time.
+
 \section{Background}
 \subsection{Signed Distance Functions}
 \label{section:sdf}

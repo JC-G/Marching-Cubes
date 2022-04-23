@@ -12,6 +12,7 @@
 \usepackage{hyperref}
 
 \usepackage{listings}
+\usepackage{fancybox}
 
 \lstset{
   basicstyle=\ttfamily,
@@ -19,7 +20,13 @@
   postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
   numbers=left,
   stepnumber=1,
+  numberstyle=\tiny,
   tabsize=1,
+  keywordstyle=\color{blue}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  commentstyle=\color{gray}\ttfamily,
+  morecomment=[l][\color{magenta}]{\#},
+  frame=shadowbox
 }
 
 \usepackage[margin=1in]{geometry}
@@ -176,8 +183,8 @@ void main() {
 }
 \end{lstlisting}
 
-\item \underline{Counting phase}: For each grid cell in the chunk, the number of mesh triangles in the cell is calculated, using the SDF sample values computed in the previous phase. This allows the vertex buffer to be sized correctly. This phase also filters out grid cells which have no triangles in at all, since no geometry needs to be generated. Listing \ref{mc_count} shows part of the code responsible for this. Variable \texttt{cubeIndex} is calculated according to the Marching Cubes algorithm, and corresponds to the vertices of the grid cell that are inside or outside of the surface. Hence, this \textit{cube index} determines the geometry that will end up in each grid cell. \texttt{totalTable} contains the number of triangles in a grid cell with that index, which is added to the atomic variable \texttt{pointCount}. \texttt{bufferIndex} reserves a place in the buffer \texttt{marchableList} for this grid cell. The condition in line 1 filters out the cube indices which do not generate any geometry.
-\begin{lstlisting}[language=C++,label={mc_count},caption={GLSL code for counting the number of vertices and marchable grid cells in the chunk.}]
+\item \underline{Counting phase}: For each grid cell in the chunk, the number of mesh triangles in the cell is calculated, using the SDF sample values computed in the previous phase. This allows the vertex buffer to be sized correctly. This phase also filters out grid cells which have no triangles in at all, since no geometry needs to be generated. Listing \ref{mc_count} shows part of the code responsible for this. The variable \texttt{cubeIndex} is calculated according to the Marching Cubes algorithm, and corresponds to the vertices of the grid cell that are inside or outside of the surface. Hence, this \textit{cube index} determines the geometry that will end up in each grid cell. \texttt{totalTable} contains the number of triangles in a grid cell with that index, which is added to the atomic variable \texttt{pointCount}. \texttt{bufferIndex} reserves a place in the buffer \texttt{marchableList} for this grid cell. The condition in line 1 filters out the cube indices which do not generate any geometry, which are those that are completely solid, or completely air.
+\begin{lstlisting}[language=C++,label={mc_count},caption={GLSL code for counting the number of vertices and marchable grid cells in the chunk. When \texttt{cubeIndex} is equal to either 0 or 255, no geometry is generated in that cell.}]
 if (cubeIndex != 0 && cubeIndex != 255)
 {
   atomicCounterAddARB(pointCount,totalTable[cubeIndex]);
@@ -187,7 +194,7 @@ if (cubeIndex != 0 && cubeIndex != 255)
 }
 \end{lstlisting}
 
-\item \underline{Polygonisation phase}: For each of the grid cells that will contain mesh triangles, these triangles are actually generated, and the vertex positions are adjusted by linearly interpolating the pre-computed SDF values. At this stage, the vertex normals are also generated. This can be done using face normals, or by providing a normal function. Listing \ref{mc_poly} shows part of the code responsible for this. Atomic variable \texttt{triCount} keeps track of the number of triangles that have been generated across the entire chunk, and allocates a space in the buffers \texttt{vertices} and \texttt{normals}, which have been sized according to the values calculated in the previous phase. \texttt{triTable} is a buffer containing a flattened version of the table with the same name in the reference implementation. It contains a list of indices into the array \texttt{vertlist} for each cube index. Each vertex in \texttt{vertlist} is positioned on the edge of the grid cell, linearly interpolated as described in Section \ref{section:mc}.
+\item \underline{Polygonisation phase}: For each of the grid cells that will contain mesh triangles, these triangles are actually generated, and the vertex positions are adjusted by linearly interpolating the pre-computed SDF values. At this stage, the vertex normals are also generated. This could be done using the normal of the generated triangle, which would result in the surface having a faceted appearance.We avoid this approach by providing a normal function. Listing \ref{mc_poly} shows part of the code responsible for this. Atomic variable \texttt{triCount} keeps track of the number of triangles that have been generated across the entire chunk, and allocates a space in the buffers \texttt{vertices} and \texttt{normals}, which have been sized according to the values calculated in the previous phase. \texttt{triTable} is a buffer containing a flattened version of the table with the same name in the reference implementation. It contains a list of indices into the array \texttt{vertlist} for each cube index. Each vertex in \texttt{vertlist} is positioned on the edge of the grid cell, linearly interpolated as described in Section \ref{section:mc}.
 \begin{lstlisting}[language=C++,label={mc_poly},caption={GLSL code for generating the geometry of a grid cell.}]
 for (int tCount = 0; triTable[tCount+16*cubeIndex] != -1; tCount+=3)
 {
@@ -202,10 +209,10 @@ for (int tCount = 0; triTable[tCount+16*cubeIndex] != -1; tCount+=3)
 \end{lstlisting}
 
 \end{enumerate}
-The choice to parallelise the algorithm in this way presents some downsides. Triangles are generated and placed into the vertex buffer in an order which is very unlikely to be coherent, meaning that there is no way to reliably use an index buffer for vertices that are generated in the same place, a common occurance. This results in many duplicate vertices in the vertex array. Nevertheless, this is a worthwhile tradeoff, with the GPU implementation greatly outperforming the CPU implementation. 
+The choice to parallelise the algorithm in this way presents some downsides. Triangles are placed into the vertex buffer in the order the parallel invocations of the third compute shader increment the atomic counter, an order which is very unlikely to be coherent, and likely to be different between calls, due to race conditions.This means that there is no way to reliably use an index buffer for vertices that are generated in the same place, a common occurance since a vertex on the edge between neighboring cells is part of the geometry generated for both of the cells. This results in many duplicate vertices in the vertex array. Nevertheless, this is a worthwhile tradeoff, with the GPU implementation greatly outperforming the CPU implementation, as demonstrated now.
 \subsubsection{Comparison of CPU and GPU implementations}
 \label{section:GPUCPUcomparison}
-The SDF used for these comparison tests is a scaled 3D noise function. Pseudorandom numbers for this noise function are generated using combinations of built in floating point functions in GLSL in the GPU implementation, and functions from the GLM C++ library in the CPU implementation. An effort has been made to ensure these functions are equivalent, however due to floating point inaccuracies and differences between these implementations, the SDF occasionally produces slightly different values between implementations, and this results in the number of triangles generated being slightly different also. However, this difference is very small compared to the total number of triangles generated, so is unlikely to have a significant impact on the runtime comparison. For example, the largest test, generating 1000 chunks of size $32^3$, produces 4394195 triangles on the CPU, and 4394045 on the GPU.
+The SDF used for these comparison tests is a scaled 3D fractal noise function. Pseudorandom numbers for this noise function are generated using combinations of built in floating point functions in GLSL in the GPU implementation, and the equivalent functions from the GLM C++ library\cite{g-truc_2005} in the CPU implementation. An effort has been made to ensure these functions are equivalent, however due to floating point inaccuracies and differences between these implementations, the SDF occasionally produces slightly different values between implementations, and this results in the number of triangles generated being slightly different also. However, this difference is very small compared to the total number of triangles generated, so is unlikely to have a significant impact on the runtime comparison. For example, the largest test, generating 1000 chunks of size $32^3$, produces 4394195 triangles on the CPU, and 4394045 on the GPU.
 Table \ref{tab:cpu-gpu-comparison} shows the time taken to generate different numbers of chunks of 3D noise, of size $32^3$, using the reference CPU implementation, and this GPU implementation. All experiments were run using an Intel i9-9900k and Nvidia RTX 2080ti. Each experiment was run 5 times, and the average time is shown.
 \begin{table}[H]
   \begin{tabular}{|c|c|c|c|}
@@ -234,7 +241,7 @@ Even with a much more efficient GPU implementation of the Marching Cubes algorit
 \subsubsection{Octree}
 \label{section:octree}
 To implement a versatile LOD system, an octree data structure is used. %TODO - explain an octree?
-Each octree node represents a cuboid of space, such that the root node of the octree represents the entire renderable world, and the 8 children of an octree node equally divide the space represented by the parent node into octants. Each leaf node contains a reference to a chunk of generated geometry, as described in section \ref{section:mc_gpu}. The depth of the octree in any given region corresponds to the level of detail at which that region will have geometry generated. Each Marching Cubes chunk is generated with the same number of grid cells, regardless of the level of detail it is being generated for. However, the size of the grid cells doubles for each detail level increase. Using an octree provides versatility since any condition can be used to set the level of detail at a specific point in space. For example, it will be desirable to use the maximum level of detail near physics objects, so the physics collision is as accurate as possible, even if the camera is very far away. These conditions will be represented by functions \texttt{shouldSplit} and \texttt{shouldChop} for each node in the octree. The function \texttt{shouldSplit} returns whether a leaf node should split into its 8 children, and \texttt{shouldChop} returns whether a non-leaf node, should become a leaf, removing the rest of the octree below that node.
+Each octree node represents a cuboid of space, such that the root node of the octree represents the entire renderable world, and the 8 children of an octree node equally divide the space represented by the parent node into octants. Each leaf node contains a reference to a chunk of generated geometry, as described in section \ref{section:mc_gpu}. The depth of the octree in any given region corresponds to the level of detail at which that region will have geometry generated. Each Marching Cubes chunk is generated with the same number of grid cells, regardless of the level of detail it is being generated for. However, the size of the grid cells within the chunk doubles in each direction, for each detail level increase. Using an octree provides versatility since any condition can be used to set the level of detail at a specific point in space. For example, it will be desirable to use the maximum level of detail near physics objects, so the physics collision is as accurate as possible, even if the camera is very far away. These conditions will be represented by functions \texttt{shouldSplit} and \texttt{shouldChop} for each node in the octree. The function \texttt{shouldSplit} returns whether a leaf node should split into its 8 children, and \texttt{shouldChop} returns whether a non-leaf node, should become a leaf, removing the rest of the octree below that node.
 
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{octree_plane.png}
@@ -255,21 +262,71 @@ Using the Marching Cubes algorithm with multiple different grid cell sizes cause
 
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{cracks2.png}
-  \caption{An example with low chunk size, where the cracks in between levels of detail are clearly visible.}
+  \caption{An example with low chunk size, to demonstrate the cracks between levels of detail. Here, parts of the blue background can be seen in the gaps between the chunks.}
   \label{fig:cracks2}
 \end{figure}
 
 
 
 \subsection{Transvoxel Algorithm}
-To solve the problem mentioned in section \ref{section:cracks}, we will switch the algorithm used to generate geometry. The Transvoxel algorithm \cite{lengyel_2010} is an algorithm based on the Marching Cubes algorithm that solves this problem by adding additional vertices into the less detailed mesh, on the faces of Marching Cubes cells adjacent to cells of a higher level of detail. This is done by splitting a cell at the lower resolution (a half-resolution cell) into a regular cell and some amount of transition cells, so that the transition cells border the regular cells at the higher resolution (full-resolution cells). These transition cells need not be cube shaped, and serve as a method of stitching the gap in between half-resolution and full-resolution cells. Figure \ref{fig:transition_cells}, reproduced from the Transvoxel algorithm paper, shows the position of transition cells in 2 different possible configurations.
+To solve the problem mentioned in section \ref{section:cracks}, we will switch the algorithm used to generate geometry. The Transvoxel algorithm \cite{lengyel_2010} is an algorithm based on the Marching Cubes algorithm that solves this problem by adding additional vertices into the less detailed mesh, on the faces of Marching Cubes cells adjacent to cells of a higher level of detail. This is done by splitting a cell at the lower resolution (a half-resolution cell) into a regular cell and some amount of transition cells, so that the transition cells border the regular cells at the higher resolution (full-resolution cells). These transition cells need not be cube shaped, and serve as a method of stitching the gap in between half-resolution and full-resolution cells. Figure \ref{fig:transition_cells}, reproduced from figure 4.9 in the Transvoxel algorithm paper\cite{lengyel_2010}, shows the position of transition cells in 2 different possible configurations.
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{transition_cells}
   \caption{A 2D illustration of possible configurations of transition cells on the boundary between levels of detail. The half-resolution regular cell has been resized, and the transition cells fit in the space made in between the cells}
   \label{fig:transition_cells}
 \end{figure}
 
-The Transvoxel algorithm works similarly to the Marching Cubes algorithm, since it can be implemented to work independently on grid cells. Hence it is also an algorithm that greatly benefits from the parallel processing power of the GPU. The algorithm relies on large lookup tables in a similar way to the Marching Cubes algorithm. For these, we will modify a set of lookup tables provided by the original author of the Transvoxel algorithm \footnote{https://transvoxel.org/Transvoxel.cpp}
+Like the Marching Cubes algorithm, the original Transvoxel implementation was written for a standard CPU. However, it is slightly more optimised, containing information in the lookup tables for vertex sharing that relies on sequential generation of the geometry. This has been removed from my implementation since this sort of optimisation is incompatible with the parallelisation used, for the same reason as described at the end of section \ref{section:mc_gpu}. The Transvoxel algorithm works similarly to the Marching Cubes algorithm, and can be implemented to work independently on grid cells. Hence it is also an algorithm that greatly benefits from the parallel processing power of the GPU. The algorithm relies on large lookup tables in a similar way to the Marching Cubes algorithm. For these, we will modify a set of lookup tables provided by the original author of the Transvoxel algorithm \footnote{https://transvoxel.org/Transvoxel.cpp}. 
+
+\subsubsection{Regular cell lookup tables}
+Unfortunately, the Transvoxel algorithm uses different labelling conventions to the Marching Cubes algorithm. Figure \ref{fig:tv_labels} shows these naming conventions. The lookup tables also use the opposite sign convention.
+
+\begin{SCfigure}[][!h]
+  \caption{Cell vertex naming convention for regular cells in the Transvoxel algorithm.}
+  \includegraphics[width=0.5\textwidth]{tv_labels.PNG}
+  \label{fig:tv_labels}
+\end{SCfigure}
+The way these tables work differs from the Marching Cubes algorithm, but performs a similar job. The original implementation defined some of this data in C++ \texttt{struct} data structures. However, since the tables will be passed to compute shaders in the form of a buffer, for simplicity, they have all been flattened. Furthermore, some of the tables contained vertex reuse data, which has also been removed.
+Listing \ref{tv_tables} shows excerpts from these tables.
+
+\begin{lstlisting}[language=C++,label={tv_tables},caption={Lookup tables for the geometry of regular cells in the Transvoxel algorithm. An example of their usage is given below.}]
+int cellMask = 1;
+for (int i = 0; i < 8; i++) {
+  if (gridCells[i] < 0) cellIndex |= cellMask;
+  cellMask = cellMask << 1;
+}
+
+const unsigned int regularCellClass[256] =
+{
+  0x00, 0x01, 0x01, 0x03, 0x01, 0x03, 0x02, 0x04, 0x01, 0x02, 0x03, 0x04, 0x03, 0x04, 0x04, 0x03,
+  ...
+};
+
+const unsigned int regularCellData[256] =
+{
+  0x00, 0,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+  0x31, 0, 1, 2,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+  ...
+};
+
+const unsigned int regularVertexData[3072] =
+{
+  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+  0x01, 0x02, 0x04, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+  ...
+};
+
+const unsigned int regularTotalTable[16] = {
+  0,
+  3,
+  ...
+};
+\end{lstlisting}
+
+The value \texttt{cellIndex} is an index into the subsequent tables, in the same way as the Marching Cubes algorithm. The table \texttt{regularCellClass} maps each of the 256 possible cell configurations to one of 16 cell classes, which defines the triangulation used within the cell. The table \texttt{regularCellData} contains a row of 16 numbers for each of the 16 cell classes. Each row starts with a value that encodes the number of distinct vertices and triangles in the triangulation, which is unused in my implementation. The following 15 entries in each row store vertex indices in the order they are used in the triangulation. Note that these vertex indices do not yet correspond to edges of the grid cell, as was the case in the Marching Cubes implementation, and a value of \texttt{0xFF} is a placeholder. The table \texttt{regularVertexData} contains a row of 12 numbers for each of the cell configurations. Each number encodes an edge of the grid cell using 2 vertex indices, as in figure \ref{fig:tv_labels}. Finally, table \texttt{regularTotalTable} contains the number of vertices in the triangulation for each class, including duplicates. This ensures the right number of vertices is always generated, and acts as a replacement for the unused data in \texttt{regularCellData}. 
+As an example, consider the case where only vertex 0 is inside the terrain (Giving a binary cellIndex of $00000001$, since the sign convention is different). The cell class is \texttt{0x01}. The number of vertices to be generated is looked up in \texttt{regularTotalTable}, where it is found that 3 vertices should be generated. The vertex indices to be used are found in \texttt{regularCellData}, and they are 0, 1, and 2. The vertex positions are found in \texttt{regularVertexData}, and they are \texttt{0x01, 0x02, 0x04}. Hence a triangle will be generated with a vertex on the edge between grid cell vertices 0 and 1, a vertex on the edge between grid cell vertices 0 and 2, and a vertex on the edge between grid cell vertices 0 and 4.
+\subsubsection{Transition cell lookup tables}
+
 \subsubsection{Adaption of the algorithm to GPU}
 
 To parallelise the Transvoxel algorithm, we employ a similar three phase approach to the one described in section \ref{section:mc_gpu}. However, since the algorithm now needs to account for transition cells, and therefore additional SDF sample values, the stages become considerably more complicated. Once again, the algorithm operates on large chunks made up of grid cells, and the resolution of a chunk determines the size of each grid cell. To determine where transition cells need to be generated, a chunk now makes use of a new variable, \texttt{edgeIndex}. This is a 6-bit integer, such that each bit stores whether a face should have transition cells generated on it. This is a parameter passed to the shaders before they are run. The calculation of \texttt{edgeIndex} is described in section \ref{section:edgeIndex}
@@ -355,7 +412,6 @@ Transition cells are handled completely separately from the regular cells, even 
 
 \end{enumerate}
 
-The original Transvoxel implementation was written for a standard CPU and contained information in the lookup tables for vertex sharing that relied on sequential generation of the geometry. This has been removed from my implementation, for the same reason as described at the end of section \ref{section:mc_gpu}.
 \subsubsection{Calculation of edgeIndex}
 \label{section:edgeIndex}
 For each generated chunk, the variable \texttt{edgeIndex} needs to be calculated. This is done using the octree data structure described in section \ref{section:octree}. For each octree node containing a chunk, the algorithm searches the octree using a recursive algorithm to find neighbor nodes in each direction that exist at the same level of detail. If a neighbor is a leaf, it contains a chunk, and this means the neighboring geometry is at the same level of detail. If no neighbor exists at the same level of detail in some direction, then the neighboring geometry is at a lower level of detail. \texttt{edgeIndex} is not modified in this case, since \texttt{edgeIndex} will be modified for the lower level of detail chunk. If the neighbor is not a leaf, then the neighboring geometry is at a higher level of detail, and edgeIndex is modified to record that transition cells should be generated in that direction. Listing \ref{octree_neighbor} shows the code responsible for finding the neighbors of an octree cell.

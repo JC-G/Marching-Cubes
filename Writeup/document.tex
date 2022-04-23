@@ -70,7 +70,7 @@ At the core of the Marching Cubes algorithm is the scalar field that is passed t
 It is worth noting that some literature chooses the terminology of signed \textit{density} functions \cite{nguyen_geiss_2007}. This is equivalent to an approximate SDF, however the sign convention is flipped, so that a negative value is outside the surface.\\
 Many primitive shapes have exact SDF representations \cite{quilez:sdf}. Figure \ref{fig:Circle_SDF} shows a 2 dimensional exact SDF for a circle.
 
-\begin{SCfigure}[][h]
+\begin{SCfigure}[][!h]
 \caption{Example of a 2 dimensional SDF representing a circle. The function shown is $f\left(x,y\right) = \sqrt{x^2+y^2}-1$, with the area where $f\left(x,y\right) < 0 $ shaded. Also shown are the contours where $f\left(x,y\right) = 0.1,0.2,...0.5$. Note that at the center point $\left(0,0\right)$, the gradient is undefined. However, since this point is not close to the surface, $f$ can still be used as an SDF without issue.}
 \includegraphics[width=0.5\textwidth]{Circle_SDF}
 \label{fig:Circle_SDF}
@@ -78,7 +78,7 @@ Many primitive shapes have exact SDF representations \cite{quilez:sdf}. Figure \
 
 However, many useful shapes, in particular heightmaps and shapes defined by random noise, shapes widespread in procedural terrain generation, are not easy to represent as an exact SDF. For this sort of shape, we use an approximate SDF. As an example, figure \ref{fig:Hill_SDF} shows a 2 dimensional approximate SDF for the heightmap defined by $y=1-\frac{x^2}{3}$. It is of course possible to define the exact distance function for any implicit shape, however such problems are often minimisation problems with with solutions that are expensive to compute. For example, even this simple example computing the exact distance to a quadratic curve requires computing the roots of a cubic polynomial, and computing the exact distance to a cubic curve requires solving a polynomial of degree 5, for which there is no elementary solution. Since this is useful for defining shapes based on interpolation splines, it is certainly worth considering when an approximation may be worth using due to the reduced computational cost.
 
-\begin{SCfigure}[][h]
+\begin{SCfigure}[][!h]
 \caption{Plot of the SDF $f\left(x,y\right) = y - \left(1 - \frac{x^2}{3}\right)$. Note the contour lines are no longer uniformly spaced, as they would be with an exact SDF. In fact, the distance approximation gets worse, as the slope of the surface increases.}
 \includegraphics[width=0.5\textwidth]{Hill_SDF}
 \label{fig:Hill_SDF}
@@ -88,13 +88,13 @@ The basic set-theoretical operations of union, intersection, and difference have
 
 \subsection{Noise}
 Use of pseudorandom noise to create natural-looking heightmaps is a commonly used technique. We will use a simple type of noise, value noise, for demonstration. Value noise assigns a pseudorandom number in the range $\left[0,1\right]$ to each point on a uniform grid in $\mathbb{R}^n$, and then smoothly interpolates between these values to assign a value to every point. Figure \ref{fig:valuenoise1} shows some value noise.
-\begin{SCfigure}[][h]
+\begin{SCfigure}[][!h]
   \caption{A single layer of value noise using a uniform grid. Note however, that the grid is still clearly visible.}
   \includegraphics[width=0.5\textwidth]{valuenoise1.png}
   \label{fig:valuenoise1}
 \end{SCfigure}
 To break up the grid structure, and provide greater detail, multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. Figure \ref{fig:valuenoise} shows an example of this.
-\begin{SCfigure}[][h]
+\begin{SCfigure}[][!h]
   \caption{8 octaves of value noise. The grid structure is less visible, although some regularity can still be seen.}
   \includegraphics[width=0.5\textwidth]{valuenoise.png}
   \label{fig:valuenoise}
@@ -106,7 +106,48 @@ The use of 3 dimensional noise as an SDF is also possible, and yields interestin
 
 \subsection{Marching Cubes Algorithm}
 \label{section:mc}
-The Marching Cubes algorithm is an algorithm for polygonising a 3 dimensional scalar field. It works by splitting the space into a uniform grid of cubes (\textit{cells}), and sampling the scalar field at the vertices of each cube. Pre-computed lookup tables, indexed by the vertices of the cell which are classified as ``inside'' or ``outside'', are used to determine the geometry that exists within the cell. Each vertex of this geometry lies on an edge of the cell, and the position of each geometry vertex is adjusted by linearly interpolating the sampled values of the scalar field at the cell vertices, such that the vertex is placed approximately on the surface described by the scalar field. In this project, we use a 3 dimensional SDF as described in Section \ref{section:sdf} to provide scalar field samples, and the lookup tables as described by Paul Bourke. \cite{bourke_1994}
+The Marching Cubes algorithm is an algorithm for polygonising a 3 dimensional scalar field. It works by splitting the space into a uniform grid of cubes (\textit{cells}), and sampling the scalar field at the vertices of each cube. Pre-computed lookup tables, indexed by the vertices of the cell which are classified as ``inside'' or ``outside'', are used to determine the geometry that exists within the cell. Each vertex of this geometry lies on an edge of the cell, and the position of each geometry vertex is adjusted by linearly interpolating the sampled values of the scalar field at the cell vertices, such that the vertex is placed approximately on the surface described by the scalar field. Figure \ref{fig:linear_interpolation} shows how this linear interpolation is done.
+
+\begin{SCfigure}[][!h]
+  \caption{A 2D example of cells that contain the same class of geometry, but with different vertex positions, due to the different values of the SDF at the cell vertices. Vertices A,B,C, and D are geometry vertices, adjusted to be in the positions where linear interpolation between the sampled SDF values is equal to 0. The lines between vertices A and B, and vertices C and D, will be part of the generated geometry.}
+  \includegraphics[width=0.5\textwidth]{linear_interpolation.png}
+  \label{fig:linear_interpolation}
+\end{SCfigure}
+
+In this project, we use a 3 dimensional SDF as described in Section \ref{section:sdf} to provide scalar field samples, and the labelling conventions and lookup tables as described by Paul Bourke. \cite{bourke_1994}. Listing \ref{mc_tables} shows excerpts from these tables, and the method used to index these tables.
+
+\begin{lstlisting}[language=C++,label={mc_tables},caption={Lookup table indexing method, and excerpts from the 2 lookup tables used in the Marching Cubes algorithm. The variable \texttt{cubeindex} is the index into \texttt{triTable} and \texttt{edgeTable}, where each of the first 8 bits of the variable corresponds to a vertex, as per the labelling convention in figure \ref{fig:marching_cubes_labels}. An entry in \texttt{edgeTable} is a record of which edges will have vertices on them, with the first 12 bits corresponding to the 12 edges, as per the labelling convention, and an entry in \texttt{triTable} is an ordered list of how these vertices are joined together. For example, if only cell vertex 0 is outside of the surface (\texttt{gridCells[0] > 0}), the binary value of \texttt{cubeindex} will be $00000001$. The corresponding entry in \texttt{edgeTable} is \texttt{0x109}, binary value $100001001$. Bits 0, 3, and 8 are chosen, corresponding to edges 0, 3, and 8. Finally, the corresponding entry in \texttt{triTable} corresponds to a triangle being generated using vertices on edges 0, 8, and 3, in that order. Conversely, if all cell vertices except vertex 0 are outside of the surface, then \texttt{cubeindex} is $11111110$, the corresponding entry in \texttt{edgeTable} is \texttt{0x109}, however the corresponding entry in \texttt{triTable} represents a triangle using the vertices in the order 0, 3, 8.}]
+if (gridCells[0] > 0) cubeindex |= 1;
+if (gridCells[1] > 0) cubeindex |= 2;
+if (gridCells[2] > 0) cubeindex |= 4;
+if (gridCells[3] > 0) cubeindex |= 8;
+if (gridCells[4] > 0) cubeindex |= 16;
+if (gridCells[5] > 0) cubeindex |= 32;
+if (gridCells[6] > 0) cubeindex |= 64;
+if (gridCells[7] > 0) cubeindex |= 128;
+
+const int CPUMarchingCubesGenerator::triTable[256][16] = {
+  {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+  {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+  {0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+  ...
+  {0, 9, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+  {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
+  {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
+};
+
+const int CPUMarchingCubesGenerator::edgeTable[256] = {
+  0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
+  ...
+  0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
+};
+\end{lstlisting}
+
+\begin{SCfigure}[][!h]
+  \caption{Edge and vertex labelling conventions for the Marching Cubes algorithm. Diagram reproduced from Paul Bourke.\cite{bourke_1994}}
+  \includegraphics[width=0.5\textwidth]{marching_cubes_labels}
+  \label{fig:marching_cubes_labels}
+\end{SCfigure}
 
 \section{Algorithm implementation}
 \subsection{GPU Implementation}
@@ -196,7 +237,7 @@ When the octree changes, the level of detail at various points changes. The geom
 \label{section:cracks}
 Using the Marching Cubes algorithm with multiple different grid cell sizes causes undesirable cracks in the surface of the generated geometry on the boundary between chunks of different levels of detail. A demonstration of what causes this is shown in figure \ref{fig:cracks_demo}, and an example within my code is shown in figure \ref{fig:cracks2}.
 
-\begin{SCfigure}[][h]
+\begin{SCfigure}[][!h]
   \caption{An illustration of the cracks between different levels of detail in the Marching Cubes algorithm. This figure shows the faces of 2 adjacent grid cells. The exact surface represented by the SDF is shown in purple, and the dotted lines show edges that may be produced by the Marching Cubes algorithm at the level of detail of these grid cells, and the level below. When these 2 cases occur next to each other, the space in between the 2 dotted lines forms a crack in the geometry.}
   \includegraphics[width=0.5\textwidth]{cracks_demo.png}
   \label{fig:cracks_demo}
@@ -246,7 +287,7 @@ if ((gid.x == 0 && (edgeIndex & 1) != 0) || (gid.x == chunkSize.x && (edgeIndex 
 }
 \end{lstlisting}
 
-\begin{SCfigure}[][h]
+\begin{SCfigure}[][!h]
   \caption{Illustration of the points that will be sampled on the face of a 2x2x2 chunk when transition cells will be generated. The 4 blue points in the bottom left show the points that will be sampled by an invocation on the vertex at $\left(0,0\right)$, the 2 green points in the bottom right show the points that will be sampled by an invocation on the vertex at $\left(2,0\right)$, and the singular purple point shows the point that will be sampled by an invocation on the vertex at $\left(2,2\right)$. Since this vertex is on the corner of the chunk, no additional points need to be sampled.}
   \includegraphics[width=0.5\textwidth]{tv_gen_grid}
   \label{fig:tv_gen_grid}
@@ -331,7 +372,7 @@ Octree* Octree::getNeighbor(glm::ivec3 relativePosition) {
 }
 \end{lstlisting}
 
-\begin{SCfigure}[][h]
+\begin{SCfigure}[][!h]
   \caption{The blue cell has 3 neighbors at the same level of detail. The green neighbor is within the same parent octree cell, and no recursive calls are needed. The red neighbor is not within the same parent cell, so the neighbor of the parent is found, and the corresponding child of this neighbor is returned. The orange neighbor is not a leaf, so \texttt{edgeIndex} is updated to reflect this. There is no neighbor at the same level of detail above the blue cell.}
   \includegraphics[width=0.5\textwidth]{octree_neighbors.png}
   \label{fig:octree_neighbors}
@@ -341,7 +382,7 @@ Octree* Octree::getNeighbor(glm::ivec3 relativePosition) {
 \label{section:octree_refinement}
 The Transvoxel algorithm with chunks is sufficient in most cases for eliminating cracks in the geometry. However, there are still octree configurations which could occur, where different levels of detail appear next to each other, even once transition cells have been generated. Figure \ref{fig:octree_neighbor_error} shows an example of when this can occur.
 
-\begin{SCfigure}[][h]
+\begin{SCfigure}[][!h]
   \caption{An example octree configuration where different levels of detail may occur next to each other, even with transition cells. Areas where transition cells will be generated are shaded in blue. The area where transition cells may be generated, but different levels of detail will still be adjacent to each other, is shaded in red. Directly below this region are regions that are 2 levels of detail higher than the cell for which transition cells have been generated.}
   \includegraphics[width=0.5\textwidth]{octree_neighbor_error.png}
   \label{fig:octree_neighbor_error}
@@ -810,7 +851,7 @@ Having already implemented a fairly comprehensive SDF-based system, there is als
 
 The situation is much more complicated with approximate SDFs, however. Since the value of the SDF is no longer guaranteed to be the exact distance from the surface, there is no guarantee that moving even a small amount in some direction will not lead to a collision, even if the SDF is large. Figure \ref{fig:approx_collision} shows a 2D example of this.
 
-\begin{SCfigure}[][h]
+\begin{SCfigure}[][!h]
   \caption{A circle with radius $0.5$ near an approximate SDF, where the distance is not exact. Here the dashed line is the contour line of the approximate SDF $f\left(x,y\right) = y - \left(1 - \frac{x^2}{3}\right)$ where the value is $0.5$. If this were an exact SDF, then the shapes would only just touch. However, they intersect by a considerable amount. Using this value in physics simulation would be ineffective, since it does not give information about whether the circle is intersecting the shape or not.}
   \includegraphics[width=0.5\textwidth]{approx_collision}
   \label{fig:approx_collision}

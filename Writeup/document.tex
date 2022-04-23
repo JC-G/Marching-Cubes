@@ -150,19 +150,29 @@ const int CPUMarchingCubesGenerator::edgeTable[256] = {
 \end{SCfigure}
 
 \section{Algorithm implementation}
+A GPU is particularly suited to applications where a similar calculation is performed many times on varying data. In traditional graphical applications, this covers applications such as vertex shaders, which determine the screen-space position of every vertex in a 3D scene, or fragment shaders, which determine the colour of every pixel on a screen. A modern GPU is capable of performing many millions of individual calculations per frame. In this project, we will use the OpenGL API, and the GLSL shader language that comes with it, to write code for the GPU. The syntax for GLSL shaders is very similar to C code. 
+
+A program written for the GPU is called a shader, and for the remainder of the project, we will consider compute shaders, which are not part of the graphics rendering pipeline, but are called by the OpenGL API. When a compute shader is executed, many separate invocations of the same code are executed at once, through the API function \texttt{glDispatchCompute}. These are indexed by the built-in GLSL variable \texttt{gl\_GlobalInvocationID}, which is a 3-component integer vector, and is different for each invocation. For example, invocation of a shader designed to calculate $f\left(x,y,z\right), \left(x,y,z\right)$ for the integer-valued triples in $\left[0,32\right]^3$ would need to be configured so that \texttt{gl\_GlobalInvocationID} varies over all of the triples in this range.
+
+In this implementation, a \textit{chunk} is a region of space consisting of $n_x \cdot n_y \cdot n_z$ Marching Cubes grid cells. In principle, chunks may be of any size, subject to performance limitations. For testing purposes, we use chunks of size $32^3$. 
 \subsection{GPU Implementation}
 \label{section:mc_gpu}
-The Marching Cubes algorithm operates on a large grid of cells, on a per-cell basis. As such, it is well-suited to parallelisation. In this section, we describe an implementation of the Marching Cubes algorithm on a GPU, using GLSL. This implementation is based on the reference implementation cited in Section \ref{section:mc}. The implementation works on \textit{chunks}, which are cuboids of grid cells, and is split into 3 phases:
+In this section, we describe an implementation of the Marching Cubes algorithm on a GPU, using GLSL. This implementation uses the same lookup tables and labelling conventions as the reference implementation\cite{bourke_1994}. The implementation works on a per-chunk basis, and is executed in 3 phases, using 3 compute shaders, invoked in order on each chunk. 
 \begin{enumerate}
 
-\item \underline{Distance function computation}: For each grid cell vertex in the chunk, the SDF is sampled, and the values are stored in a buffer to be passed to the subsequent phases. This is done separately to the other phases, which operate over grid cells rather than grid cell vertices, to avoid unnecessary recomputation of the SDF, since one grid cell vertex may belong to up to 8 neighboring grid cells.
-\begin{lstlisting}[language=C++,label={mc_generate},caption={GLSL code for generating the SDF at one vertex in a chunk. The function \texttt{generate} may use any SDF, and stores the value in a buffer.}]
+\item \underline{Distance function computation}: For each grid cell vertex in the chunk, the SDF is sampled, and the values are stored in a buffer to be passed to the subsequent phases. It is more efficient to do this separately to the other phases, which operate over grid cells rather than grid cell vertices, to avoid unnecessary recomputation of the SDF, since one grid cell vertex may belong to up to 8 neighboring grid cells, all of which rely on this value.
+\begin{lstlisting}[language=C++,label={mc_generate},caption={GLSL code for generating the SDF at one vertex in a chunk. The function \texttt{generate} calls the SDF \texttt{modified\_distance}, and stores the value in a buffer.}]
+void generate(uvec3 gid) {
+  uint arrID = getArrID(gid); //get the index into the buffer
+  distanceValues[arrID] = modified_distance(gid*chunkStride + chunkPosition); //call the SDF at the corresponding world-space location
+}
+
 void main() {
-  uvec3 gid = gl_GlobalInvocationID;
-  if (gid.x > chunkSize.x || gid.y > chunkSize.y || gid.z > chunkSize.z) {
-    return;
-  }
-  generate(gid);
+	uvec3 gid = gl_GlobalInvocationID;
+	if (gid.x > chunkSize.x || gid.y > chunkSize.y || gid.z > chunkSize.z) {
+		return; //do not try to compute the SDF if gid is outside of the volume
+	}
+	generate(gid);
 }
 \end{lstlisting}
 

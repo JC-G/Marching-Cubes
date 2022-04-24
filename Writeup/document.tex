@@ -276,10 +276,10 @@ To solve the problem mentioned in section \ref{section:cracks}, we will switch t
   \label{fig:transition_cells}
 \end{figure}
 
-Like the Marching Cubes algorithm, the original Transvoxel implementation was written for a standard CPU. However, it is slightly more optimised, containing information in the lookup tables for vertex sharing that relies on sequential generation of the geometry. This has been removed from my implementation since this sort of optimisation is incompatible with the parallelisation used, for the same reason as described at the end of section \ref{section:mc_gpu}. The Transvoxel algorithm works similarly to the Marching Cubes algorithm, and can be implemented to work independently on grid cells. Hence it is also an algorithm that greatly benefits from the parallel processing power of the GPU. The algorithm relies on large lookup tables in a similar way to the Marching Cubes algorithm. For these, we will modify a set of lookup tables provided by the original author of the Transvoxel algorithm \footnote{https://transvoxel.org/Transvoxel.cpp}. 
+Like the Marching Cubes algorithm, the original Transvoxel implementation was written for a standard CPU. However, it is slightly more optimised, containing information in the lookup tables for vertex sharing that relies on sequential generation of the geometry. This has been removed from my implementation since this sort of optimisation is incompatible with the parallelisation used, for the same reason as described at the end of section \ref{section:mc_gpu}. The Transvoxel algorithm works similarly to the Marching Cubes algorithm, and can be implemented to work independently on grid cells. Hence it is also an algorithm that greatly benefits from the parallel processing power of the GPU. The algorithm relies on large lookup tables in a similar way to the Marching Cubes algorithm. For these, we will modify a set of lookup tables provided by the original author of the Transvoxel algorithm \footnote{https://transvoxel.org/Transvoxel.cpp}. A useful graphic of all of the possible regular and transition cells in the Transvoxel algorithm is also available from the same source\cite{lengyel}.
 
 \subsubsection{Regular cell lookup tables}
-Unfortunately, the Transvoxel algorithm uses different labelling conventions to the Marching Cubes algorithm. Figure \ref{fig:tv_labels} shows these naming conventions. The lookup tables also use the opposite sign convention.
+Unfortunately, the Transvoxel algorithm uses different labelling conventions to the Marching Cubes algorithm. Figure \ref{fig:tv_labels}, reproduced from figure 3.7 of the Transvoxel paper\cite{lengyel_2010} shows these naming conventions. The lookup tables also use the opposite sign convention.
 
 \begin{SCfigure}[][!h]
   \caption{Cell vertex naming convention for regular cells in the Transvoxel algorithm.}
@@ -289,7 +289,7 @@ Unfortunately, the Transvoxel algorithm uses different labelling conventions to 
 The way these tables work differs from the Marching Cubes algorithm, but performs a similar job. The original implementation defined some of this data in C++ \texttt{struct} data structures. However, since the tables will be passed to compute shaders in the form of a buffer, for simplicity, they have all been flattened. Furthermore, some of the tables contained vertex reuse data, which has also been removed.
 Listing \ref{tv_tables} shows excerpts from these tables.
 
-\begin{lstlisting}[language=C++,label={tv_tables},caption={Lookup tables for the geometry of regular cells in the Transvoxel algorithm. An example of their usage is given below.}]
+\begin{lstlisting}[language=C++,label={tv_tables},caption={Calculation of \texttt{cellIndex}, and lookup tables for the geometry of regular cells in the Transvoxel algorithm. An example of their usage is given below.}]
 int cellMask = 1;
 for (int i = 0; i < 8; i++) {
   if (gridCells[i] < 0) cellIndex |= cellMask;
@@ -323,9 +323,83 @@ const unsigned int regularTotalTable[16] = {
 };
 \end{lstlisting}
 
-The value \texttt{cellIndex} is an index into the subsequent tables, in the same way as the Marching Cubes algorithm. The table \texttt{regularCellClass} maps each of the 256 possible cell configurations to one of 16 cell classes, which defines the triangulation used within the cell. The table \texttt{regularCellData} contains a row of 16 numbers for each of the 16 cell classes. Each row starts with a value that encodes the number of distinct vertices and triangles in the triangulation, which is unused in my implementation. The following 15 entries in each row store vertex indices in the order they are used in the triangulation. Note that these vertex indices do not yet correspond to edges of the grid cell, as was the case in the Marching Cubes implementation, and a value of \texttt{0xFF} is a placeholder. The table \texttt{regularVertexData} contains a row of 12 numbers for each of the cell configurations. Each number encodes an edge of the grid cell using 2 vertex indices, as in figure \ref{fig:tv_labels}. Finally, table \texttt{regularTotalTable} contains the number of vertices in the triangulation for each class, including duplicates. This ensures the right number of vertices is always generated, and acts as a replacement for the unused data in \texttt{regularCellData}. 
-As an example, consider the case where only vertex 0 is inside the terrain (Giving a binary cellIndex of $00000001$, since the sign convention is different). The cell class is \texttt{0x01}. The number of vertices to be generated is looked up in \texttt{regularTotalTable}, where it is found that 3 vertices should be generated. The vertex indices to be used are found in \texttt{regularCellData}, and they are 0, 1, and 2. The vertex positions are found in \texttt{regularVertexData}, and they are \texttt{0x01, 0x02, 0x04}. Hence a triangle will be generated with a vertex on the edge between grid cell vertices 0 and 1, a vertex on the edge between grid cell vertices 0 and 2, and a vertex on the edge between grid cell vertices 0 and 4.
+The value \texttt{cellIndex} is an index into the subsequent tables, in the same way as the Marching Cubes algorithm. The table \texttt{regularCellClass} maps each of the 256 possible cell configurations to one of 16 cell classes, which defines the triangulation used within the cell. There are actually 18 possible classes, however some of them use the same triangulation with different vertices, and this information is stored in \texttt{regularCellData}, so only 16 classes need to be considered. The table \texttt{regularCellData} contains a row of 16 numbers for each of the 16 cell classes. Each row starts with a value that encodes the number of distinct vertices and triangles in the triangulation, which is unused in my implementation. The following 15 entries in each row store vertex indices in the order they are used in the triangulation. Note that these vertex indices do not yet correspond to edges of the grid cell, as was the case in the Marching Cubes implementation, and a value of \texttt{0xFF} is a placeholder. The table \texttt{regularVertexData} contains a row of 12 numbers for each of the cell configurations. Each number encodes an edge of the grid cell using 2 vertex indices, as in figure \ref{fig:tv_labels}. Finally, table \texttt{regularTotalTable} contains the number of vertices in the triangulation for each class, including duplicates. This ensures the right number of vertices is always generated, and acts as a replacement for the unused data in \texttt{regularCellData}. 
+As an example, consider the case where only vertex 0 is inside the terrain (Giving a binary cellIndex of $00000001$, since the sign convention is different to the Marching Cubes implementation). The cell class is \texttt{0x01}. The number of vertices to be generated is looked up in \texttt{regularTotalTable}, where it is found that 3 vertices should be generated. The vertex indices to be used are found in \texttt{regularCellData}, and they are 0, 1, and 2. The vertex positions are found in \texttt{regularVertexData}, and they are \texttt{0x01, 0x02, 0x04}. Hence a triangle will be generated with a vertex on the edge between grid cell vertices 0 and 1, a vertex on the edge between grid cell vertices 0 and 2, and a vertex on the edge between grid cell vertices 0 and 4.
+
+Figure \ref{fig:regular_cell_example_case} shows a cell of this type.
+\begin{SCfigure}[][!h]
+  \caption{A cell of the same class as the example used above, reproduced from the diagram of all transvoxel cell classes\cite{lengyel}. Note however that this cell is not oriented the same as figure \ref{fig:tv_labels}.}
+  \includegraphics[width=0.5\textwidth]{regular_cell_example_case.PNG}
+  \label{fig:regular_cell_example_case}
+\end{SCfigure}
+
 \subsubsection{Transition cell lookup tables}
+
+The labelling convention for the cell vertices of a transition cell is shown in figure \ref{fig:tv_transition_labels}, reproduced from figure 4.16 of the Transvoxel paper\cite{lengyel_2010}.
+
+\begin{SCfigure}[][!h]
+  \caption{Cell vertex naming convention for transition cells in the Transvoxel algorithm. (a) shows the higher resolution face of the cell, and (b) shows the opposite, lower resolution face.}
+  \includegraphics[width=0.5\textwidth]{tv_transition_labels.PNG}
+  \label{fig:tv_transition_labels}
+\end{SCfigure}
+
+Furthermore, the order in which transition cell vertices are considered for the purpose of calculating \texttt{cellIndex} is different to the above labelling. Figure \ref{fig:tv_transition_cellIndex}, reproduced from figure 4.17 of the Transvoxel paper\cite{lengyel_2010}, illustrates this.
+
+\begin{SCfigure}[][!h]
+  \caption{Hexadecimal contribution to \texttt{cellIndex} by each cell vertex on the higher resolution face of a transition cell.}
+  \includegraphics[width=0.5\textwidth]{tv_transition_cellIndex.PNG}
+  \label{fig:tv_transition_cellIndex}
+\end{SCfigure}
+
+
+A transition cell uses 9 distinct SDF sample values, at vertices 0 through 8 in figure \ref{fig:tv_transition_labels}. Cell vertices 9, A, B, and C take their sample values from the vertices directly opposite them: vertices 0, 2, 6, and 8 respectively. Thus there are 512 possible cases to consider, rather than 256 cases in the case of a regular cell. Listing \ref{tv_transition_tables} shows excerpts from the lookup tables used for transition cells.
+
+\begin{lstlisting}[language=C++, label={tv_transition_tables}, caption={Calculation of \texttt{transitionCellIndex}, and lookup tables for transition cells in the Transvoxel algorithm. An example of their usage is given below.}]
+//Note the obscure order of this - see Figure 4.17 in transvoxel paper
+//order is 0,1,2,5,8,7,6,3,4
+int transitionFaceOrder[9] = int[](0,1,2,5,8,7,6,3,4);
+int transitionCellMask = 1;
+for (int i = 0; i < 9; i++) {
+  if (transitionGridCells[transitionFaceOrder[i]] < 0) transitionCellIndex |= transitionCellMask;
+  transitionCellMask = transitionCellMask << 1;
+}
+const unsigned int transitionCellClass[512] =
+{
+  0x00, 0x01, 0x02, 0x84, 0x01, 0x05, 0x04, 0x04, 0x02, 0x87, 0x09, 0x8C, 0x84, 0x0B, 0x05, 0x05,
+  ...
+};
+
+const unsigned int transitionCellData[2072] =
+{
+  0x00, 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+  0x42, 0, 1, 3, 1, 2, 3,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+  ...
+};
+
+const unsigned int transitionVertexData[6144] =
+{
+  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+  0x01, 0x03, 0x9B, 0x9A, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+  ...
+};
+
+const unsigned int transitionTotalTable[56] = {
+  0,
+  6,
+  ...
+};       
+\end{lstlisting}
+
+Once again, these tables have been flattened, and vertex reuse data has been removed. The tables perform the same roles as their regular cell counterparts. However, there are 73 classes of transition cell, rather than the 18 cases for regular cells. By considering classes that use the same triangulation for different vertices, in the same way as for regular cells, as well as classes that use the same triangulation but with triangles that face in a different direction, this can be reduced to 56 classes. The highest bit in the 8-bit cell class value corresponds to a configuration where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass}, having binary value $10000111$, corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
+For example, consider the transition cell where vertex 0 is inside the terrain. Then vertex 9 will also be considered as inside the terrain. The variable \texttt{transitionCellIndex} will be calculated as $000000001$, a 9-bit value. This corresponds to a cell class of \texttt{0x01} in \texttt{transitionCellClass}. The number of vertices to generate is found in \texttt{transitionTotalTable}, which is indexed by the cell class. For this transition cell, there are 6. The geometry vertices to be generated are found in \texttt{transitionCellData}: The first triangle uses vertices 0, 1, and 3, in that order, from the corresponding row in \texttt{transitionVertexData}, and the second triangle uses vertices 1, 2, and 3.
+The actual locations of these geometry vertices are found in the corresponding row in \texttt{transitionVertexData}, so vertex 0 is between cell vertices 0 and 1, vertex 1 is between cell vertices 0 and 3, and so on.
+
+Figure \ref{fig:transition_cell_example_case} shows a transition cell of this type.
+\begin{SCfigure}[][!h]
+  \caption{A transition cell of the same class as the example used above, reproduced from the diagram of all transvoxel cell classes\cite{lengyel}.}
+  \includegraphics[width=0.5\textwidth]{transition_cell_example_case.PNG}
+  \label{fig:transition_cell_example_case}
+\end{SCfigure}
 
 \subsubsection{Adaption of the algorithm to GPU}
 
@@ -339,11 +413,11 @@ uvec3 gid = gl_GlobalInvocationID;
 if (gid.x > chunkSize.x || gid.y > chunkSize.y || gid.z > chunkSize.z) {
   return;
 }
-generate(gid,uvec3(0));
+generate(gid,uvec3(0)); //calculate the SDF at this grid point
 
 if ((gid.x == 0 && (edgeIndex & 1) != 0) || (gid.x == chunkSize.x && (edgeIndex & 2) != 0)) {
   if (gid.y < chunkSize.y) {
-    generate(gid,uvec3(0,1,0));
+    generate(gid,uvec3(0,1,0)); //calculate the SDF at this grid point, offset by half the grid width in the y direction
   }
   if (gid.z < chunkSize.z) {
     generate(gid,uvec3(0,0,1));
@@ -352,6 +426,7 @@ if ((gid.x == 0 && (edgeIndex & 1) != 0) || (gid.x == chunkSize.x && (edgeIndex 
     generate(gid,uvec3(0,1,1));
   }
 }
+... //do the same for the y and z oriented faces
 \end{lstlisting}
 
 \begin{SCfigure}[][!h]
@@ -387,10 +462,10 @@ if (transitionCellIndex != 0 && transitionCellIndex != 511) {
 }
 \end{lstlisting}
 
-\item \underline{Polygonisation phase}: This shader is run once for each regular cell or transition cell that will contain geometry, as decided by the previous phase. For regular cells, this process is essentially the same as for the regular Marching Cubes algorithm. However, care must be taken to ensure that vertices are placed in the right position. In the case where a regular cell has been made smaller, the SDF has been sampled at the grid cell vertices, rather than the vertices of the regular cell. This introduces inaccuracies in the resulting geometry. The Transvoxel algorithm paper describes a transformation that solves this issue, which is applied to the generated vertices whenever the cell vertices have changed position. Figure \ref{tv_poly_transform} shows the implementation of this transformation.
+\item \underline{Polygonisation phase}: This shader is run once for each regular cell or transition cell that will contain geometry, as decided by the previous phase. For regular cells, this process is essentially the same as for the regular Marching Cubes algorithm. However, care must be taken to ensure that vertices are placed in the right position. In the case where a regular cell has been made smaller, the SDF has been sampled at the grid cell vertices, rather than the vertices of the regular cell. This introduces inaccuracies in the resulting geometry. The Transvoxel algorithm paper describes a transformation that solves this issue by moving vertices on the lower resolution face of the transition cell, and the corresponding vertex on the neighboring regular cell, so they are on the edge that the regular cell would have generated. This is applied whenever the cell vertices have changed position to include transition cells. Listing \ref{tv_poly_transform} shows the implementation of this transformation.
 
 \begin{lstlisting}[language=C++,label={tv_poly_transform},caption={Transformation to be applied to a generated vertex, when the cell vertices it is being generated between have moved.}]
-if (hasShifted[v1Index] || hasShifted[v2Index]) { //if this vertex has moved
+if (hasShifted[v1Index] || hasShifted[v2Index]) { //if this vertex has moved - either as a transition cell, or to accommodate for one
   //apply the transformation as in Figure 4.12 in the Transvoxel paper
 
   //where the vertex would have been

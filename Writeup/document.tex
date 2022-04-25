@@ -1127,6 +1127,8 @@ bool inBox(vec4 bottom, vec4 top, vec3 inPos) {
 }
 \end{lstlisting}
 
+Since this extends the area in which a brush may affect the geometry, the corresponding C++ code must also be changed, to ensure that the brush is included when this bounding box change means the bounding box would intersect a new chunk, otherwise cracks would appear in the generated geometry.
+
 \subsection{Possible Improvements}
 As it stands right now, the octree refinement algorithm could be made more efficient when considering physics objects. Currently, only the octree leaves at the highest level of detail, nearest the physics objects, are maintained by the \texttt{shouldChop} function, which flags all other leaves at other levels of detail, that were created by the previous iteration of the refinement algorithm. Although this does not result in the geometry being regenerated every time, thanks to the flagging mechanism, this still results in a large amount of unneccesary iteration over the octree as nodes are repeatedly flagged, and then unflagged again.
   

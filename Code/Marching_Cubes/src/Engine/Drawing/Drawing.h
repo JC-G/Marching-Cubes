@@ -48,6 +48,8 @@ class Drawing {
         const static GLfloat screenQuadData[];
 
         static std::vector<glm::vec4> allGLLines;
+        static GLuint rockTexture;
+        static GLuint grassTexture;
 
 };
 

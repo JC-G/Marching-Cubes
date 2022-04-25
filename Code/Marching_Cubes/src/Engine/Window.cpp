@@ -94,7 +94,6 @@ bool Window::initGL()
                       0, nullptr, GL_TRUE); 
         }
     }
-
     //misc OpenGL Setup
     glClearColor(0,148./255,1,1);
     if (Config::get<bool>("backface_culling")) {

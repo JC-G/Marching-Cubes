@@ -24,6 +24,8 @@ GLuint Drawing::frameBuffer = 0;
 GLuint Drawing::depthBuffer = 0;
 GLuint Drawing::frameBufferTexture = 0;
 GLuint Drawing::crosshairTexture;
+GLuint Drawing::rockTexture;
+GLuint Drawing::grassTexture;
 
 std::vector<glm::vec4> Drawing::allGLLines;
 
@@ -49,6 +51,17 @@ bool Drawing::init() {
     screenShader = new Shader(Shader::ShaderFromFiles("Shaders/screen_vert.glsl","Shaders/screen_frag.glsl"));
     boxShader = new Shader(Shader::ShaderFromFiles("Shaders/box_vert.glsl","Shaders/box_frag.glsl"));
 
+	//textures in slots 4,5,6,7 so they dont collide with anything else
+	rockTexture = loadTexture("Textures/rock.dds");
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D,rockTexture);
+	glUniform1i(chunkShader->getUniform("rockSampler"),4);
+
+	grassTexture = loadTexture("Textures/grass.dds");
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D,grassTexture);
+	glUniform1i(chunkShader->getUniform("grassSampler"),5);
+
     //set uniforms that never change
     glm::mat4 PM = Window::getProjectionMatrix();
 
@@ -67,6 +80,7 @@ bool Drawing::init() {
     glBindFramebuffer(GL_FRAMEBUFFER,frameBuffer);
 
     //create blank texture
+	glActiveTexture(GL_TEXTURE0);
     glGenTextures(1,&frameBufferTexture);
     glBindTexture(GL_TEXTURE_2D,frameBufferTexture);
     glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,bufferWidth,bufferHeight,0,GL_RGB,GL_UNSIGNED_BYTE,0);
@@ -138,6 +152,15 @@ bool Drawing::drawChunks() {
     glm::mat4 VM = Window::activeCamera->getViewMatrix();
     glUniformMatrix4fv(chunkShader->getUniform("V"),1,GL_FALSE,&VM[0][0]);
     glUniform3fv(chunkShader->getUniform("cameraPosition"),1,&(Window::activeCamera->position)[0]);
+
+	
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D,rockTexture);
+	glUniform1i(chunkShader->getUniform("rockSampler"),4);
+	
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D,grassTexture);
+	glUniform1i(chunkShader->getUniform("grassSampler"),5);
 
     for (auto C : MarchingChunk::loadedChunks) {
         //for test chunks only, octree is used to store actual chunks

@@ -43,15 +43,13 @@ std::string ScaledTerrain::getShaderCode() {
                 0.4,
                 2.0
             ).z;
-
-            float box = sdBox(inPos-vec3(0.5,1,0.5),vec3(0.5,1,0.5));
-            return min(box,ground);
+            return ground;
         }
 
         vec3 normal(vec3 inPos) {
             vec3 n = biomeHeight(
                 inPos.xz,
-                3.0,
+                4.0,
                 4,
                 2000.,
                 2000.,

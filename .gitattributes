@@ -6,3 +6,5 @@ CMakeLists.txt text eol=lf
 build/cmake/*  text eol=lf
 *.a            binary
 *.ttf          binary
+*.bmp          binary
+*.dds          binary

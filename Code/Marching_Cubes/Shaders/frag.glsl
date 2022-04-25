@@ -34,4 +34,5 @@ void main() {
 
 	color.a = 1;
 	color.rgb = (ambientTotal + diffuseTotal + specularTotal) * terrainColor;
+    // color.rgb = (vertexNormal_worldSpace.xyz + vec3(1.))/2.;
 }

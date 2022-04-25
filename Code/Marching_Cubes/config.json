@@ -35,7 +35,7 @@
     "show_test_cube": false,
     "draw_chunk_boundaries": false,
 
-    "terrain_mode": "plane",
+    "terrain_mode": "scaled",
     "generator_mode": "transvoxel",
 
     "raycast_mode": "mesh",
@@ -61,8 +61,8 @@
 
     "show_full_controls": false,
 
-    "load_test_brushes": true,
-    "log_chunk_time": true,
+    "load_test_brushes": false,
+    "log_chunk_time": false,
     "only_generate_brushes": false
 
 }               

@@ -34,20 +34,33 @@ std::string ScaledTerrain::getShaderCode() {
 
 
         float distance(vec3 inPos) {
-            float ground = inPos.y-1000.0 * terrain(inPos.xz/500.0);
+            float ground = inPos.y-biomeHeight(
+                inPos.xz,
+                3.0,
+                4,
+                2000.,
+                2000.,
+                0.4,
+                2.0
+            ).z;
+
             float box = sdBox(inPos-vec3(0.5,1,0.5),vec3(0.5,1,0.5));
             return min(box,ground);
         }
 
         vec3 normal(vec3 inPos) {
-            float ground = inPos.y-1000.0 * terrain(inPos.xz/500.0);
-            float box = sdBox(inPos-vec3(0.5,1,0.5), vec3(0.5,1,0.5));
-            if (ground < box) {
-                vec2 terrDer = 1000.0/500.0 * terrainDerivative(inPos.xz/500.0);
-                return normalize(vec3(-terrDer.x,1,-terrDer.y));
-            } else {
-                return sdBoxNormal(inPos-vec3(0.5,1,0.5),vec3(0.5,1,0.5));
-            }
+            vec3 n = biomeHeight(
+                inPos.xz,
+                3.0,
+                4,
+                2000.,
+                2000.,
+                0.4,
+                2.0
+            );
+            return -normalize(
+                vec3(n.x,-1,n.y)
+            );
 
         }
     

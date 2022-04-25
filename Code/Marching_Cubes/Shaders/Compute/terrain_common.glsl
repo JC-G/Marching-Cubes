@@ -102,3 +102,76 @@ float perlin3(vec3 x) //multiple octaves of noise3
 	}
 	return res/T;
 }
+
+
+
+//--------------------------------------------
+//
+// Terrain from old project...
+//
+//--------------------------------------------
+
+
+mat2 ROT = mat2(0.6,0.8,-0.8,0.6);
+mat2 ROTi = determinant(ROT)*inverse(ROT);
+float floatHash(vec2 key){
+    return fract(sin(dot(key, vec2(12.9898, 4.1414))) * 43758.5453);
+}
+float uF(float x)
+{
+    return x*x*(3.0-2.0*x);
+}
+
+float duF(float x)
+{
+    return 6.0*x*(1.0-x);
+}
+vec3 noised2sp(vec2 xy, float sp)
+{    
+    vec2 uv = mod(xy,1.0);
+    vec2 fxy = floor(xy);
+    float a = floatHash(fxy);
+    float b = floatHash(fxy+vec2(1,0));
+    float c = floatHash(fxy+vec2(0,1));
+    float d = floatHash(fxy+vec2(1,1));
+
+    vec3 res = vec3(0.);
+    float u = uF(uv.x);
+    float v = uF(uv.y);
+
+    float n = a-a*u+b*u-a*v+a*v*u-b*v*u+c*v-c*v*u+d*v*u;
+    float dx = (-a+b+a*v-b*v-c*v+d*v)*duF(uv.x)*sp*pow(n,sp-1);
+    float dz = (-a+a*u-b*u+c-c*u+d*u)*duF(uv.y)*sp*pow(n,sp-1);
+    res.z = pow(n,sp);
+    res.x = dx;
+    res.y = dz;
+    return res;
+}
+
+
+vec3 biomeHeight(vec2 xy, float SPIKYNESS, int OCTAVES, float STRETCH, float MAXHEIGHT, float OCTAVE_WEIGHT, float OCTAVE_SCALE)
+{
+    vec3 res = vec3(0.);
+    float w = 1.;
+    float s = 1.;
+    mat2 tmprot = ROT;
+    mat2 tmproti = ROTi;
+    for (int x = 0; x < OCTAVES;x++)
+    {
+        tmprot*=ROT;
+        tmproti*=ROTi;
+        vec3 octaveData = noised2sp(s*tmprot*xy/STRETCH,SPIKYNESS);
+        res.z += octaveData.z*w;
+        vec2 der = vec2(octaveData.x*w*s/STRETCH,octaveData.y*w*s/STRETCH);
+        der = tmproti*der;
+        res.x += der.x;
+        res.y += der.y;
+
+
+        w*= OCTAVE_WEIGHT;
+        s*= OCTAVE_SCALE;
+    }
+    res *=  MAXHEIGHT;
+    //res.z -= 1.0*(cos(res.x)+cos(res.y));
+    return res;
+}

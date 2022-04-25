@@ -27,6 +27,10 @@ BrushBoundingBox Octree::getBoundingBox() {
     return BrushBoundingBox(myPosition,myPosition+mySize);
 }
 
+BrushBoundingBox Octree::getPaddedBoundingBox() {
+    return BrushBoundingBox(myPosition-mySize/Config::get<float>("chunk_size"),myPosition+mySize + mySize/Config::get<float>("chunk_size"));
+}
+
 void Octree::split()
 {
     if (flagged) {
@@ -44,7 +48,7 @@ void Octree::split()
                     Octree* thisChild = new Octree(0.5f * mySize,myPosition + mySize * 0.5f * glm::vec3(i,j,k), myDetailLevel + 1,myGenerator,this,glm::uvec3(i,j,k));
                     auto it = myBrushes.begin();
                     while (it != myBrushes.end()) {
-                        if ((*it)->getBoundingBox().intersects(thisChild->getBoundingBox())) {
+                        if ((*it)->getBoundingBox().intersects(thisChild->getPaddedBoundingBox())) {
                             thisChild->insertBrush(*it);
                         }
                         it++;
@@ -438,7 +442,7 @@ void Octree::insertBrush(Brush* b) {
         for (int j = 0; j <= 1; j++) {
             for (int k = 0; k <= 1; k++) {
                 Octree* thisChild = myChildren[i][j][k];
-                if (b->getBoundingBox().intersects(thisChild->getBoundingBox())) {
+                if (b->getBoundingBox().intersects(thisChild->getPaddedBoundingBox())) {
                     thisChild->insertBrush(b);
                 }
             }

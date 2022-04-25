@@ -22,6 +22,7 @@ class Octree
         void generateAllChunks(bool force = false);
 
         BrushBoundingBox getBoundingBox();
+        BrushBoundingBox getPaddedBoundingBox();
 
         float getIntersectionPoint(glm::vec3 origin, glm::vec3 direction);
         Octree* child(int i, int j, int k);

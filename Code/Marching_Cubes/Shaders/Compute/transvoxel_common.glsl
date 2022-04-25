@@ -90,7 +90,6 @@ uint getArrID(uvec3 gid, uvec3 halfXYZ) {
             temp.x + ts.x * temp.y;
     }
     offset += ts.x * ts.y;
-
 }
 
 //Utility functions to assist in iterating over vertices of cells

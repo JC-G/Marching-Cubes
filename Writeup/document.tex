@@ -161,6 +161,8 @@ A GPU is particularly suited to applications where a similar calculation is perf
 
 A program written for the GPU is called a shader, and for the remainder of the project, we will consider compute shaders, which are not part of the graphics rendering pipeline, but are called by the OpenGL API. When a compute shader is executed, many separate invocations of the same code are executed at once, through the API function \texttt{glDispatchCompute}. These are indexed by the built-in GLSL variable \texttt{gl\_GlobalInvocationID}, which is a 3-component integer vector, and is different for each invocation. For example, invocation of a shader designed to calculate $f\left(x,y,z\right), \left(x,y,z\right)$ for the integer-valued triples in $\left[0,32\right]^3$ would need to be configured so that \texttt{gl\_GlobalInvocationID} varies over all of the triples in this range.
 
+To display the rendered terrain, and to interact with the OpenGL API, we will make use of some useful open source OpenGL libraries, namely GLFW\cite{glfw}, for creating a window and handling input, GLEW\cite{glew}, to load the OpenGL API functions, and GLM\cite{g-truc_2005}, to provide mathematical functions equivalent to those in GLSL, such as manipulation of vectors, in C++.
+
 In this implementation, a \textit{chunk} is a region of space consisting of $n_x \cdot n_y \cdot n_z$ Marching Cubes grid cells. In principle, chunks may be of any size, subject to performance limitations. For testing purposes, we use chunks of size $32^3$. 
 \subsection{GPU Implementation}
 \label{section:mc_gpu}
@@ -794,7 +796,7 @@ Each type of shape that may be used to modify the terrain has an SDF and normal 
   \label{fig:inaccurate_sdf}
 \end{figure}
 
-For efficiency reasons, the SDF of a shape is only considered when the sample point lies within its bounding box. This introduces discontinuities in the overall SDF being computed, and for this reason, it is necessary that the bounding box really is a bounding box, such that any geometry that may be generated for the shape lies fully within it, and hence all vertices are properly generated. 
+For efficiency reasons, the SDF of a shape is only considered when the grid cell being worked on lies within its bounding box. This prevents a huge amount of SDFs being evaluated when the majority will not affect the geometry within the grid cell. This introduces discontinuities in the overall SDF being computed, and for this reason, it is necessary to enforce the bounding box really is a bounding box, such that any geometry that may be generated for the shape lies fully within it, and hence all vertices are properly generated. 
 
 \subsection{Interactive Terrain Modification}
 User interaction with the terrain modification system uses a set of pre-defined actions, defined through classes derived from a base \texttt{Action} class. The methods defined in this class are shown in listing \ref{action_methods}.
@@ -1014,25 +1016,151 @@ The situation is much more complicated with approximate SDFs, however. Since the
 Furthermore, collision between an SDF and a different shape is more complicated, even if the SDF is exact. Since the distance from a surface at which a shape is colliding with it is different depending on the orientation of the shape relative to the surface, and the evaluation of an SDF gives no information about direction to the nearest point on the surface, such a system would be inaccurate. There is potential in using an approximate SDF which provides a lower bound of the distance to the surface, along with a spherical bounding volume for physics shapes, to perform culling on objects to determine when it is impossible for them to intersect. However, we will not explore this here, choosing instead to remain with the library implementation.  
 
 
-\section{Implementation}
-- TODO: probably an unneeded section now - there is a lot of code interspersed throughout. \\
-- C++ with fairly low-level opengl libraries\\
-- key code probably in design section already\\
-- section for the ``boring bits'' of the implementation, rather than key ideas\\
-- perhaps section to explain other things that needed bugfixes?\\
-- something tying it all together?
+\section{Changes in the Implementation}
+The code has been iteratively updated and improved over the course of the project, and there have been approaches that did not work, or were inefficient. This section briefly explores some of the issues encountered during development, and how they were addressed.
+
+\subsection{Storage of Transvoxel sample values in a flat buffer}
+Each of the SDF sample values calculated in the first shader stage must be stored in an OpenGL buffer in a consistent way so that it can be retrieved by the later stages. To do this, a function \texttt{getArrID} is implemented, that takes the position of the sample relative to the chunk, and returns an index into a flat buffer. For the Marching Cubes algorithm, this is simple, since the sample values are always arranged in a cuboid. Listing \ref{mc_arrID} shows how this is done.
+\begin{lstlisting}[language=C++,label={mc_arrID},caption={Function mapping grid position \texttt{gid} to flat array id}]
+uint getArrID(uvec3 gid) {
+  return gid.x + gid.y * (1+chunkSize.x) + gid.z * (1+chunkSize.x) * (1+chunkSize.y);
+}
+\end{lstlisting}
+
+Things become more complicated for the sample points in the Transvoxel algorithm, since there are sample points that are midway between the grid cell vertices, on the faces of the chunk, when transition cells are generated. A simple solution is to use a very large array, doubling the size in each dimension, so that sample points halfway between grid cells fit in as though the grid size was changed. Listing \ref{tv_arrID_1} shows this.
+
+\begin{lstlisting}[language=C++,label={tv_arrID_1},caption={Inefficient function mapping grid position \texttt{gid} and information about whether the sample point is in between the grid positions, \texttt{halfXYZ}, to a flat array id}]
+uint getArrID(uvec3 gid, uvec3 halfXYZ) {
+  uvec3 temp = 2 * gid + halfXYZ;
+  return temp.x + temp.y * (2 * chunkSize.x + 1) + temp.z * (2 * chunkSize.x + 1) * (2 * chunkSize.y + 1);
+}
+\end{lstlisting}
+
+However, this leads to a very sparse buffer that is far larger than it needs to be, since there is now space for sample points to be placed in between any 2 adjacent grid cell vertices. A more space-efficient solution stores the internal sample points (those which are not on the faces of the chunk) as a cuboid, in a similar way to the Marching Cubes method. Then, each face of the chunk is stored at the end of the buffer, using the alternate scaling as described above, so that additional sample points on the face can fit. This may still result in a sparse array, when these additional points are not needed, however there is much less wasted space. Listing \ref{tv_arrID_2} shows this.
+
+\begin{lstlisting}[language=C++,label={tv_arrID_2},caption={A more efficient \texttt{getArrID} function for the Transvoxel algorithm}]
+  uint getArrID(uvec3 gid, uvec3 halfXYZ) {
+    //Store the main volume like this
+    if (gid.x > 0 && gid.x < chunkSize.x &&
+        gid.y > 0 && gid.y < chunkSize.y &&
+        gid.z > 0 && gid.z < chunkSize.z) {
+        return (gid.x - 1) +
+               (gid.y - 1) * (chunkSize.x - 1) +
+               (gid.z - 1) * (chunkSize.x - 1) * (chunkSize.y - 1); 
+    }
+
+    uint offset = (chunkSize.x - 1) * (chunkSize.y - 1) * (chunkSize.z - 1);
+
+    uvec3 temp = 2 * gid + halfXYZ;
+    uvec3 ts = 2 * chunkSize + uvec3(1);
+    //Store the faces as -x, +x, -y, +y, -z, +z in that order, edges and corners are stored in the first place in this ordering (some unpopulated values)
+
+    //point on the -x face
+    if (gid.x == 0 && halfXYZ.x == 0) {
+        return offset +
+            temp.y + ts.y * temp.z;
+    }
+    offset += ts.y * ts.z;
+    //point on the +x face
+    if (gid.x == chunkSize.x && halfXYZ.x == 0) {
+        return offset +
+            temp.y + ts.y * temp.z;
+    }
+    offset += ts.y * ts.z;
+
+    //point on the -y face
+    if (gid.y == 0 && halfXYZ.y == 0) {
+        return offset +
+            temp.x + ts.x * temp.z;
+    }
+    offset += ts.x * ts.z;
+    //point on the +y face
+    if (gid.y == chunkSize.y && halfXYZ.y == 0) {
+        return offset +
+            temp.x + ts.x * temp.z;
+    }
+    offset += ts.x * ts.z;
+
+    //point on the -z face
+    if (gid.z == 0 && halfXYZ.z == 0) {
+        return offset +
+            temp.x + ts.x * temp.y;
+    }
+    offset += ts.x * ts.y;
+    //point on the +z face
+    if (gid.z == chunkSize.z && halfXYZ.z == 0) {
+        return offset +
+            temp.x + ts.x * temp.y;
+    }
+    offset += ts.x * ts.y;
+}
+\end{lstlisting}
+
+\subsection{Storage of Editing Brushes}
+The first iteration of the editing algorithm stored all brushes for the entire world in one single array. This made it simple to add brushes, but meant that the entire array of brushes had to be iterated through for every chunk, which was prohibitively slow for a large number of brushes, even on chunks that had a small amount of brushes within them. Listing \ref{edit_storage_1} shows this iteration.
+
+\begin{lstlisting}[language=C++,label={edit_storage_1},caption={Iteration over every brush, returning those that intersect the bounding box of the chunk.}]
+std::vector<BrushParams> Editing::getBrushesInBox(BrushBoundingBox box) {
+  std::vector<BrushParams> result;
+  for (Brush* b : Editing::allBrushes) {
+    if (b->getBoundingBox().intersects(box)) {
+      result.push_back(b->getBrushParams());
+    }
+  }
+  return result;
+}
+\end{lstlisting}
+
+Using the pre-existing octree to store lists of brushes for each chunk, as described in section \ref{section:modification_implementation}, removes the need to do this iteration, at the expense of having to iterate over the octree to add a brush. However, this means that the list of brushes inside each chunk is much simpler to compute.
+
+\subsection{Bounding Boxes and Grid Cells}
+As described in section \ref{section:modification_implementation}, an SDF is only evaluated if the grid cell being worked on intersects its bounding box. A previous iteration only considered whether the sample point was within this bounding box. However, this resulted in the interpolation of geometry vertices being incorrect in grid cells that were partially inside the SDF bounding box, where geometry was generated on the edge. This was due to the discontinuity introduced by not evaluating the SDF at one of the points. 
+
+\begin{lstlisting}[language=C++,label={bb_gc},caption={The first iteration of the test of a grid cell point against an SDF bounding box defined by \texttt{bottom} and \texttt{top}, followed by the second iteration, which includes the value \texttt{chunkStride} to ensure that the SDF is considered if the sample point is within 1 grid cell of the bounding box.}]
+//Iteration 1
+bool inBox(vec4 bottom, vec4 top, vec3 inPos) {
+  return all(lessThanEqual(bottom.xyz,inPos)) && all(lessThanEqual(inPos,top.xyz));
+}
+//Iteration 2
+bool inBox(vec4 bottom, vec4 top, vec3 inPos) {
+  return all(lessThanEqual(bottom.xyz,inPos + chunkStride)) && all(lessThanEqual(inPos - chunkStride,top.xyz));
+}
+\end{lstlisting}
+
+\subsection{Possible Improvements}
+As it stands right now, the octree refinement algorithm could be made more efficient when considering physics objects. Currently, only the octree leaves at the highest level of detail, nearest the physics objects, are maintained by the \texttt{shouldChop} function, which flags all other leaves at other levels of detail, that were created by the previous iteration of the refinement algorithm. Although this does not result in the geometry being regenerated every time, thanks to the flagging mechanism, this still results in a large amount of unneccesary iteration over the octree as nodes are repeatedly flagged, and then unflagged again.
   
 \section{Conclusion}
-The full implementation can be found at \url{https://github.com/JC-G/Marching-Cubes}.
+%TODO - benchmark octree terrain?
+In this project we have successfully achieved the goal of generating a large area of procedural terrain that can be interacted with in real-time using the Transvoxel algorithm. We showed that parallelising the algorithm on the GPU gives a massive speedup compared to a CPU implementation, 
+
+We have applied techniques seen in the Geometric Modelling course in interesting ways, such as the use of an octree to partition space into regions with different levels of detail, and the use of interpolation splines as a part of an SDF defining more complex shapes. We have also used techniques seen in the Computer Graphics course for handling geometry and rendering 3D images.
+
+At the start of this project, I had a small amount of experience working with the technology used, namely C++, and the libraries responsible for interacting with OpenGL. The choice of OpenGL as an API was a straightforward one, since it is well-established, and widely supported on modern hardware and operating systems. C++ as a language is also very well-established, and compiled C++ code can be very efficient compared to other languages. However, developing in C++ is more challenging than other, higher level languages, with added complexity such as memory management to consider. In particular, configuring a compiler to work with various new libraries introduced throughout the project was a source of frustration, since each library is written and compiled in a different way. This is something that could be avoided by using a language that had a more standardised way of including libraries. It would be interesting to implement a similar project in a language such as Python, comparing the execution speed to the equivalent C++ program.
+
+I particularly enjoyed creating SDFs to represent terrain, and it was satisfying to be able to define a shape using an equation and immediately see it rendered. 
+
+%TODO - count lines - at the very end
+The final implementation contains XXXX lines of C++ and GLSL code, and can be found at \url{https://github.com/JC-G/Marching-Cubes}.
+TODO:...
+- something tying it all together?\\
  - demonstration of final product\\
- - conclusion\\
+
+
 
 \subsection{Future Work}
+\subsubsection{Rendering Efficiency}
 In this project, we have not considered numerous standard techniques for rendering, such as frustrum culling or occlusion culling, since the bulk of the computation has been in generating the geometry on the GPU, rather than rendering it. Nevertheless, these are common, well-documented techniques that would yield some performance improvement.
+\subsubsection{Bounding the main SDF}
 As implemented here, there is no equivalent to a bounding box for the main SDF, which would enable improvements similar to those described in \ref{section:modification_implementation}, preventing SDF computation at a point that is clearly not near the boundary. For a simple SDF such as a plane, this would be trivial to implement, however for functions such as noise, this becomes much more difficult, since there could be large regions within the area affected by the SDF, which do not contain any of the surface. If some bound were to be used for this main SDF, then it would completely eliminate all of the geometry generation steps in chunks that do not actually have any geometry in them.
+\subsubsection{Additional Multithreading}
 It would also be beneficial to separate the geometry generation from the rendering; although there is not nearly as much of a performance hit when compared to the physics mesh generation, which necessitated a separate thread, when the octree is updated rapidly, such as when moving quickly, some slowdown is still noticable.
+\subsubsection{Terrain Materials}
 Alongside a distance and normal function, a material function could also be defined. Such a function would describe the type of geometry at some point, for example distinguishing between grass and rock, in terrain generation. Marching Cubes cells could then be shaded according to the materials function at their vertices. Care would have to be taken when deciding how to shade cells where different materials are present at different vertices.
+\subsubsection{Blends}
 Using a blend function rather than set union or subtraction to modify the geometry would reduce the number of places where sharp corners appear in the SDF. However, care would have to be taken that the blend function does not result in geometry being modified outside of the bounding box of the shape being added, or this would result in incorrect generation.
+\subsubsection{Real-World Terrain Data}
+It would be interesting to modify this system to display elevation data from the real world. High-resolution LIDAR data is available for much of the UK, and it would be an interesting extension to pass this data in place of an SDF, and render a particularly mountainous area.
 
 %\paragraph{paragraph}
 %\subparagraph{subparagraph}

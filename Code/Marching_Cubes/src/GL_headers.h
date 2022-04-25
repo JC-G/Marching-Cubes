@@ -7,6 +7,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <gli/gli.hpp>
+#include <gli/generate_mipmaps.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <tiny_obj_loader.h>
 

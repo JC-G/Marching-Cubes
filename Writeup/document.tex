@@ -156,6 +156,14 @@ const int CPUMarchingCubesGenerator::edgeTable[256] = {
   \label{fig:marching_cubes_labels}
 \end{SCfigure}
 
+\subsubsection{Limitations of the Marching Cubes algorithm}
+The Marching Cubes algorithm is ideal for this project because the geometry for each grid cell can be generated independently with only the SDF and normal information, and it produces a good result for smooth shapes. However, it is not the best choice of algorithm for shapes that have a lot of sharp corners.
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{mc_cylinder.png}
+  \caption{An example of a slanted cylinder polygonized with the Marching Cubes algorithm. Despite being rendered with a relatively large number of polygons, inaccuracies near the sharp edge of the cylinder are still visible.}
+\end{figure}
+For this purpose, an algorithm such as Dual Contouring\cite{10.1145/566654.566586} may produce better results. However, we will not consider this idea further, since this algorithm would be significantly more difficult to parallelise in the same way, because generated triangles span multiple grid cells.
+
 \section{Algorithm implementation}
 A GPU is particularly suited to applications where a similar calculation is performed many times on varying data. In traditional graphical applications, this covers applications such as vertex shaders, which determine the screen-space position of every vertex in a 3D scene, or fragment shaders, which determine the colour of every pixel on a screen. A modern GPU is capable of performing many millions of individual calculations per frame. In this project, we will use the OpenGL API, and the GLSL shader language that comes with it, to write code for the GPU. The syntax for GLSL shaders is very similar to C code. 
 
@@ -1022,8 +1030,8 @@ float road_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
 
 
 \subsubsection{Limits of terrain modification}
- - TODO limits of marching cubes - sharp edges? this could go in the MC section also. 
- - TODO: how many primitives is reasonable before slowdown due to SDF evaluation?\\
+\label{edit_limits}
+As it stands now, the terrain modification system allows for a wide variety of shapes to be implemented. The efficiency improvements resulting from the use of the octree to prevent iteration over large lists of brushes, and the use of bounding boxes inside the GLSL shader means that a large number of brushes can exist within the world with little slowdown, provided they are spread out. However, the number of brushes in the world grows without bound as further editing occurs, meaning that slowdown is inevitable, particulary when the number of brushes in a single node becomes high, since this requires more work in the generation shader. This slowdown presents itself as a stutter in between frames, when a large number of chunks of geometry need to be regenerated. This can be reduced by limiting the speed of the player so that a large movement in between frames does not happen. There are other ways to address this, which we will discuss in section \ref{section:future_work}. Nevertheless, it is possible to modify the world with many thousands of brushes before significant slowdown occurs.
 \section{Graphical User Interface}
  - TODO: show previews of editing, info text. Create info text for controls?
  
@@ -1243,7 +1251,6 @@ Since this extends the area in which a brush may affect the geometry, the corres
 As it stands right now, the octree refinement algorithm could be made more efficient when considering physics objects. Currently, only the octree leaves at the highest level of detail, nearest the physics objects, are maintained by the \texttt{shouldChop} function, which flags all other leaves at other levels of detail, that were created by the previous iteration of the refinement algorithm. Although this does not result in the geometry being regenerated every time, thanks to the flagging mechanism, this still results in a large amount of unneccesary iteration over the octree as nodes are repeatedly flagged, and then unflagged again.
   
 \section{Conclusion}
-%TODO - benchmark octree terrain?
 In this project we have successfully achieved the goal of generating a large area of procedural terrain that can be interacted with in real-time using the Transvoxel algorithm. We showed that parallelising the algorithm on the GPU gives a massive speedup compared to a CPU implementation, 
 
 We have applied techniques seen in the Geometric Modelling course in interesting ways, such as the use of an octree to partition space into regions with different levels of detail, and the use of interpolation splines as a part of an SDF defining more complex shapes. We have also used techniques seen in the Computer Graphics course for handling geometry and rendering 3D images.
@@ -1261,12 +1268,13 @@ TODO:...
 
 
 \subsection{Future Work}
+\label{section:future_work}
 \subsubsection{Rendering Efficiency}
 In this project, we have not considered numerous standard techniques for rendering, such as frustrum culling or occlusion culling, since the bulk of the computation has been in generating the geometry on the GPU, rather than rendering it. Nevertheless, these are common, well-documented techniques that would yield some performance improvement.
 \subsubsection{Bounding the main SDF}
 As implemented here, there is no equivalent to a bounding box for the main SDF, which would enable improvements similar to those described in \ref{section:modification_implementation}, preventing SDF computation at a point that is clearly not near the boundary. For a simple SDF such as a plane, this would be trivial to implement, however for functions such as noise, this becomes much more difficult, since there could be large regions within the area affected by the SDF, which do not contain any of the surface. If some bound were to be used for this main SDF, then it would completely eliminate all of the geometry generation steps in chunks that do not actually have any geometry in them.
 \subsubsection{Additional Multithreading}
-It would also be beneficial to separate the geometry generation from the rendering; although there is not nearly as much of a performance hit when compared to the physics mesh generation, which necessitated a separate thread, when the octree is updated rapidly, such as when moving quickly, some slowdown is still noticable.
+It would also be beneficial to separate the geometry generation from the rendering; although there is not nearly as much of a performance hit when compared to the physics mesh generation, which necessitated a separate thread, when the octree is updated rapidly, such as when moving quickly, some slowdown is still noticable. This is due to the large amount of geometry that must be generated before the GPU renders another frame. We encountered this problem in section \ref{edit_limits}. By moving the generation to a separate thread, we could artificially limit the number of chunk updates per frame, slowing the speed at which the octree can be updated, but removing the stutter.
 \subsubsection{Terrain Materials}
 Alongside a distance and normal function, a material function could also be defined. Such a function would describe the type of geometry at some point, for example distinguishing between grass and rock, in terrain generation. Marching Cubes cells could then be shaded according to the materials function at their vertices. Care would have to be taken when deciding how to shade cells where different materials are present at different vertices.
 \subsubsection{Blends}

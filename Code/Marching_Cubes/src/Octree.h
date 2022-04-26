@@ -19,7 +19,7 @@ class Octree
         void drawBoundary(GLuint VAO);
         void refresh(glm::vec3 inPos);
         unsigned int getEdgeIndex();
-        void generateAllChunks(bool force = false);
+        void generateAllChunks(glm::vec3 inPos, bool force = false);
 
         BrushBoundingBox getBoundingBox();
         BrushBoundingBox getPaddedBoundingBox();
@@ -54,6 +54,7 @@ class Octree
         glm::vec3 getCenter();
 
 
+        bool shouldHaveChunk(glm::vec3 inPos);
         void generateMarchingChunk(int edgeIndex);
         void deleteChildren();
 

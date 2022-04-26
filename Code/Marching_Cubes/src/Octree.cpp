@@ -9,7 +9,9 @@ Octree::~Octree()
     if (!isLeaf) {
         deleteChildren();
     } else {
-        myChunk->tryDelete();
+        if (myChunk) {
+            myChunk->tryDelete();
+        }
     }
 }
 
@@ -238,20 +240,30 @@ Octree* Octree::getNeighbor(glm::ivec3 relativePosition) {
     }
 }
 
-void Octree::generateAllChunks(bool force) {
+
+bool Octree::shouldHaveChunk(glm::vec3 inPos) {
+    if (myDetailLevel >= Config::get<int>("physics_threshold")) {
+        return true;
+    }
+    return glm::length(getCenter() - inPos) - (mySize.x * glm::sqrt(3.0)/2.0) <= Config::get<float>("render_limit");
+}
+void Octree::generateAllChunks(glm::vec3 inPos, bool force) {
     //needed so we have the shape of the octree before generating chunks that rely on it
     unsigned int E = getEdgeIndex();
 
     if (isLeaf) {
         if (!hasChunk || E != edgeIndex || force || needsRegen) {
             edgeIndex = E;
-            generateMarchingChunk(edgeIndex);
+            if (shouldHaveChunk(inPos)) {
+                generateMarchingChunk(edgeIndex);
+
+            }
         }
     } else {
         for(int i = 0; i <= 1; i++) {
             for(int j = 0; j <= 1; j++) {
                 for(int k = 0; k <= 1; k++) {
-                    myChildren[i][j][k]->generateAllChunks();
+                    myChildren[i][j][k]->generateAllChunks(inPos);
                 }
             }
         }
@@ -314,7 +326,7 @@ void Octree::refresh(glm::vec3 inPos) {
         std::cout << "Octree took: " << t;
     }
 
-    generateAllChunks();
+    generateAllChunks(inPos);
     
     Editing::newBrushes.clear();
     if (Config::get<bool>("log_chunk_time")) {

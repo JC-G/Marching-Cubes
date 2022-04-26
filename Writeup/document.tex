@@ -59,7 +59,7 @@ Finally, we use the meshes we have generated with a well-known physics library.
 \section{Introduction}
 
 
-The Marching Cubes algorithm is an algorithm for polygonising a scalar field. Originally designed by William E. Lorensen and Harvey E. Cline in 1987\cite{10.1145/37402.37422}, the original application of the algorithm was in medical imaging, to create anatomical models using data from 3D scans such as CT scans. %At the time it was written... ?
+The Marching Cubes algorithm is an algorithm for polygonising a scalar field. Originally designed by William E. Lorensen and Harvey E. Cline in 1987\cite{10.1145/37402.37422}, the original application of the algorithm was in medical imaging, to create anatomical models using data from 3D scans such as CT scans. At the time it was written, the algorithm was comparatively expensive to execute, due to the limited hardware available. 
  
 Procedural terrain generation is a popular technique seen within the video game industry, allowing for large areas of geometry to be created, according to mathematical rules, rather than the traditional method of 3D modelling, which is time-consuming for the modeller, and takes up a large amount of storage space.
 
@@ -565,7 +565,7 @@ bool Octree::flagSplitPhase(glm::vec3 inPos) {
   return result;
 }
   \end{lstlisting}
-  \item If the first step changed the structure of the octree, or flagged any nodes, then traverse the octree, checking whether any nodes have neighbors which are more than one level of detail higher. This is done using the \texttt{getNeighbor} function described in listing \ref{octree_neighbor}. If this occurs, then split the node into its 8 children. If the node is not a leaf, but was flagged by the previous phase, the unflag it. This flagging, rather than immediate deleting, prevents octree nodes and the geometry chunks that have been created as a result of this refinement being deleted in the first step, then immediately recreated in the subsequent steps, when they may still be needed. Performing this refinement step may create inconsistencies elsewhere. Hence, it is performed repeatedly, until no changes are made. %TODO - maybe make this easier to understand with a 2D analogy?
+  \item If the first step changed the structure of the octree, or flagged any nodes, then traverse the octree, checking whether any nodes have neighbors which are more than one level of detail higher. This is done using the \texttt{getNeighbor} function described in listing \ref{octree_neighbor}. If this occurs, then split the node into its 8 children. If the node is not a leaf, but was flagged by the previous phase, the unflag it. This flagging, rather than immediate deleting, prevents octree nodes and the geometry chunks that have been created as a result of this refinement being deleted in the first step, then immediately recreated in the subsequent steps, when they may still be needed. Performing this refinement step may create inconsistencies elsewhere. Hence, refinement is performed repeatedly, until no changes are made in one such refinement step.
   \begin{lstlisting}[language=C++,label={refinephase},caption={The second stage in the octree refinement process, \texttt{refine}. This phase is called repeatedly until no more changes are made. The array \texttt{edgeNeighbors} corresponds to the relative positions of the neighboring chunks, at the same level of detail, and the variable \texttt{childPosition} gives the position of the child to check in each neighbor. The flow of this code is complicated, and is designed such that exactly the 4 children of the neighboring chunk that touch this chunk are checked.}] 
 //refine the octree - if a neighbor directly adjacent, smaller by more than one exists, split this
 //return true if no refinements were made
@@ -795,7 +795,6 @@ for(int i = 0; i <= 1; i++) {
 }
 \end{lstlisting}
 
-% TODO - modify so normal and sdf are produced at the same time
 Each type of shape that may be used to modify the terrain has an SDF and normal function implementation in GLSL. The shapes represented in the array passed to the generation algorithm are used in the order they are passed, to modify the SDF via the interpretations of set union and subtraction using the \texttt{min} and \texttt{max} functions. The normal function is computed by taking the shape which produces the smallest value of the SDF, and returning the normal function for that shape. Both the SDF and normal suffer from inaccuracies when a non-exact SDF is very far from the actual distance value, and in extreme cases, the resulting inaccurate interpolation can lead to cracks appearing in the geometry. Figure \ref{fig:inaccurate_sdf} shows an example of an SDF that exhibits this problem. However, with careful choices of SDF, in most cases it produces an acceptable result.
 
 \begin{figure}[H]
@@ -855,8 +854,7 @@ Once this is done, a ray-triangle intersection test is performed for every trian
 
 It would also be possible to perform ray-triangle intersection tests within an OpenGL compute shader, which would remove the need for the geometry data to be copied to the CPU. However, since copying this data to the CPU will need to be done for physics simulation anyway, and is only needed once per chunk of geometry, this method will be sufficient.
 \subsubsection{Example Brush Implementations}
-%TODO - move normal computation information into the SDF section
-In principle, any shape for which an SDF and normal function can be derived may be implemented as a brush, using the method described in section \ref{section:modification_implementation}. A good resource for SDF implementations is the article by Inigo Quilez referenced in section \ref{section:sdf}\cite{quilez:sdf}. It is also necessary to provide a normal function for each SDF. For this, we use the normalised gradient of the SDF. In some cases, the partial derivatives can be computed exactly, particularly when the SDF has a simple form. For example, the SDF of a sphere with radius 1, centered at the origin, is $f\left(x,y,z\right) = \sqrt{x^2+y^2+z^2}-1$. The gradient vector at point $\left(x,y,z\right)$ is $\nabla f = \left(\frac{x}{\sqrt{x^2+y^2+z^2}},\frac{y}{\sqrt{x^2+y^2+z^2}},\frac{z}{\sqrt{x^2+y^2+z^2}}\right)$.In this case, the gradient happens to already be normalised, but if it is not, it can be normalised with the GLSL \texttt{normalize} function, so a vector of length 1 is always returned. In any case, it is possible to approximate the normal of an SDF numerically. Listing \ref{numerical_gradient} shows the GLSL code for approximating the normal, using the method of finite differences.
+In principle, any shape for which an SDF and normal function can be derived may be implemented as a brush, using the method described in section \ref{section:modification_implementation}. A good resource for SDF implementations is the article by Inigo Quilez referenced in section \ref{section:sdf}\cite{quilez:sdf}. It is also necessary to provide a normal function for each SDF. For this, we use the normalised gradient of the SDF. In some cases, the partial derivatives can be computed exactly, particularly when the SDF has a simple form. For example, the SDF of a sphere with radius 1, centered at the origin, is $f\left(x,y,z\right) = \sqrt{x^2+y^2+z^2}-1$. The gradient vector at point $\left(x,y,z\right)$ is $\nabla f = \left(\frac{x}{\sqrt{x^2+y^2+z^2}},\frac{y}{\sqrt{x^2+y^2+z^2}},\frac{z}{\sqrt{x^2+y^2+z^2}}\right)$.In this case, the gradient happens to already be normalised, but if it is not, it should be normalised with the GLSL \texttt{normalize} function, so a vector of length 1 is always returned. In any case, it is possible to approximate the normal of an SDF numerically. Listing \ref{numerical_gradient} shows the GLSL code for approximating the normal, using the method of finite differences.
 
 \begin{lstlisting}[language=C++,label={numerical_gradient},caption={Approximation of the normal of an SDF. Note however, that this requires 4 evaluations of the SDF. The constant \texttt{eps} can be adjusted for precision as required.}]
 vec3 normal(vec3 inPos) {
@@ -875,7 +873,6 @@ vec3 normal(vec3 inPos) {
 \end{lstlisting}
 
 \paragraph{Example Shape: Ellipsoid}
-%TODO - better ellipsoid SDF?
 Another article by Inigo Quilez\cite{quilez:ellipsoid} lists various approximate SDFs for ellipsoids. Listing \ref{ellipsoid_sdf} shows my transformation of the first SDF listed in this article into an SDF representing an ellipsoid at any given point in space, as well as a normal function, which has been derived by computing the gradient of this SDF.
 
 \begin{lstlisting}[language=C++,label={ellipsoid_sdf},caption={approximate SDF and normal function for an ellipsoid.}]
@@ -1038,7 +1035,7 @@ As it stands now, the terrain modification system allows for a wide variety of s
 \section{Physics}
 To be able to use the terrain we have generated in the previous sections, in many applications it is useful to have collision detection and physics simulation. This section explores a method of doing this.
 \subsection{Bullet Physics}
-To implement physics simulation, we use a well-known library called Bullet Physics\cite{bullet-physics}. This library is a general-purpose CPU based physics library. The python binding of the library, PyBullet, is popular, however we will be using the C++ library.%It contains many built-in optimisations for efficient collision detection between objects. %TODO - citation for this
+To implement physics simulation, we use a well-known library called Bullet Physics\cite{bullet-physics}. This library is a general-purpose CPU based physics library. The python binding of the library, PyBullet, is popular, however we will be using the C++ library.
 
 Bullet Physics supports collision between static, concave triangle meshes and other primitive objects, such as spheres. We will use this functionality, along with the triangle meshes we have already generated using the Transvoxel algorithm, to implement physics simulation.
 
@@ -1282,8 +1279,6 @@ Using a blend function rather than set union or subtraction to modify the geomet
 \subsubsection{Real-World Terrain Data}
 It would be interesting to modify this system to display elevation data from the real world. High-resolution LIDAR data is available for much of the UK, and it would be an interesting extension to pass this data in place of an SDF, and render a particularly mountainous area.
 
-%\paragraph{paragraph}
-%\subparagraph{subparagraph}
 
 \bibliography{mc}
 \end{document}

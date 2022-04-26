@@ -931,6 +931,96 @@ Figure \ref{fig:bezier_roads} shows a shape generated using an SDF where each li
   \label{fig:bezier_roads}
 \end{figure}
 
+Listing \ref{road_code} shows the GLSL code to define this SDF.
+
+\begin{lstlisting}[language=C++,label={road_code},caption={The full SDF code for the shape discussed above. \texttt{road\_distance} is the SDF for part of the shape defined by a single cubic Bezier curve. When an interpolation spline consisting of multiple curves is required, a \texttt{Brush} object is created for each.}]
+//SDF of capsule between a and b, with radius r
+float sdCapsule( vec3 p, vec3 a, vec3 b, float r ) {
+  vec3 pa = p - a, ba = b - a;
+  float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
+  return length( pa - ba*h ) - r;
+}
+
+//sdf of plane with normal n, passing through p0, offset in normal direction by h
+float sdPlane(vec3 inPos, vec3 n, vec3 p0,float h) {
+  return dot(n,inPos-p0)/length(n) - h;
+}
+
+//returns (distance, t value) for one line segment on the curve
+vec2 road_segment(vec3 inPos, vec3 a, vec3 b, float r) {
+  //normal in the plane containing line direction and up vector, perpendicular to direction
+  vec3 planeDirection = b-a;
+  vec3 planeNormal = vec3(
+    -planeDirection.x*planeDirection.y,
+    planeDirection.x * planeDirection.x + planeDirection.z * planeDirection.z, 
+    -planeDirection.z*planeDirection.y
+  );
+
+  //proportion of radius the plane will be above the center - 0 for half-circle cross-section, 1 for circle cross-section
+  float hProp = 0.2;
+
+  //SDF value - intersect a capsule with a plane
+  float capsuleDistance = sdCapsule(inPos,a,b,r);
+  float planeDistance = sdPlane(inPos,planeNormal,a,hProp*r);
+  float resDistance = max(capsuleDistance,planeDistance);
+
+  //t value along the line a+t(b-a) such that p is closest
+  float t = dot(inPos-a,b-a)/dot(b-a,b-a);
+  return vec2(resDistance,t);
+}
+
+int roadResolution = 32;
+float road_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
+  //Approximation method
+  vec2 dMin = vec2(1e4,0);
+  int bestI = 0;
+  for (int i = 0; i < roadResolution; i++) {
+
+    float nt = i/float(roadResolution);
+    float nt1 = (i+1.)/float(roadResolution);
+
+    vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
+    vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
+
+    //bounding box with a little bit of wiggle room, so the very ends of the line are always generated properly
+    vec4 bottom = min(a,b).xyzz - vec4(r * 1.1);
+    vec4 top = max(a,b).xyzz + vec4(r * 1.1);
+
+    if (inBox(bottom,top,inPos)) {
+      vec2 segmentResult = road_segment(inPos,a,b,r);
+      //store the closest distance and t value
+      if (segmentResult.x < dMin.x) {
+        dMin = segmentResult;
+        bestI = i;
+      }
+
+    }
+  }
+    
+  //not on one of the end caps - just return SDF
+  if (dMin.y <=1. && dMin.y >= 0.) {
+    return dMin.x;
+  }
+  //on an endcap, only return the part of the endcap that intersects with the next segment
+  float nt, nt1;
+  if (dMin.y > 1.) {
+    //return intersection of endcap with next segment
+    nt = (bestI+1.)/float(roadResolution);
+    nt1 = (bestI+2.)/float(roadResolution);
+  } else { //dMin.y < 0.
+    // return intersection of endcap with previous segment
+    nt = (bestI-1.)/float(roadResolution);
+    nt1 = bestI/float(roadResolution);
+  }
+  //compute SDF of adjacent segment
+  vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
+  vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
+  vec2 nextResult = road_segment(inPos,a,b,r);
+  return max(nextResult.x,dMin.x);
+}
+\end{lstlisting}
+
+
 \subsubsection{Limits of terrain modification}
  - TODO limits of marching cubes - sharp edges? this could go in the MC section also. 
  - TODO: how many primitives is reasonable before slowdown due to SDF evaluation?\\

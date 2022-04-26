@@ -306,14 +306,6 @@ vec3 cubic_bezier_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
     return normalize(vec3((fx-f)/eps, (fy-f)/eps, (fz-f)/eps));
 }
 
-float sdCapsule( vec3 p, vec3 a, vec3 b, float r )
-{
-    vec3 pa = p - a, ba = b - a;
-    // pa *= vec3(1.,5.,1.); ba *=vec3(1.,5.,1.);
-    float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
-  return length( pa - ba*h ) - r;
-}
-
 vec3 capsuleDerivative(vec3 p, vec3 a, vec3 b, float r) {
     vec3 pa = p - a, ba = b - a;
     pa *= vec3(1.,5.,1.); ba *=vec3(1.,5.,1.);
@@ -321,18 +313,20 @@ vec3 capsuleDerivative(vec3 p, vec3 a, vec3 b, float r) {
     return normalize((pa - ba*h) * vec3(1.,5.,1.));
 }
 
+//SDF of capsule between a and b, with radius r
+float sdCapsule( vec3 p, vec3 a, vec3 b, float r ) {
+    vec3 pa = p - a, ba = b - a;
+    float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
+  return length( pa - ba*h ) - r;
+}
 
-float hProp = 0.2;
-
+//sdf of plane with normal n, passing through p0, offset in normal direction by h
 float sdPlane(vec3 inPos, vec3 n, vec3 p0,float h) {
     return dot(n,inPos-p0)/length(n) - h;
 }
 
-
-//returns (distance, t value)
+//returns (distance, t value) for one line segment on the curve
 vec2 road_segment(vec3 inPos, vec3 a, vec3 b, float r) {
-    //intersect a capsule with an plane
-
     //normal in the plane containing line direction and up vector, perpendicular to direction
     vec3 planeDirection = b-a;
     vec3 planeNormal = vec3(
@@ -341,7 +335,10 @@ vec2 road_segment(vec3 inPos, vec3 a, vec3 b, float r) {
         -planeDirection.z*planeDirection.y
     );
 
-    //SDF value
+    //proportion of radius the plane will be above the center - 0 for half-circle cross-section, 1 for circle cross-section
+    float hProp = 0.2;
+
+    //SDF value - intersect a capsule with a plane
     float capsuleDistance = sdCapsule(inPos,a,b,r);
     float planeDistance = sdPlane(inPos,planeNormal,a,hProp*r);
     float resDistance = max(capsuleDistance,planeDistance);
@@ -352,10 +349,8 @@ vec2 road_segment(vec3 inPos, vec3 a, vec3 b, float r) {
 
 }
 
-
 int roadResolution = 32;
 float road_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
-
     //Approximation method
     vec2 dMin = vec2(1e4,0);
     int bestI = 0;
@@ -387,25 +382,21 @@ float road_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
         return dMin.x;
     }
     //on an endcap, only return the part of the endcap that intersects with the next segment
+    float nt, nt1;
     if (dMin.y > 1.) {
         //return intersection of endcap with next segment
-        float nt = (bestI+1.)/float(roadResolution);
-        float nt1 = (bestI+2.)/float(roadResolution);
-
-        vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
-        vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
-        vec2 nextResult = road_segment(inPos,a,b,r);
-        return max(nextResult.x,dMin.x);
+        nt = (bestI+1.)/float(roadResolution);
+        nt1 = (bestI+2.)/float(roadResolution);
     } else { //dMin.y < 0.
         // return intersection of endcap with previous segment
-        float nt = (bestI-1.)/float(roadResolution);
-        float nt1 = bestI/float(roadResolution);
-
-        vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
-        vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
-        vec2 nextResult = road_segment(inPos,a,b,r);
-        return max(nextResult.x,dMin.x);
+        nt = (bestI-1.)/float(roadResolution);
+        nt1 = bestI/float(roadResolution);
     }
+    //compute SDF of adjacent segment
+    vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
+    vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
+    vec2 nextResult = road_segment(inPos,a,b,r);
+    return max(nextResult.x,dMin.x);
 }
 
 vec3 road_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {

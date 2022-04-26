@@ -13,22 +13,6 @@ BrushBoundingBox RoadBrush::getBoundingBox() {
         glm::vec4(min - glm::vec3(radius),0),
         glm::vec4(max+glm::vec3(radius),0)
     );
-    float roadOffset = radius - (H2-H1)*(K2*K1)/(K2-K1);
-    glm::vec3 offsetTop = glm::vec3(
-        radius+roadOffset,
-        H1,
-        radius+roadOffset
-    );
-    glm::vec3 offsetBottom = glm::vec3(
-        radius+roadOffset,
-        -H2,
-        radius+roadOffset
-
-    );
-    return BrushBoundingBox(
-        glm::vec4(min-offsetBottom*1.1f,0),
-        glm::vec4(max+offsetTop*1.1f,0)
-    );
 }
 
 BrushParams RoadBrush::getBrushParams() {

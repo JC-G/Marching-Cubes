@@ -242,7 +242,7 @@ Even with a much more efficient GPU implementation of the Marching Cubes algorit
 
 \subsubsection{Octree}
 \label{section:octree}
-To implement a versatile LOD system, an octree data structure is used. %TODO - explain an octree?
+To implement a versatile LOD system, an octree data structure is used.
 Each octree node represents a cuboid of space, such that the root node of the octree represents the entire renderable world, and the 8 children of an octree node equally divide the space represented by the parent node into octants. Each leaf node contains a reference to a chunk of generated geometry, as described in section \ref{section:mc_gpu}. The depth of the octree in any given region corresponds to the level of detail at which that region will have geometry generated. Each Marching Cubes chunk is generated with the same number of grid cells, regardless of the level of detail it is being generated for. However, the size of the grid cells within the chunk doubles in each direction, for each detail level increase. Using an octree provides versatility since any condition can be used to set the level of detail at a specific point in space. For example, it will be desirable to use the maximum level of detail near physics objects, so the physics collision is as accurate as possible, even if the camera is very far away. These conditions will be represented by functions \texttt{shouldSplit} and \texttt{shouldChop} for each node in the octree. The function \texttt{shouldSplit} returns whether a leaf node should split into its 8 children, and \texttt{shouldChop} returns whether a non-leaf node, should become a leaf, removing the rest of the octree below that node.
 
 \begin{figure}[H]
@@ -908,8 +908,28 @@ To avoid the complex computation that comes with finding the roots of a quintic,
   \label{fig:spline_approximation}
 \end{figure}
 
-Using approximations like this also allows for splines to be used to define more complex shapes, where calculating an exact SDF may be infeasible.
-TODO - for example... ?
+Using approximations like this also allows for splines to be used to define more complex shapes, where calculating an exact SDF may be infeasible. It is likely that the shape used for the line segment will result in jagged areas between line segments, when the shape is very curves. Figure \ref{fig:jagged_road} illustrates this. 
+
+\begin{SCfigure}[][!h]
+  \caption{Illustration of the union of 2 shapes at an angle, so there is a jagged overlap between them}
+  \includegraphics[width=0.5\textwidth]{jagged_road}
+  \label{fig:jagged_road}
+\end{SCfigure}
+
+A simple solution to improve the look of the final shape when this happens is to only consider the intersection between the ends of the shapes, as shown in figure \ref{fig:smooth_road}. 
+
+\begin{SCfigure}[][!h]
+  \caption{Illustration of the union of 2 shapes at an angle, considering only the points on the ends that are in the intersection of the shape. This gives a much smoother appearance, although there is still a visible line between the shapes.}
+  \includegraphics[width=0.5\textwidth]{smooth_road}
+  \label{fig:smooth_road}
+\end{SCfigure}
+
+Figure \ref{fig:bezier_roads} shows a shape generated using an SDF where each line segment is represented by a capsule intersected with a half-plane, to form a shape that is flat on top.
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{bezier_roads.png}
+  \caption{Interpolation splines and an SDF of a capsule intersected with a half plane were used to define this shape. The method described above, which prevents as many jagged edges being generated, was used. However, since each cubic curve in the interpolation spline is passed to the shader separately, this method was not used on the boundary between the curve segments, since implementing this would require significant changes to the editing code. Some inaccuracies in the normal function are visible, due to the approximate nature of this SDF.}
+  \label{fig:bezier_roads}
+\end{figure}
 
 \subsubsection{Limits of terrain modification}
  - TODO limits of marching cubes - sharp edges? this could go in the MC section also. 

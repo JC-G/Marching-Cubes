@@ -17,9 +17,9 @@ class RoadBrush : public Brush {
         BrushMode mode;
 
         //TODO - make this into another vector of parameters
-        float H1=0.1;
-        float H2=-1.0;
-        float K1=0.4;
-        float K2=-4.0;
+        // float H1=0.1;
+        // float H2=-1.0;
+        // float K1=0.4;
+        // float K2=-4.0;
 };
 #endif

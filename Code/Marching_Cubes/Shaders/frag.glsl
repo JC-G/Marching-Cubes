@@ -20,6 +20,8 @@ const float specularExponent = 10.0;
 
 
 //Shading Parameters
+
+const vec3 oneColor = vec3(0.1,0.5,0.1);
 const vec3 grassColor = vec3(38.,127.,0.)/255.;
 const vec3 grassColor2 = vec3(20.,60.,10.)/255.;
 // const vec3 grassColor2 = vec3(255.,0.,10.)/255.;
@@ -105,6 +107,7 @@ void main() {
     vec3 thisRockColor = mix(rockColor,rockColor2,rockBlend);
 
     vec3 textureColor = grassAmount * thisGrassColor + (1.0-grassAmount) * thisRockColor;
+    textureColor = oneColor;
 
     //ambient
     float ambientTotal = ambientPower;

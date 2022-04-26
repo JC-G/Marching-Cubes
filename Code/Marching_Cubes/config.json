@@ -35,12 +35,12 @@
     "show_test_cube": false,
     "draw_chunk_boundaries": false,
 
-    "terrain_mode": "scaled",
+    "terrain_mode": "plane",
     "generator_mode": "transvoxel",
 
     "raycast_mode": "mesh",
 
-    "shader_debug": false,
+    "shader_debug": true,
     "opengl_debug": false,
     "physics_debug": false,
     "enable_physics": true,

@@ -322,138 +322,90 @@ vec3 capsuleDerivative(vec3 p, vec3 a, vec3 b, float r) {
 }
 
 
-int roadResolution = 16;
+float hProp = 0.2;
+
+float sdPlane(vec3 inPos, vec3 n, vec3 p0,float h) {
+    return dot(n,inPos-p0)/length(n) - h;
+}
+
+
+//returns (distance, t value)
+vec2 road_segment(vec3 inPos, vec3 a, vec3 b, float r) {
+    //intersect a capsule with an plane
+
+    //normal in the plane containing line direction and up vector, perpendicular to direction
+    vec3 planeDirection = b-a;
+    vec3 planeNormal = vec3(
+        -planeDirection.x*planeDirection.y,
+        planeDirection.x * planeDirection.x + planeDirection.z * planeDirection.z, 
+        -planeDirection.z*planeDirection.y
+    );
+
+    //SDF value
+    float capsuleDistance = sdCapsule(inPos,a,b,r);
+    float planeDistance = sdPlane(inPos,planeNormal,a,hProp*r);
+    float resDistance = max(capsuleDistance,planeDistance);
+
+    //t value along the line a+t(b-a) such that p is closest
+    float t = dot(inPos-a,b-a)/dot(b-a,b-a);
+    return vec2(resDistance,t);
+
+}
+
+
+int roadResolution = 32;
 float road_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
 
-    //Approximation - use capsules for now
-    //TODO - find a nicer distance function - maybe a straight version of the cross-section we already have from the attempts at the analytic version
-    float dMin = 1e4;
+    //Approximation method
+    vec2 dMin = vec2(1e4,0);
+    int bestI = 0;
     for (int i = 0; i < roadResolution; i++) {
+
         float nt = i/float(roadResolution);
         float nt1 = (i+1.)/float(roadResolution);
+
         vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
         vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
+
+        //bounding box with a little bit of wiggle room, so the very ends of the line are always generated properly
         vec4 bottom = min(a,b).xyzz - vec4(r * 1.1);
         vec4 top = max(a,b).xyzz + vec4(r * 1.1);
+
         if (inBox(bottom,top,inPos)) {
-            dMin = min(dMin,sdCapsule(inPos,a,b,r));
+            vec2 segmentResult = road_segment(inPos,a,b,r);
+            //store the closest distance and t value
+            if (segmentResult.x < dMin.x) {
+                dMin = segmentResult;
+                bestI = i;
+            }
 
         }
     }
-    return dMin;
-/*
-    //The old, analytic approach to this - broken and overcomplicated...
-    // // return evaluate_road_d2(inPos, 0 ,A.xyz,B.xyz,C.xyz,D.xyz,r);
-    // // vec3 d3 = d3cubic_spline(inPos, A.xyz,B.xyz,C.xyz,D.xyz);
-    // // float dist = length(d3.xz);
-    // // float f = min(0,r-dist) + 0.4 * (0.1 - d3.y); //inverse distance function
-    // // float g = min(0,r-dist) - 4.0 * (-1.0 - d3.y);
-    // // return max(-f,-g);
-
-    // 
-    // "radius" of the road wrt y is defined as the minimum of:
-    //  -K1(y-H1) + R
-    //  -K2(y-H2) + R
-    // where y is relative to the curve
-    // crossover point occurs at (k1h1-k2h2)/(k1-k2)
-    // 
-
-
-    // //coefficients of the bezier curve
-    // vec3 t3 = -A.xyz + 3.0 * B.xyz - 3.0 * C.xyz + D.xyz;
-    // vec3 t2 = 3.0 * A.xyz - 6.0 * B.xyz + 3.0 * C.xyz;
-    // vec3 t1 = -3.0 * A.xyz + 3.0 * B.xyz;
-    // vec3 t0 = A.xyz;
-
-    // //coefficients of derivative of bezier curve
-    // vec3 d2 = 3.0 * t3,
-    //      d1 = 2.0 * t2,
-    //      d0 = t1;
     
-    // //multiply the y components by K1
-    // vec3 Kvec = vec3(1.0,K1,1.0);
-    // vec3 t3k = t3 * Kvec;
-    // vec3 t2k = t2 * Kvec;
-    // vec3 t1k = t1 * Kvec;
-    // vec3 t0k = t0 * Kvec;
-    
-    // //coefficients of first quintic
-    
-    // float a5 = dot(t3k, d2);
-    // float a4 = dot(t3k, d1) + dot(t2k, d2);
-    // float a3 = dot(t3k, d0) + dot(t2k, d1) + dot(t1k, d2);
-    // float a2 = dot(t2k, d0) + dot(t1k, d1) + dot(t0k, d2) -
-    //            dot(Kvec * inPos, d2) + (r - H1) * d2.y;
-    // float a1 = dot(t1k, d0) + dot(t0k, d1) -
-    //            dot(Kvec * inPos, d1) + (r - H1) * d1.y;
-    // float a0 = dot(t0k, d0) - 
-    //            dot(Kvec * inPos, d0) + (r - H1) * d0.y;
-               
-    // //K1zeros represents the t points where we are closest to r1 of the bezier curve
-    // vec5 K1zeros = solveQuintic(a5,a4,a3,a2,a1,a0);
+    //not on one of the end caps - just return SDF
+    if (dMin.y <=1. && dMin.y >= 0.) {
+        return dMin.x;
+    }
+    //on an endcap, only return the part of the endcap that intersects with the next segment
+    if (dMin.y > 1.) {
+        //return intersection of endcap with next segment
+        float nt = (bestI+1.)/float(roadResolution);
+        float nt1 = (bestI+2.)/float(roadResolution);
 
-    // //repeat the same process for K2...
+        vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
+        vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
+        vec2 nextResult = road_segment(inPos,a,b,r);
+        return max(nextResult.x,dMin.x);
+    } else { //dMin.y < 0.
+        // return intersection of endcap with previous segment
+        float nt = (bestI-1.)/float(roadResolution);
+        float nt1 = bestI/float(roadResolution);
 
-    // //multiply the y components by K2
-    // Kvec = vec3(1.0,K2,1.0);
-    // t3k = t3 * Kvec;
-    // t2k = t2 * Kvec;
-    // t1k = t1 * Kvec;
-    // t0k = t0 * Kvec;
-    
-    // //coefficients of first quintic
-    
-    // a5 = dot(t3k, d2);
-    // a4 = dot(t3k, d1) + dot(t2k, d2);
-    // a3 = dot(t3k, d0) + dot(t2k, d1) + dot(t1k, d2);
-    // a2 = dot(t2k, d0) + dot(t1k, d1) + dot(t0k, d2) -
-    //      dot(Kvec * inPos, d2) + (r - H1) * d2.y;
-    // a1 = dot(t1k, d0) + dot(t0k, d1) -
-    //      dot(Kvec * inPos, d1) + (r - H1) * d1.y;
-    // a0 = dot(t0k, d0) - 
-    //            dot(Kvec * inPos, d0) + (r - H1) * d0.y;
-
-    // vec5 K2zeros = solveQuintic(a5,a4,a3,a2,a1,a0);
-
-    // //Old method - greatly simplified...
-    // // float a5 = t3.x * d2.x + 
-    // //            t3.z * d2.z + 
-    // //            K1 * t3.y * d2.y; 
-    // // float a4 = t3.x * d1.x + t2.x * d2.x + 
-    // //            t3.z * d1.z + t2.z * d2.z + 
-    // //            K1 * (t3.y * d1.y + t2.y * d2.y);
-    // // float a3 = t3.x * d0.x + t2.x * d1.x + t1.x * d2.x + 
-    // //            t3.z * d0.z + t2.z * d1.z + t1.z * d2.z +
-    // //            K1 * (t3.y * d0.y + t2.y * d1.y + t1.y * d2.y);
-    // // float a2 = t2.x * d0.x + t1.x * d1.x + (t0.x - inPos.x) * d2.x + 
-    // //            t2.z * d0.z + t1.z * d1.z + (t0.z - inPos.z) * d2.z + 
-    // //            K1 * (t2.y * d0.y + t1.y * d1.y + (t0.z - inPos.z) * d2.y) + 
-    // //            (r - H1) * d2.y;
-    // // float a1 = t1.x * d0.x + (t0.x - inPos.x) * d1.x +
-    // //            t1.z * d0.z + (t0.z - inPos.z) * d1.z +
-    // //            K1 * (t1.y * d0.y + (t0.y - inPos.y) * d1.y) + 
-    // //            (r - H1) * d1.y;
-    // // float a0 = (t0.x - inPos.x) * d0.x + 
-    // //            (t0.z - inPos.z) * d0.z + 
-    // //            K1 * ((t0.y - inPos.y) * d0.z) +
-    // //            (r - H1) * d0.y;
-
-    // //now we have all of the points where the distance *could* be minimized, work out which is actually the minimum
-    // clamp(K1zeros.t,0.,1.);
-    // clamp(K2zeros.t,0.,1.);
-    // clamp(K1zeros.xyzw,0.,1.);
-    // clamp(K2zeros.xyzw,0.,1.);
-    // float lMin = min(
-    //     evaluate_road_d2(inPos, K1zeros.t,A.xyz,B.xyz,C.xyz,D.xyz,r),
-    //     evaluate_road_d2(inPos, K2zeros.t,A.xyz,B.xyz,C.xyz,D.xyz,r)
-    // );
-    // for (int i = 0; i < 4; i++) {
-    //     lMin = min(lMin,evaluate_road_d2(inPos, K1zeros.xyzw[i],A.xyz,B.xyz,C.xyz,D.xyz,r));
-    //     lMin = min(lMin,evaluate_road_d2(inPos, K2zeros.xyzw[i],A.xyz,B.xyz,C.xyz,D.xyz,r));
-    // }
-    // return lMin;
-
-*/
+        vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
+        vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
+        vec2 nextResult = road_segment(inPos,a,b,r);
+        return max(nextResult.x,dMin.x);
+    }
 }
 
 vec3 road_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
@@ -467,28 +419,4 @@ vec3 road_normal(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
     float fy = road_distance(dy,A,B,C,D,r);
     float fz = road_distance(dz,A,B,C,D,r);
     return normalize(vec3((fx-f)/eps, (fy-f)/eps, (fz-f)/eps));
-    // float dMin = 1e4;
-    // int bestI = 0;
-    // for (int i = 0; i < roadResolution; i++) {
-    //     float nt = i/float(roadResolution);
-    //     float nt1 = (i+1.)/float(roadResolution);
-    //     vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
-    //     vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
-    //     vec4 bottom = min(a,b).xyzz - vec4(r * 1.1);
-    //     vec4 top = max(a,b).xyzz + vec4(r * 1.1);
-
-        
-    //     if (inBox(bottom,top,inPos)) {
-    //         float dNew = sdCapsule(inPos,a,b,r);
-    //         if (dNew < dMin) {
-    //             dMin = dNew;
-    //             bestI = i;
-    //         }
-    //     }
-    // }
-    // float nt = bestI/float(roadResolution);
-    // float nt1 = (bestI+1.)/float(roadResolution);
-    // vec3 a = B3(nt ,A.xyz,B.xyz,C.xyz,D.xyz);
-    // vec3 b = B3(nt1,A.xyz,B.xyz,C.xyz,D.xyz);
-    // return capsuleDerivative(inPos,a,b,r);
 }

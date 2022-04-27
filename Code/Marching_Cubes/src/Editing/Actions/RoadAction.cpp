@@ -17,6 +17,9 @@ void RoadAction::handleInput(glm::vec3 inPos) {
     if (Controller::keyPressed(Window::window,GLFW_KEY_X)) {
         finishSpline();
     }
+    if (Controller::keyPressed(Window::window,GLFW_KEY_C)) {
+        mousePreview = !mousePreview;
+    }
 }
 void RoadAction::finishSpline() {
     std::vector<glm::vec3> controlPoints = BezierHelperFunctions::calculateControlPoints(points);
@@ -68,10 +71,13 @@ void RoadAction::drawPreview() {
         return;
     }
     std::vector<glm::vec3> tempPoints(points);
-    tempPoints.push_back(Window::placePos);
+    if (mousePreview) {
+        tempPoints.push_back(Window::placePos);
+    }
     std::vector<glm::vec3> controlPoints = BezierHelperFunctions::calculateControlPoints(tempPoints);
     for (int i = 0; i < tempPoints.size()-1; i++) {
         Preview::drawBezierCurve(
+            radius,
             controlPoints[3 * i],
             controlPoints[3 * i + 1],
             controlPoints[3 * i + 2],
@@ -86,5 +92,6 @@ std::string RoadAction::getDetails() {
            "([) Decrease Radius\n"
            "(]) Increase Radius\n"
            "(Click) Place Interpolation Point\n"
-           "(X) Finish Spline";
+           "(X) Finish Spline\n"
+           "(C) Toggle Mouse Preview";
 }

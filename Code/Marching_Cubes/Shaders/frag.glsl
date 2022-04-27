@@ -107,32 +107,32 @@ void main() {
     vec3 thisRockColor = mix(rockColor,rockColor2,rockBlend);
 
     vec3 textureColor = grassAmount * thisGrassColor + (1.0-grassAmount) * thisRockColor;
-    textureColor = oneColor;
+    // textureColor = oneColor;
 
     //ambient
     float ambientTotal = ambientPower;
 
     //diffuse - from player and from sun
     vec4 sunDirection = normalize(sunPos - vertexPosition_worldSpace);
+
     vec4 playerLightPosition = playerLightOffset + vec4(cameraPosition,0.);
     vec4 playerLightDirection = normalize(playerLightPosition - vertexPosition_worldSpace);
+
     float diffuseTotal = diffusePower * (
         0.5 * max(0,dot(sunDirection,normalize(vertexNormal_worldSpace))) +
         0.5 * max(0,dot(playerLightDirection,normalize(vertexNormal_worldSpace)))
     );
 
-
-    //specular - only from sun...
+    //specular - only from sun
     vec4 reflectDirection = reflect(-sunDirection,normalize(vertexNormal_worldSpace));
     vec4 cameraDirection = normalize(vec4(cameraPosition,1) - vertexPosition_worldSpace);
     float specularTotal = specularPower * pow(max(0,dot(reflectDirection,cameraDirection)),specularExponent);
 
-
-	color.a = 1;
 	vec3 terrainColor = (ambientTotal + diffuseTotal + specularTotal) * textureColor;
     // color.rgb = (vertexNormal_worldSpace.xyz + vec3(1.))/2.;
 
     //Fog
     float fogFactor = smoothstep(nearFog,farFog,length(cameraPosition-vertexPosition_worldSpace.xyz));
     color.rgb = mix(terrainColor,fogColor,fogFactor);
+	color.a = 1;
 }

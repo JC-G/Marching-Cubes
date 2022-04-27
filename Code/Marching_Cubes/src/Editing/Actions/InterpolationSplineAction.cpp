@@ -17,6 +17,9 @@ void InterpolationSplineAction::handleInput(glm::vec3 inPos) {
     if (Controller::keyPressed(Window::window,GLFW_KEY_X)) {
         finishSpline();
     }
+    if (Controller::keyPressed(Window::window,GLFW_KEY_C)) {
+        mousePreview = !mousePreview;
+    }
 }
 void InterpolationSplineAction::finishSpline() {
     //Use a sequence of CubicBezierBrushes
@@ -68,10 +71,29 @@ void InterpolationSplineAction::drawPreview() {
     if (points.size() == 0) {
         return;
     }
-    for (int i = 0; i < points.size()-1; i++) {
-        Preview::drawPreviewLine(points[i],points[i+1]);
+    std::vector<glm::vec3> tempPoints(points);
+    if (mousePreview) {
+        tempPoints.push_back(Window::placePos);
     }
-    Preview::drawPreviewLine(points[points.size()-1], Window::placePos);
+    std::vector<glm::vec3> controlPoints = BezierHelperFunctions::calculateControlPoints(tempPoints);
+    for (int i = 0; i < tempPoints.size()-1; i++) {
+        Preview::drawBezierCurve(
+            radius,
+            controlPoints[3 * i],
+            controlPoints[3 * i + 1],
+            controlPoints[3 * i + 2],
+            controlPoints[3 * i + 3],
+            16
+        );
+    }
+
+    // if (points.size() == 0) {
+    //     return;
+    // }
+    // for (int i = 0; i < points.size()-1; i++) {
+    //     Preview::drawPreviewLine(points[i],points[i+1]);
+    // }
+    // Preview::drawPreviewLine(points[points.size()-1], Window::placePos);
 }
 
 std::string InterpolationSplineAction::getDetails() {
@@ -79,5 +101,6 @@ std::string InterpolationSplineAction::getDetails() {
            "([) Decrease Radius\n"
            "(]) Increase Radius\n"
            "(Click) Place Interpolation Point\n"
-           "(X) Finish Spline";
+           "(X) Finish Spline\n"
+           "(C) Toggle Mouse Preview";
 }

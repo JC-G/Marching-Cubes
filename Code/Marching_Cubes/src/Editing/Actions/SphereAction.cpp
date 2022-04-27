@@ -21,9 +21,7 @@ void SphereAction::onMouseHold(glm::vec3 pos){
 
 void SphereAction::onCancel(){};
 
-std::string SphereAction::getDescription() {
-    return "Sphere, Radius " + std::to_string(radius);
-}
+
 
 void SphereAction::increaseSize() {
     radius += 0.01;
@@ -34,6 +32,10 @@ void SphereAction::decreaseSize() {
 
 void SphereAction::drawPreview() {
     Preview::drawPreviewSphere(glm::vec3(radius),Window::placePos);
+}
+
+std::string SphereAction::getDescription() {
+    return "Sphere, Radius " + std::to_string(radius);
 }
 
 std::string SphereAction::getDetails() {

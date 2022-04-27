@@ -818,7 +818,7 @@ virtual void decreaseSize() {};
 
 virtual void handleInput(glm::vec3 placePos);
 \end{lstlisting}
-The first 3 of these functions are designed to be overridden, to implement the action when the mouse is pressed, released, and held, respectively. The argument is the in-world position at which the mouse is pointing. The method \texttt{onCancel} is designed to be called when the action has been cancelled, to clean up any state that has been created, for example in a more complex action that may store intermediate control points. The methods \texttt{increaseSize} and \texttt{decreaseSize} are designed to provide a standard way of increasing and decreasing the size of a shape, for example changing the radius of a sphere, or thickness of a spline curve. The final method, \texttt{handleInput}, is designed for more general input for an action, which is useful for actions that require more input than the options given in the other functions. It has a default implementation, which calls the other functions, that can be overridden. This implementation is shown in listing \ref{action_handleinput}.
+The first 3 of these functions are designed to be overridden, to implement the action when the mouse is pressed, released, and held, respectively. The next 3 are also designed to be overridden, to implement what should happen when the size of the brush is modified, or when a brush is cancelled midway through placing, if applicable (for example, if some control points of a curve are placed, but not all of them). The argument is the in-world position at which the mouse is pointing. The method \texttt{onCancel} is designed to be called when the action has been cancelled, to clean up any state that has been created, for example in a more complex action that may store intermediate control points. The methods \texttt{increaseSize} and \texttt{decreaseSize} are designed to provide a standard way of increasing and decreasing the size of a shape, for example changing the radius of a sphere, or thickness of a spline curve. The final method, \texttt{handleInput}, is designed for more general input for an action, which is useful for actions that require more input than the options given in the other functions. It has a default implementation, which calls the other functions, that can be overridden. This implementation is shown in listing \ref{action_handleinput}.
 \begin{lstlisting}[language=C++,label={action_handleinput},caption={Default implementation of \texttt{handleInput}}]
 void Action::handleInput(glm::vec3 placePos) {
   //default input handling for an action
@@ -1030,8 +1030,41 @@ float road_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
 \label{edit_limits}
 As it stands now, the terrain modification system allows for a wide variety of shapes to be implemented. The efficiency improvements resulting from the use of the octree to prevent iteration over large lists of brushes, and the use of bounding boxes inside the GLSL shader means that a large number of brushes can exist within the world with little slowdown, provided they are spread out. However, the number of brushes in the world grows without bound as further editing occurs, meaning that slowdown is inevitable, particulary when the number of brushes in a single node becomes high, since this requires more work in the generation shader. This slowdown presents itself as a stutter in between frames, when a large number of chunks of geometry need to be regenerated. This can be reduced by limiting the speed of the player so that a large movement in between frames does not happen. There are other ways to address this, which we will discuss in section \ref{section:future_work}. Nevertheless, it is possible to modify the world with many thousands of brushes before significant slowdown occurs.
 \section{Graphical User Interface}
- - TODO: show previews of editing, info text. Create info text for controls?
- 
+To make editing more intuitive for the user, a basic graphical user interface has been implemented. Text showing information such as the camera position and currently enabled brush is displayed in the bottom left. A list of controls is displayed on the right, and can be hidden if necessary. Controls for the selected brush are shown on the top left. A crosshair is shown in the middle of the screen, to show the user what they are currently pointing at. When a brush is being placed, a preview is shown to the user, to help them understand what modification will be performed. To implement this, the methods \texttt{drawPreview}, \texttt{getDescription}, and \texttt{getDetails} have been added to the \texttt{Action} interface. Listing \ref{action_ui_methods} shows the implementation of these methods for drawing a sphere.
+
+\begin{lstlisting}[language=C++,label={action_ui_methods},caption={The UI methods for the \texttt{SphereAction} class. The function \texttt{Preview::drawPreviewSphere} draws a semi-transparent sphere in the scene, loaded from an external 3D model file, using standard OpenGL methods.}]
+void SphereAction::drawPreview() {
+  Preview::drawPreviewSphere(glm::vec3(radius),Window::placePos);
+}
+
+std::string SphereAction::getDescription() {
+  return "Sphere, Radius " + std::to_string(radius);
+}
+
+std::string SphereAction::getDetails() {
+  return "Brush Controls:\n"
+         "([) Decrease Size\n"
+         "(]) Increase Size\n"
+         "(Click) Place Spheres";
+}
+\end{lstlisting}
+
+Previews for shapes defined using Bezier splines are shown by approximating the curve with a series of cylinders. Some examples the UI and previews are shown in the figures below. In each case, the informational text and the preview of a shape about to be placed into the world can be seen
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{sphere_preview.png}
+  \caption{Preview of a sphere about to be placed, next to a sphere that has already been placed for comparison.}
+  \label{fig:sphere_preview}
+\end{figure}
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{cylinder_preview.png}
+  \caption{Preview of a cylinder about to be placed, next to some shapes which have already been placed.}
+  \label{fig:cylinder_preview}
+\end{figure}
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{spline_preview.png}
+  \caption{Preview of an interpolation spline with multiple control points. The use of semi-transparent shapes means that visual artifacts are present when the shapes overlap. This is a standard problem when rendering translucent objects, and can be solved, for example by sorting the shapes so they are drawn in a specific order. However, since the only purpose of rendering this is to temporarily display a preview, we do not solve this issue here}
+  \label{fig:spline_preview}
+\end{figure}
 \section{Physics}
 To be able to use the terrain we have generated in the previous sections, in many applications it is useful to have collision detection and physics simulation. This section explores a method of doing this.
 \subsection{Bullet Physics}
@@ -1129,6 +1162,61 @@ The situation is much more complicated with approximate SDFs, however. Since the
 \end{SCfigure}
 
 Furthermore, collision between an SDF and a different shape is more complicated, even if the SDF is exact. Since the distance from a surface at which a shape is colliding with it is different depending on the orientation of the shape relative to the surface, and the evaluation of an SDF gives no information about direction to the nearest point on the surface, such a system would be inaccurate. There is potential in using an approximate SDF which provides a lower bound of the distance to the surface, along with a spherical bounding volume for physics shapes, to perform culling on objects to determine when it is impossible for them to intersect. However, we will not explore this here, choosing instead to remain with the library implementation.  
+
+\section{Shading}
+A good way to greatly improve the appearance of the generated terrain is to apply some shading. For lighting, we make use of a modified version Phong lighting, with 2 light sources. We will have a far away light source to represent the sun. This light source will have both diffuse and specular reflection. We will also have a light source which is positioned directly above the camera, that only contributes a diffuse component. This gives the appearance that nearby geometry is lighter than geometry that is further away, and excluding the specular component from the player light source prevents everything from appearing as shiny. Listing \ref{lighting} shows the code responsible for this
+
+\begin{lstlisting}[language=C++,label={lighting},caption={Part of the fragment shader used to determine the light intensity for a given pixel.}]
+//ambient
+float ambientTotal = ambientPower;
+
+//diffuse - from player and from sun
+vec4 sunDirection = normalize(sunPos - vertexPosition_worldSpace);
+
+vec4 playerLightPosition = playerLightOffset + vec4(cameraPosition,0.);
+vec4 playerLightDirection = normalize(playerLightPosition - vertexPosition_worldSpace);
+
+float diffuseTotal = diffusePower * (
+  0.5 * max(0,dot(sunDirection,normalize(vertexNormal_worldSpace))) +
+  0.5 * max(0,dot(playerLightDirection,normalize(vertexNormal_worldSpace)))
+);
+
+//specular - only from sun
+vec4 reflectDirection = reflect(-sunDirection,normalize(vertexNormal_worldSpace));
+vec4 cameraDirection = normalize(vec4(cameraPosition,1) - vertexPosition_worldSpace);
+float specularTotal = specularPower * pow(max(0,dot(reflectDirection,cameraDirection)),specularExponent);
+
+vec3 terrainColor = (ambientTotal + diffuseTotal + specularTotal) * textureColor;
+\end{lstlisting}
+We will make use of a customized fragment shader, defining the color of the terrain based on its position and normal using procedural texturing. This has a benefit over using textures in this context, since tiling the texture over a large area will show a clearly repeating pattern, whereas a procedural texture defined using noise will not have such an obvious repeating pattern. Listing \ref{procedural_shading} shows some procedural texturing that appears as grass on horizontal surfaces, and rock on vertical surfaces.
+
+\begin{lstlisting}[language=C++,label={procedural_shading},caption={Part of the fragment shader used to determine the color of each pixel. We use noise to interpolate between different shades of a color, rather than using a flat color. The variable \texttt{grassAmount} determines how much grass is visible at a given point, ranging from no grass when the y component of the normal is less than 0.75, to all grass, when the y component is greater than 0.9. The noise used to define the rock colour has been stretched in the x and z directions. The result is a color that changes more quickly as the y coordinate changes.}]
+float grassAmount = smoothstep(0.75,0.9,vertexNormal_worldSpace.y);
+
+//noise
+float grassBlend = perlin3(vertexPosition_worldSpace.xyz/10.,octaves);
+float rockBlend = perlin3(vertexPosition_worldSpace.xyz/vec3(50.,8.,50.),octaves);
+
+//somewhere between color 1 and color 2, which are different shades of green, gray respectively
+vec3 thisGrassColor = mix(grassColor,grassColor2,grassBlend);
+vec3 thisRockColor = mix(rockColor,rockColor2,rockBlend);
+
+//mix grass and rock based on grassAmount
+vec3 textureColor = grassAmount * thisGrassColor + (1.0-grassAmount) * thisRockColor;    
+\end{lstlisting}
+Figure \ref{fig:procedural_shading_shapes} shows the shading produced by this algorithm.
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{procedural_shading_shapes.png}
+  \caption{Plane, cylinder and sphere, textured using this procedural texturing method.}
+  \label{fig:procedural_shading_shapes}
+\end{figure}
+
+When these techniques are applied alongside a well-chosen noise-based terrain function, the result is a visually appealing landscape that can still be modified.
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{shaded_mountains.jpg}
+  \caption{Mountainous landscape generated using noise, and textured with procedural texturing. }
+  \label{fig:shaded_mountains}
+\end{figure}
 
 
 \section{Changes in the Implementation}

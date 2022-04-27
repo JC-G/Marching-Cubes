@@ -106,9 +106,9 @@ void Preview::drawPreviewSphere(glm::vec3 radius, glm::vec3 position) {
 	glBufferData(GL_ARRAY_BUFFER,sphereVertexData.size()*sizeof(glm::vec4),sphereVertexData.data(),GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
-	glDisable(GL_DEPTH_TEST);
+	// glDisable(GL_DEPTH_TEST);
 	glDrawArrays(GL_TRIANGLES,0,sphereVertexData.size());
-	glEnable(GL_DEPTH_TEST);	
+	// glEnable(GL_DEPTH_TEST);	
 
 }
 
@@ -134,12 +134,13 @@ void Preview::drawPreviewLine(glm::vec3 pos1, glm::vec3 pos2) {
 	drawPreviewCylinder(0.01,pos1,pos2,glm::vec4(1,0,0,1));
 }
 
-void Preview::drawBezierCurve(glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 D, int resolution) {
+void Preview::drawBezierCurve(float r, glm::vec3 A, glm::vec3 B, glm::vec3 C, glm::vec3 D, int resolution) {
 	for (int i = 0; i < resolution; i++) {
 		float rf = float(resolution);
 		float t = i / rf;
 		float t1 = (i+1.0f) / rf;
-		drawPreviewLine(
+		drawPreviewCylinder(
+			r,
 			BezierHelperFunctions::cubicBezier(A,B,C,D,t),
 			BezierHelperFunctions::cubicBezier(A,B,C,D,t1)
 		);

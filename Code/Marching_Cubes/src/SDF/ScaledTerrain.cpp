@@ -36,10 +36,10 @@ std::string ScaledTerrain::getShaderCode() {
         float distance(vec3 inPos) {
             float ground = inPos.y-biomeHeight(
                 inPos.xz,
-                7.0,
+                3.0,
                 10,
-                1500.,
-                1000.,
+                400.,
+                300.,
                 0.4,
                 2.0
             ).z;
@@ -49,10 +49,10 @@ std::string ScaledTerrain::getShaderCode() {
         vec3 normal(vec3 inPos) {
             vec3 n = biomeHeight(
                 inPos.xz,
-                7.0,
+                3.0,
                 10,
-                1500.,
-                1000.,
+                400.,
+                300.,
                 0.4,
                 2.0
             );

@@ -262,7 +262,6 @@ std::string Window::getControlString(bool full) {
                "(P) Delete All Brushes\n"
                "(B) Next Brush Type\n"
                "(Y) Spawn Physics Object\n"
-               "(T) Torus\n"
                "(F) Show/Hide Wireframe\n"
                "(V) Teleport to Mouse\n"
                "(Z) Toggle Player Physics\n"

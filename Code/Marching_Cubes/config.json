@@ -10,7 +10,7 @@
     "chunk_size": 32,
 
     "camera_move_speed": 5.0,
-    "jump_speed": 10.0,
+    "jump_speed": 5.0,
     "physics_move_speed": 500.0,
     "player_physics": true,
     "camera_start_position": [0.0,2.0,0.0],
@@ -35,7 +35,7 @@
     "show_test_cube": false,
     "draw_chunk_boundaries": false,
 
-    "terrain_mode": "plane",
+    "terrain_mode": "scaled",
     "generator_mode": "transvoxel",
 
     "raycast_mode": "mesh",

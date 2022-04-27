@@ -23,6 +23,7 @@ class RoadAction : public Action {
     private:
         float radius;
         std::vector<glm::vec3> points;
+        bool mousePreview = true;
 
 }; 
 #endif

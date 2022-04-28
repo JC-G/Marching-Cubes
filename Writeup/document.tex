@@ -49,8 +49,7 @@
 \newpage
 
 \section*{Abstract}
-This project explores a method for procedurally generating terrain by applying a variation of the Marching Cubes algorithm known as the Transvoxel algorithm. We use an octree data structure to break down a large world into chunks at varying levels of detail, and apply the parallel processing power of the GPU to rapidly generate geometry on a per-chunk basis. We then explore applications of this approach, modifying the geometry in real-time by making localized changes to the underlying distance function. %TODO - Finally, we demonstrate the applicability of this approach by ...
-Finally, we use the meshes we have generated with a well-known physics library.
+This project explores a method for procedurally generating terrain by applying a variation of the Marching Cubes algorithm known as the Transvoxel algorithm. We use an octree data structure to break down a large world into chunks at varying levels of detail, and apply the parallel processing power of the GPU to rapidly generate geometry on a per-chunk basis. We then explore applications of this approach, modifying the geometry in real-time by making localized changes to the underlying distance function. Finally, we use the meshes we have generated with a well-known physics library. TODO - create and write about basic game.
 \newpage
 
 \tableofcontents
@@ -105,6 +104,12 @@ To break up the grid structure, and provide greater detail, multiple layers or \
   \caption{8 octaves of value noise. The grid structure is less visible, although some regularity can still be seen.}
   \includegraphics[width=0.5\textwidth]{valuenoise.png}
   \label{fig:valuenoise}
+\end{SCfigure}
+Other, more advanced noise algorithms that show fewer regularities like this. Figure \ref{fig:better_noise} shows the output of 2 such algorithms.
+\begin{SCfigure}[][!h]
+  \caption{Left: Perlin Noise. Right: Simplex Noise. Algorithms originally devised by Ken Perlin\cite{PerlinChapter2N}. Images generated using functions \texttt{cnoise} and \texttt{snoise} respectively, from the cited collection of reference implementations\cite{github_2014}.}
+  \includegraphics[width=0.5\textwidth]{better_noise.png}
+  \label{fig:better_noise}
 \end{SCfigure}
 
 There are many different varieties of noise function, all of which take as input a point in $\mathbb{R}^n$ and return a pseudorandom value, typically between 0 and 1. The output of a noise function can be used to define the terrain height at a given point to generate a convincing heightmap, and typical implementations are as a function of the form $y = h\left(x,z\right)$ giving the height of the terrain at a given $\left(x,z\right)$ coordinate. This can be simply extended to an approximate SDF, using the formula $f\left(x,y,z\right) = y - h\left(x,z\right)$. Note that this is in fact an approximate SDF, and that the distance approximation worsens as the steepness of the slope of $h\left(x,z\right)$ increases, as was demonstrated in figure \ref{fig:Hill_SDF}.
@@ -194,28 +199,50 @@ void main() {
 \end{lstlisting}
 
 \item \underline{Counting phase}: For each grid cell in the chunk, the number of mesh triangles in the cell is calculated, using the SDF sample values computed in the previous phase. This allows the vertex buffer to be sized correctly. This phase also filters out grid cells which have no triangles in at all, since no geometry needs to be generated. Listing \ref{mc_count} shows part of the code responsible for this. The variable \texttt{cubeIndex} is calculated according to the Marching Cubes algorithm, and corresponds to the vertices of the grid cell that are inside or outside of the surface. Hence, this \textit{cube index} determines the geometry that will end up in each grid cell. \texttt{totalTable} contains the number of triangles in a grid cell with that index, which is added to the atomic variable \texttt{pointCount}. \texttt{bufferIndex} reserves a place in the buffer \texttt{marchableList} for this grid cell. The condition in line 1 filters out the cube indices which do not generate any geometry, which are those that are completely solid, or completely air.
-\begin{lstlisting}[language=C++,label={mc_count},caption={GLSL code for counting the number of vertices and marchable grid cells in the chunk. When \texttt{cubeIndex} is equal to either 0 or 255, no geometry is generated in that cell.}]
+\begin{lstlisting}[language=C++,label={mc_count},caption={GLSL code for counting the number of vertices and marchable grid cells in the chunk, using lookup table \texttt{totalTable} as described in listing \ref{mc_tables}. When \texttt{cubeIndex} is equal to either 0 or 255, no geometry is generated in that cell, since it is considered all air, or all solid.}]
 if (cubeIndex != 0 && cubeIndex != 255)
 {
   atomicCounterAddARB(pointCount,totalTable[cubeIndex]);
   uint bufferIndex = atomicCounterIncrement(marchableCount);
+  //store the grid cell and cube index
   uvec4 mc = uvec4(gid.x,gid.y,gid.z,cubeIndex);
   marchableList[bufferIndex] = mc;
 }
 \end{lstlisting}
 
 \item \underline{Polygonisation phase}: For each of the grid cells that will contain mesh triangles, these triangles are actually generated, and the vertex positions are adjusted by linearly interpolating the pre-computed SDF values. At this stage, the vertex normals are also generated. This could be done using the normal of the generated triangle, which would result in the surface having a faceted appearance.We avoid this approach by providing a normal function. Listing \ref{mc_poly} shows part of the code responsible for this. Atomic variable \texttt{triCount} keeps track of the number of triangles that have been generated across the entire chunk, and allocates a space in the buffers \texttt{vertices} and \texttt{normals}, which have been sized according to the values calculated in the previous phase. \texttt{triTable} is a buffer containing a flattened version of the table with the same name in the reference implementation. It contains a list of indices into the array \texttt{vertlist} for each cube index. Each vertex in \texttt{vertlist} is positioned on the edge of the grid cell, linearly interpolated as described in Section \ref{section:mc}.
-\begin{lstlisting}[language=C++,label={mc_poly},caption={GLSL code for generating the geometry of a grid cell.}]
-for (int tCount = 0; triTable[tCount+16*cubeIndex] != -1; tCount+=3)
-{
-  uint index = atomicCounterIncrement(triCount);
-  for (int t = 0; t < 3;t++)
+\begin{lstlisting}[language=C++,label={mc_poly},caption={Snippets from the GLSL code for generating the geometry of a grid cell, using the lookup tables as described in listing \ref{mc_tables}.}]
+//get the cube index from the previous stage
+int E = int(edgeTable[marchableList[gl_GlobalInvocationID.x].w]);
+if (E != 0 && E != 255) {
+  //stored as both int and uint to prevent unexpected bitwise 
+  uint cubeIndex = marchableList[gl_GlobalInvocationID.x].w;
+
+  /* Find the vertices where the surface intersects the cube */
+  if ((E & 1) != 0) {
+    vertlist[0] = VertexInterp(gridPos[0],gridPos[1],gridCells[0],gridCells[1]);
+  }
+  if ((E & 2) != 0) {
+    vertlist[1] = VertexInterp(gridPos[1],gridPos[2],gridCells[1],gridCells[2]);
+  }
+  ... //do the same for each edge - bit with value 1<<x is edge x, interpolating between the required cell vertices. 
+
+  //for every triangle until we hit an edge index of -1 in triTable
+  for (int tCount = 0; triTable[tCount+16*cubeIndex] != -1; tCount+=3)
   {
-    vec3 vertPos = vertlist[triTable[cubeIndex*16+tCount+t]]*chunkStride + chunkPosition;
-    vertices[3*index+t] = vec4(vertPos,1);
-    normals[3*index+t] = vec4(modified_normal(vertPos),0);
+    //index of triangle in vertex and normal buffer
+    uint index = atomicCounterIncrement(triCount);
+    //populate the buffer according to tables
+    for (int t = 0; t < 3;t++)
+    {
+      vec3 vertPos = vertlist[triTable[cubeIndex*16+tCount+t]]*chunkStride + chunkPosition;
+      vertices[3*index+t] = vec4(vertPos,1);
+      normals[3*index+t] = vec4(modified_normal(vertPos),0);
+    }
   }
 }
+
+
 \end{lstlisting}
 
 \end{enumerate}
@@ -419,24 +446,32 @@ To parallelise the Transvoxel algorithm, we employ a similar three phase approac
 \item \underline{Distance function computation}: For each grid cell vertex, sample the SDF. In addition, if this vertex lies on the face of the chunk, also sample the SDF at additional points on the face, for use in transition cells. Store all of these values in a buffer for the next phases. This shader is invoked once for each grid cell vertex, and the invocations corresponding to the vertices on the faces where transition cells are generated are responsible for calculating the additional sample points
 
 \begin{lstlisting}[language=C++,label={tv_generate},caption={Part of the GLSL code responsible for sampling the SDF in the parallel Transvoxel algorithm. This code snippet samples the SDF at the actual grid point, as well as at points surrounding it on the -X and +X facing faces. Lines 7-17 are repeated for the remaining faces of the chunk. Figure \ref{fig:tv_gen_grid} demonstrates which sample points would be calculated in various invocations of this algorithm. The \texttt{generate} function takes 2 parameters: the first is the actual position of the grid cell vertex, and the second is an offset parameter, for generating sample values halfway beetween grid vertices. For example, a value of \texttt{uvec3(0,1,0)} corresponds to a point that is offset from the position in the first argument by half a grid cell in the Y direction.}]
-uvec3 gid = gl_GlobalInvocationID;
-if (gid.x > chunkSize.x || gid.y > chunkSize.y || gid.z > chunkSize.z) {
-  return;
-}
-generate(gid,uvec3(0)); //calculate the SDF at this grid point
 
-if ((gid.x == 0 && (edgeIndex & 1) != 0) || (gid.x == chunkSize.x && (edgeIndex & 2) != 0)) {
-  if (gid.y < chunkSize.y) {
-    generate(gid,uvec3(0,1,0)); //calculate the SDF at this grid point, offset by half the grid width in the y direction
-  }
-  if (gid.z < chunkSize.z) {
-    generate(gid,uvec3(0,0,1));
-  }
-  if (gid.y < chunkSize.y && gid.z < chunkSize.z) {
-    generate(gid,uvec3(0,1,1));
-  }
+void generate(uvec3 gid, uvec3 halfXYZ) {
+  uint arrID = getArrID(gid, halfXYZ);
+  float value = modified_distance((gid + 0.5 * vec3(halfXYZ)) * chunkStride + chunkPosition);
+  distanceValues[arrID] = value;
 }
-... //do the same for the y and z oriented faces
+void main() {
+  uvec3 gid = gl_GlobalInvocationID;
+  if (gid.x > chunkSize.x || gid.y > chunkSize.y || gid.z > chunkSize.z) {
+    return;
+  }
+  generate(gid,uvec3(0)); //calculate the SDF at this grid point
+
+  if ((gid.x == 0 && (edgeIndex & 1) != 0) || (gid.x == chunkSize.x && (edgeIndex & 2) != 0)) {
+    if (gid.y < chunkSize.y) {
+      generate(gid,uvec3(0,1,0)); //calculate the SDF at this grid point, offset by half the grid width in the y direction
+    }
+    if (gid.z < chunkSize.z) {
+      generate(gid,uvec3(0,0,1));
+    }
+    if (gid.y < chunkSize.y && gid.z < chunkSize.z) {
+      generate(gid,uvec3(0,1,1));
+    }
+  }
+  ... //do the same for the y and z oriented faces  
+}
 \end{lstlisting}
 
 \begin{SCfigure}[][!h]
@@ -452,7 +487,7 @@ if ((gid.x == 0 && (edgeIndex & 1) != 0) || (gid.x == chunkSize.x && (edgeIndex 
     \item Use the lookup tables with \texttt{transitionCellIndex} to determine how much geometry exists within this transition cell, and increase the atomic counter accordingly.
     \item Append this transition cell to the buffer of cells to be polygonised in the subsequent phase. The transition cell will be polygonised separately from the regular cell that exists within the same grid cell. Additional flags are added to the data in this buffer to indicate that this cell is a transition cell, and its orientation.
   \end{itemize}
-\begin{lstlisting}[language=C++,label={tv_count},caption={Part of the code responsible for counting the triangles in transition cells, and appending them to the geometry generation buffer. The first 9 bits of \texttt{paddedTransitionCellIndex} store the type of geometry inside the transition cell, the 10th bit records that the cell is a transition cell, and bits 11-16 are a mask identifying the orientation of the transition cell.}]
+\begin{lstlisting}[language=C++,label={tv_count},caption={Part of the code responsible for counting the triangles in transition cells, and appending them to the geometry generation buffer. The first 9 bits of \texttt{paddedTransitionCellIndex} store the type of geometry inside the transition cell, the 10th bit records that the cell is a transition cell, and bits 11-16 are a mask identifying the orientation of the transition cell. The code for regular cells is similar, using the corresponding lookup tables, and omitting the storage of cell orientation.}]
 //cell is a transition cell:
 int paddedTransitionCellIndex = transitionCellIndex;
 paddedTransitionCellIndex |= (1<<9);
@@ -467,6 +502,7 @@ if (transitionCellIndex != 0 && transitionCellIndex != 511) {
   atomicCounterAddARB(pointCount,transitionTotalTable[0x7F & transitionCellClass[transitionCellIndex]]);
 
   uint bufferIndex = atomicCounterIncrement(marchableCount);
+  //store grid position in the first 3 coordinates, cell index and orientation padded into single int in the 4th coordinate
   uvec4 mc = uvec4(gid.x,gid.y,gid.z,paddedTransitionCellIndex);
   marchableList[bufferIndex] = mc;
 }
@@ -711,7 +747,7 @@ To evaluate the efficiency of the Transvoxel algorithm compared to the standard 
     10x10x10 Chunks & 4394045 & 4816936\\
     \hline
   \end{tabular}
-  \caption{\label{tab:gpu-tv-comparison-tris}Difference in number of triangles between the Transvoxel and Marching Cubes GPU implementations.}
+  \caption{\label{tab:gpu-tv-comparison-tris}Difference in number of triangles between the Transvoxel and Marching Cubes GPU implementations. The number of triangles in the 1 chunk test happens to be the same in both cases, because no geometry is generated on the edge of the chunk.}
 \end{table}
 
 \begin{table}[H]
@@ -1115,7 +1151,7 @@ Figures \ref{fig:meshes2} and \ref{fig:meshes3} show this system in action.
 \subsection{Player Controller}
 To handle player collision, we will use a capsule shape oriented along the y axis. To move the shape, we will apply a force in the direction we want to move. The direction of this force is determined by the directional keys being pressed. For example, if the forward key is being pressed, the force will be in the same direction as the x and z components of the look direction of the camera, and the collision shape is pushed in the direction the camera is looking. The other directional keys act similarly, applying a force relative to the direction of the camera. To move upwards, a large upwards force is applied. 
 \subsubsection{Editing geometry near the player}
-If geometry is edited near the player, it is possible for the collision shape to become stuck in the collision meshes, or even pass through it entirely, resulting in incorrect collisions. To prevent this from happening, there is the option of a simple camera mode, with no collision detection, and it is possible to restrict terrain editing to only be possible in this mode. In this case, the collision shape is moved to the new position of the camera when the mode is switched again. %TODO - check for collision before changing back to physics mode
+If geometry is edited near the player, it is possible for the collision shape to become stuck in the collision meshes, or even pass through it entirely, resulting in incorrect collisions. To prevent this from happening, there is the option of a simple camera mode, with no collision detection, and it is possible to restrict terrain editing to only be possible in this mode. In this case, the collision shape is moved to the new position of the camera when the mode is switched again.
 \subsection{Multithreading}
 Even when meshes are only generated for chunks at the very highest level of detail, mesh generation for a large chunk of geometry still takes long enough that generating a mesh between frames causes a noticable slowdown. Therefore, to enable physics meshes to be generated whilst maintaining an interactive framerate, they are generated on a separate thread. All of the information about the collision mesh for a chunk is stored in a \texttt{ChunkMesh} object. There are numerous ways in which race conditions can occur as a result of this multithreading, for example:
 \begin{itemize}
@@ -1215,7 +1251,7 @@ When these techniques are applied alongside a well-chosen noise-based terrain fu
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{shaded_mountains.jpg}
   \caption{Mountainous landscape generated using noise, and textured with procedural texturing. }
-  \label{fig:shaded_mountains}
+  \label{fig:shaded_mountainsd}
 \end{figure}
 
 
@@ -1343,12 +1379,8 @@ We have applied techniques seen in the Geometric Modelling course in interesting
 At the start of this project, I had a small amount of experience working with the technology used, namely C++, and the libraries responsible for interacting with OpenGL. The choice of OpenGL as an API was a straightforward one, since it is well-established, and widely supported on modern hardware and operating systems. C++ as a language is also very well-established, and compiled C++ code can be very efficient compared to other languages. However, developing in C++ is more challenging than other, higher level languages, with added complexity such as memory management to consider. In particular, configuring a compiler to work with various new libraries introduced throughout the project was a source of frustration, since each library is written and compiled in a different way. This is something that could be avoided by using a language that had a more standardised way of including libraries. It would be interesting to implement a similar project in a language such as Python, comparing the execution speed to the equivalent C++ program.
 
 I particularly enjoyed creating SDFs to represent terrain, and it was satisfying to be able to define a shape using an equation and immediately see it rendered. 
-
-%TODO - count lines - at the very end
 The final implementation contains XXXX lines of C++ and GLSL code, and can be found at \url{https://github.com/JC-G/Marching-Cubes}.
-TODO:...
-- something tying it all together?\\
- - demonstration of final product\\
+TODO: demonstration of final product by making a basic game - limited number of brushes to roll a ball to a goal?
 
 
 

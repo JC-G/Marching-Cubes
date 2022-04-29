@@ -1,7 +1,7 @@
 #include "CylinderBrush.h"
 
-CylinderBrush::CylinderBrush(glm::vec3 a, glm::vec3 b, float r) 
-:a(a),b(b),r(r){
+CylinderBrush::CylinderBrush(glm::vec3 a, glm::vec3 b, float r,BrushMode mode) 
+:a(a),b(b),r(r),mode(mode){
 
 }
 BrushBoundingBox CylinderBrush::getBoundingBox() {
@@ -19,7 +19,7 @@ BrushParams CylinderBrush::getBrushParams() {
         glm::vec4(getBoundingBox().top,0),
 
         CYLINDER_BRUSH,
-        0,
+        mode,
         r,
         0
     };

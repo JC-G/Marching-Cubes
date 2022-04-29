@@ -8,6 +8,8 @@
 #include "RoadAction.h"
 #include "SingleSphereAction.h"
 #include "EllipsoidAction.h"
+#include "DigSingleSphereAction.h"
+#include "DigCylinderAction.h"
 
 #include "EllipsoidBrush.h"
 
@@ -20,10 +22,12 @@ std::vector<Action*> Editing::allActions = {
     new EllipsoidAction(glm::vec3(1.0,2.0,3.0)),
     new CylinderAction(1.0),
     new DigSphereAction(1.0),
+    new DigSingleSphereAction(8.0),
     new BezierAction(1.0),
     new CubicBezierAction(1.0),
     new InterpolationSplineAction(2.0),
     new RoadAction(2.0),
+    new DigCylinderAction(5.0),
 };
 
 void Editing::sphereRing(glm::vec3 pos, float ringR, int ringN, float r) {

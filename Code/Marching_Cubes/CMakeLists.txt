@@ -103,6 +103,10 @@ add_executable(MarchingCubes
     src/Editing/Actions/SingleSphereAction.h
     src/Editing/Actions/EllipsoidAction.cpp
     src/Editing/Actions/EllipsoidAction.h
+    src/Editing/Actions/DigSingleSphereAction.cpp
+    src/Editing/Actions/DigSingleSphereAction.h
+    src/Editing/Actions/DigCylinderAction.cpp
+    src/Editing/Actions/DigCylinderAction.h
 
     src/Physics/BulletTest.h
     src/Physics/ChunkMesh.cpp

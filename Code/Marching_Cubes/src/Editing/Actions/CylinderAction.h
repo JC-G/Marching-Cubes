@@ -20,7 +20,7 @@ class CylinderAction : public Action {
 
         float radius;
         bool placing = false;
-    private:
+    protected:
         glm::vec3 pos1;
         glm::vec3 pos2;
 };

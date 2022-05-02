@@ -52,12 +52,9 @@ The Marching Cubes algorithm is an algorithm for polygonising a 3 dimensional sc
 
 A 2D example of cells that contain the same class of geometry, but with different vertex positions, due to the different values of the SDF at the cell vertices. Vertices A,B,C, and D are geometry vertices, adjusted to be in the positions where linear interpolation between the sampled SDF values is equal to 0. The lines between vertices A and B, and vertices C and D, will be part of the generated geometry.}
 
-In this project, we use a 3 dimensional SDF as described in Section \ref{section:sdf} to provide scalar field samples, and the labelling conventions and lookup tables as described by Paul Bourke. \cite{bourke_1994}. Listing \ref{mc_tables} shows excerpts from these tables, and the method used to index these tables.
+Figure \ref{fig:ms_example} shows a 2D example of the Marching Cubes algorithm.
 
-Lookup table indexing method, and excerpts from the 2 lookup tables used in the Marching Cubes algorithm. The variable \texttt{cubeindex} is the index into \texttt{triTable} and \texttt{edgeTable}, where each of the first 8 bits of the variable corresponds to a vertex, as per the labelling convention in figure \ref{fig:marching_cubes_labels}. An entry in \texttt{edgeTable} is a record of which edges will have vertices on them, with the first 12 bits corresponding to the 12 edges, as per the labelling convention, and an entry in \texttt{triTable} is an ordered list of how these vertices are joined together. For example, if only cell vertex 0 is outside of the surface (\texttt{gridCells[0] > 0}), the binary value of \texttt{cubeindex} will be $00000001$. The corresponding entry in \texttt{edgeTable} is \texttt{0x109}, binary value $100001001$. Bits 0, 3, and 8 are chosen, corresponding to edges 0, 3, and 8. Finally, the corresponding entry in \texttt{triTable} corresponds to a triangle being generated using vertices on edges 0, 8, and 3, in that order. Conversely, if all cell vertices except vertex 0 are outside of the surface, then \texttt{cubeindex} is $11111110$, the corresponding entry in \texttt{edgeTable} is \texttt{0x109}, however the corresponding entry in \texttt{triTable} represents a triangle using the vertices in the order 0, 3, 8.}
-
-Edge and vertex labelling conventions for the Marching Cubes algorithm. Diagram reproduced from Paul Bourke.\cite{bourke_1994}}
-
+A 2D example of Marching Cubes approximating a circle on a 6x6 grid.}
 
 \subsubsection{Limitations of the Marching Cubes algorithm}
 The Marching Cubes algorithm is ideal for this project because the geometry for each grid cell can be generated independently from other cells, using only the SDF and normal function. It produces a relatively accurate result for smooth shapes. However, it is not the best choice of algorithm for shapes that have a lot of sharp corners.
@@ -65,9 +62,9 @@ The Marching Cubes algorithm is ideal for this project because the geometry for 
 An example of a slanted cylinder polygonized with the Marching Cubes algorithm. Despite being rendered with a relatively large number of polygons, inaccuracies near the sharp edge of the cylinder are still visible.}
 
 
-For this purpose, an algorithm such as Dual Contouring\cite{10.1145/566654.566586} may produce better results. However, this algorithm is out of scope for this project, since this algorithm cannot be parallelised with the same method, because generated triangles span multiple grid cells.
+For this purpose, an algorithm such as Dual Contouring\cite{10.1145/566654.566586} may produce better results. However, this algorithm is out of scope for this project, since it cannot be parallelised with the same method, because generated triangles span multiple grid cells.
 
-\section{Algorithm implementation}
+\section{Algorithm Implementation}
 A GPU is particularly suited to applications where a similar calculation is performed many times on varying data. In traditional graphical applications, this covers applications such as vertex shaders, which determine the screen-space position of every vertex in a 3D scene, or fragment shaders, which determine the color of every pixel on a screen. A modern GPU is capable of performing many millions of individual calculations per frame. In this project, we will use the OpenGL API, and the GLSL shader language that comes with it, to write code for the GPU. The syntax for GLSL shaders is very similar to C code. 
 
 A program written for the GPU is called a shader, and for the remainder of the project, we will consider compute shaders, which are not part of the graphics rendering pipeline, but are called by the OpenGL API and take advantage of the parallel architecture of the GPU. When a compute shader is executed, many separate invocations of the same code are executed at once, through the API function \texttt{glDispatchCompute}. These are indexed by the built-in GLSL variable \texttt{gl\_GlobalInvocationID}, which is a 3-component integer vector, and is different for each invocation. For example, invocation of a shader designed to calculate $f\left(x,y,z\right)$, for $ \left(x,y,z\right)$ ranging over integer-valued triples in $\left[0,32\right]^3$ would need to be configured so that \texttt{gl\_GlobalInvocationID} varies over all of the triples in this range.
@@ -103,13 +100,13 @@ Table \ref{tab:cpu-gpu-comparison} shows the time taken to generate different nu
 An example of the 3D noise generated by these tests. This figure shows a wireframe of the 10x1x10 chunk test, with backface culling enabled.}
 
 
-\subsection{LOD system}
-Even with a much more efficient GPU implementation of the Marching Cubes algorithm, when attempting to generate very large areas of geometry, it becomes infeasible to generate and render a uniform grid of Marching Cubes chunks. Furthermore, generating large amounts of triangles very far away from the camera is unnecessary, since the detail will not be visible. For this reason, it is necessary to have a dynamic level of detail (LOD) system.
+\subsection{LOD System}
+Even with a much more efficient GPU implementation of the Marching Cubes algorithm, when attempting to generate very large areas of geometry, it becomes infeasible to generate and render a uniform grid of Marching Cubes chunks. Generating large amounts of triangles very far away from the camera is unnecessary, since the detail will not be visible. For this reason, it is necessary to have a dynamic level of detail (LOD) system.
 
 \subsubsection{Octree}
 
 To implement a versatile LOD system, an octree data structure is used.
-Each octree node represents a cuboid of space, such that the root node of the octree represents the entire renderable world, and the 8 children of an octree node equally divide the space represented by the parent node into octants. Each leaf node contains a reference to a chunk of generated geometry, as described in section \ref{section:mc_gpu}. The depth of the octree in any given region corresponds to the level of detail at which that region will have geometry generated. Each Marching Cubes chunk is generated with the same number of grid cells, regardless of the level of detail it is being generated for. However, the size of the grid cells within the chunk doubles in each direction, for each detail level increase. Using an octree provides versatility since any condition can be used to set the level of detail at a specific point in space. For example, it will be desirable to use the maximum level of detail near physics objects, so the physics collision is as accurate as possible, even if the camera is very far away. These conditions will be represented by functions \texttt{shouldSplit} and \texttt{shouldChop} for each node in the octree. The function \texttt{shouldSplit} returns whether a leaf node should split into its 8 children, and \texttt{shouldChop} returns whether a non-leaf node, should become a leaf, removing the rest of the octree below that node.
+Each octree node represents a cuboid of space, such that the root node of the octree represents the entire renderable world, and the 8 children of an octree node equally divide the space represented by the parent node into octants. Each leaf node contains a reference to a chunk of generated geometry, and the depth each leaf corresponds to the level of detail at which that region will have geometry generated. Each Marching Cubes chunk is generated with the same number of grid cells, regardless of the level of detail it is being generated for. However, the size of the grid cells within the chunk doubles in each direction, for each detail level increase. Using an octree provides versatility since any condition can be used to set the level of detail at a specific point in space. For example, it will be desirable to use the maximum level of detail near physics objects, so the physics collision is as accurate as possible, even if the camera is very far away. These conditions will be represented by functions \texttt{shouldSplit} and \texttt{shouldChop} for each node in the octree. The function \texttt{shouldSplit} returns whether a leaf node should split into its 8 children, and \texttt{shouldChop} returns whether a non-leaf node, should become a leaf, removing the rest of the octree below that node.
 
 
   \caption{A plane SDF being generated using this octree LOD system. Here, the chunk size is $4^3$. The level of detail is configured to decrease as the distance from the camera increases.}
@@ -117,7 +114,7 @@ Each octree node represents a cuboid of space, such that the root node of the oc
 
 When the octree changes, the level of detail at various points changes. The geometry currently generated at those points will be the wrong level of detail, and is considered invalid. The Marching Cubes chunks are deleted, and the region is completely regenerated at the correct level of detail.
 
-\subsubsection{Issue with the Marching Cubes algorithm and LOD systems}
+\subsubsection{The Transvoxel Algorithm}
 
 Using the Marching Cubes algorithm with multiple different grid cell sizes causes undesirable cracks in the surface of the generated geometry on the boundary between chunks of different levels of detail. A demonstration of what causes this is shown in figure \ref{fig:cracks_demo}, and an example within my code is shown in figure \ref{fig:cracks2}.
 
@@ -127,10 +124,10 @@ An illustration of the cracks between different levels of detail in the Marching
 An example with low chunk size, to demonstrate the cracks between levels of detail. Here, parts of the blue background can be seen in the gaps between the chunks.}
 
 \subsection{Transvoxel Algorithm}
-To solve the problem mentioned in section \ref{section:cracks}, we will switch the algorithm used to generate geometry. The Transvoxel algorithm \cite{lengyel_2010} is an algorithm based on the Marching Cubes algorithm that solves this problem by adding additional vertices into the less detailed mesh, on the faces of Marching Cubes cells adjacent to cells of a higher level of detail. This is done by splitting a cell at the lower resolution (a half-resolution cell) into a regular cell and some amount of transition cells, so that the transition cells border the regular cells at the higher resolution (full-resolution cells). These transition cells need not be cube shaped, and serve as a method of stitching the gap in between half-resolution and full-resolution cells. Figure \ref{fig:transition_cells}, reproduced from figure 4.9 in the Transvoxel algorithm paper\cite{lengyel_2010}, shows the position of transition cells in 2 different possible configurations.
+To solve the problem mentioned in section \ref{section:cracks}, we will switch the algorithm used to generate geometry. The Transvoxel algorithm \cite{lengyel_2010} is an algorithm based on Marching Cubes that solves this problem by adding additional vertices into the less detailed mesh, on the faces of Marching Cubes cells adjacent to cells of a higher level of detail. This is done by splitting a cell at the lower resolution (a half-resolution cell) into a regular cell and some amount of transition cells, so that the transition cells border the regular cells at the higher resolution (full-resolution cells). These transition cells need not be cube shaped, and serve as a method of stitching the gap in between half-resolution and full-resolution cells. Figure \ref{fig:transition_cells}, reproduced from figure 4.9 in the Transvoxel algorithm paper\cite{lengyel_2010}, shows the position of transition cells in 2 different possible configurations.
 
 
-  \caption{A 2D illustration of possible configurations of transition cells on the boundary between levels of detail. The half-resolution regular cell has been resized, and the transition cells fit in the space made in between the cells}
+  \caption{A 2D illustration of possible configurations of transition cells on the boundary between levels of detail. The half-resolution regular cell has been resized, and transition cells fit in the space made in between the cells}
 
   
 

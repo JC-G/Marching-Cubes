@@ -535,13 +535,13 @@ Octree* Octree::getNeighbor(glm::ivec3 relativePosition) {
   \label{fig:octree_neighbors}
 \end{SCfigure}
 
-\subsubsection{Downsides of parallelisation}
+\subsubsection{Downsides of Parallelisation}
 \label{section:downsides}
 The choice to parallelise the algorithm in this way presents some downsides. Triangles are placed into the vertex buffer in the order the parallel invocations of the third compute shader increment the atomic counter, an order which is very unlikely to be coherent, and likely to be different between calls, due to race conditions.This means that there is no way to reliably use an index buffer for vertices that are generated in the same place, a common occurance since a vertex on the edge between neighboring cells is part of the geometry generated for both of the cells. This results in many duplicate vertices in the vertex array. This is also the reason that vertex reuse data has been removed from the Transvoxel tables. Nevertheless, this is a worthwhile tradeoff, with the GPU implementation greatly outperforming the CPU implementation, as demonstrated in section \ref{section:GPUCPUcomparison}.
 
 
 
-\subsubsection{Algorithm speed comparison}
+\subsubsection{Algorithm Speed Comparison}
 \label{section:GPUCPUcomparison}
 In this section, we evaluate the performance of the above Transvoxel implementation, comparing to a CPU implementation of the Marching Cubes algorithm based on one by Paul Bourke\cite{bourke_1994}. We also include an implementation of the same Marching Cubes algorithm, parallelised on the GPU using the same 3-phase technique.
 
@@ -592,20 +592,18 @@ Table \ref{tab:comparison-time} shows the time taken to generate different numbe
 \end{figure}
 
 
-
-
 \subsubsection{Octree Refinement}
 \label{section:octree_refinement}
-The Transvoxel algorithm with chunks is sufficient in most cases for eliminating cracks in the geometry. However, there are still octree configurations which could occur, where different levels of detail appear next to each other, even once transition cells have been generated. Figure \ref{fig:octree_neighbor_error} shows an example of when this can occur.
+The Transvoxel algorithm with chunks is sufficient in most cases for eliminating cracks in the geometry. However, there are octree configurations which could occur, where different levels of detail appear next to each other, even once transition cells have been generated. Figure \ref{fig:octree_neighbor_error} shows an example of when this can occur.
 
 \begin{SCfigure}[][!h]
-  \caption{An example octree configuration where different levels of detail may occur next to each other, even with transition cells. Areas where transition cells will be generated are shaded in blue. The area where transition cells may be generated, but different levels of detail will still be adjacent to each other, is shaded in red. Directly below this region are regions that are 2 levels of detail higher than the cell for which transition cells have been generated.}
+  \caption{An example octree configuration where different levels of detail may occur next to each other. Areas where transition cells will be generated are shaded in blue. The area where transition cells may be generated, but different levels of detail will still be adjacent to each other, is shaded in red. Directly below this region are regions that are 2 levels of detail higher than the cell for which transition cells have been generated.}
   \includegraphics[width=0.5\textwidth]{octree_neighbor_error.png}
   \label{fig:octree_neighbor_error}
 \end{SCfigure}
 To rectify this issue, a refinement strategy is used to ensure that cases like this do not occur within the octree. When the octree needs to be modified, the following 4 steps are performed in order:
 \begin{enumerate}
-  \item Traverse the octree data structure, visiting every node, including leaves. If a node satisfies \texttt{shouldChop}, then flag it, but do not delete its children yet. If a node satisfies \texttt{shouldSplit}, then split it, creating the 8 new leaf nodes. The newly created leaf nodes will also be traversed in this step, since this allows for more than one layer of the octree to be generated at once.
+  \item Traverse the octree data structure, visiting every node, including leaves. If a node satisfies \texttt{shouldChop}, then flag it, but do not delete its children yet. If a node satisfies \texttt{shouldSplit}, then split it, creating the 8 new leaf nodes. The newly created leaf nodes will also be traversed in this step, allowing more than one layer of the octree to be generated at once.
   
   \begin{lstlisting}[language=C++,label={flagsplitphase},caption={The first stage in the octree refinement process, \texttt{flagSplitPhase}}]
 bool Octree::flagSplitPhase(glm::vec3 inPos) {
@@ -630,8 +628,8 @@ bool Octree::flagSplitPhase(glm::vec3 inPos) {
   return result;
 }
   \end{lstlisting}
-  \item If the first step changed the structure of the octree, or flagged any nodes, then traverse the octree, checking whether any nodes have neighbors which are more than one level of detail higher. This is done using the \texttt{getNeighbor} function described in listing \ref{octree_neighbor}. If this occurs, then split the node into its 8 children. If the node is not a leaf, but was flagged by the previous phase, the unflag it. This flagging, rather than immediate deleting, prevents octree nodes and the geometry chunks that have been created as a result of this refinement being deleted in the first step, then immediately recreated in the subsequent steps, when they may still be needed. Performing this refinement step may create inconsistencies elsewhere. Hence, refinement is performed repeatedly, until no changes are made in one such refinement step.
-  \begin{lstlisting}[language=C++,label={refinephase},caption={The second stage in the octree refinement process, \texttt{refine}. This phase is called repeatedly until no more changes are made. The array \texttt{edgeNeighbors} corresponds to the relative positions of the neighboring chunks, at the same level of detail, and the variable \texttt{childPosition} gives the position of the child to check in each neighbor. The flow of this code is complicated, and is designed such that exactly the 4 children of the neighboring chunk that touch this chunk are checked.}] 
+  \item If the first step changed the structure of the octree, or flagged any nodes, then traverse the octree, checking whether any nodes have neighbors which are more than one level of detail higher. This is done using the \texttt{getNeighbor} function described in listing \ref{octree_neighbor}. If this occurs, then split the node into its 8 children. If the node is not a leaf, but was flagged by the previous phase, the unflag it. This flagging, rather than immediate deleting, prevents octree nodes and the geometry chunks that have been created being deleted in the first step, then immediately recreated in the subsequent steps, when they may still be needed. Performing this refinement step may create inconsistencies elsewhere. Hence, refinement is performed repeatedly, until no changes are made.
+  \begin{lstlisting}[language=C++,label={refinephase},caption={The second stage in the octree refinement process, \texttt{refine}. This phase is called repeatedly until no more changes are made. The array \texttt{edgeNeighbors} corresponds to the relative positions of the neighboring chunks, at the same level of detail, and the variable \texttt{childPosition} gives the position of the child to check in each neighbor. The flow of this code is designed such that exactly the 4 children of the neighboring chunk that touch this chunk are checked.}] 
 //refine the octree - if a neighbor directly adjacent, smaller by more than one exists, split this
 //return true if no refinements were made
 bool Octree::refine() {
@@ -692,7 +690,8 @@ bool Octree::refine() {
 }
   \end{lstlisting}
 
-  \item Once the previous step is complete, traverse the octree, deleting the children of any nodes which are still flagged. Since this step reaches all of the leaves of the updated octree structure, and does not create additional leaves, it is also where any regeneration of geometry that is required is detected (for example, if the geometry inside the chunk has been modified - see section \ref{section:modification_implementation}).
+  \item Once the previous step is complete, traverse the octree, deleting the children of any nodes which are still flagged. 
+  
   \begin{lstlisting}[language=C++,label={deleteregenphase},caption={The third stage in the octree refinement process, \texttt{deleteRegenPhase}}]
 void Octree::deleteRegenPhase() {
   //chop chunks that shouldnt be there
@@ -711,7 +710,7 @@ void Octree::deleteRegenPhase() {
   }  
 }
   \end{lstlisting}
-  \item Traverse the octree a final time, generating geometry chunks for all new leaves, and all leaves that needed regeneration, for example if the geometry inside them has changed. Also regenerate geometry for all leaves where \texttt{edgeIndex} has changed, so that cracks do not appear after changing the level of detail of a neighboring chunk.
+  \item Traverse the octree a final time, generating geometry chunks for all new leaves, and all leaves that needed regeneration, for example if the geometry inside them has changed.  Also regenerate geometry for all leaves where \texttt{edgeIndex} has changed, so that cracks do not appear after changing the level of detail of a neighboring chunk.
   \begin{lstlisting}[language=C++,label={generateallchunks},caption={The fourth stage in the octree refinement process, \texttt{generateAllChunks}}]
 void Octree::generateAllChunks(bool force) {
   //needed so we have the shape of the octree before generating chunks that rely on it
@@ -734,30 +733,6 @@ void Octree::generateAllChunks(bool force) {
 }
   \end{lstlisting}
 \end{enumerate}
-Listing \ref{octree_refine} shows the code responsible for this:
-\begin{lstlisting}[language=C++,label={octree_refine},caption={Code showing the order of steps in the octree refinement process}]
-void Octree::refresh(glm::vec3 inPos) {
-  //Initially, pass through the entire octree and flag chunks that should be deleted, according to the chop condition
-  //Or split, according to split condition
-  //return true if something has split
-  bool needsRefinement = flagSplitPhase(inPos);
-
-  //Refine, undoing flags rather than splitting
-  //need many passes, because a refinement may cause inconsistencies elsewhere
-  if (needsRefinement) {
-    bool done = false;
-    int steps = 0;
-    while (!done) {
-      steps++;
-      done = refine();
-    }
-  }
-  //Now delete flagged chunks.
-  deleteRegenPhase();
-
-  generateAllChunks();
-}
-\end{lstlisting}
 
 \section{Terrain Modification}
 \subsection{Method of Terrain Modification}
@@ -766,8 +741,8 @@ There are multiple different approaches to modifying the generated geometry. Mod
 
 \subsection{Adding Primitives to the SDF}
 \label{section:modification_implementation}
-To implement terrain modification, \texttt{Brush} objects are used. Each \texttt{Brush} object contains information about a shape that has been added to the world,and has 2 methods which are overridden for each type of shape. The first method is \texttt{getBoundingBox()}, which returns an axis-aligned bounding box such that the shape lies entirely within the box. The second is \texttt{getBrushParams()}, which returns a structure containing all of the information required to add this shape to the SDF. For example, it may contain the radius of a sphere, or the control points and thickness of a shape defined by a Bezier spline. An example is given in listing \ref{brushparams_glsl}.
-\begin{lstlisting}[language=C++,label={brushparams_glsl},caption={The \texttt{BrushParams} data structure, in GLSL. Common to all shapes are the values \texttt{bottom} and \texttt{top}, which correspond to diagonally opposite corners of the bounding box as given in \texttt{getBoundingBox}, the value \texttt{type}, which is a constant corresponding to the type of shape represented, and \texttt{mode}, which is a constant describing how the shape is to be added to the SDF, for example whether it should be added or subtracted. In principle, the other values may be used however they are needed, but typically the \texttt{location} and \texttt{size} variables represent the location and size of the shape to be added.}]
+To implement terrain modification, \texttt{Brush} objects are used. Each \texttt{Brush} object contains information about a shape that has been added to the world, and has 2 methods which are overridden for each type of shape. The first method is \texttt{getBoundingBox()}, which returns an axis-aligned bounding box such that the shape lies entirely within the box. The second is \texttt{getBrushParams()}, which returns a structure containing all of the information required to add this shape to the SDF. For example, it may contain the radius of a sphere, or the control points and thickness of a shape defined by a Bezier spline. An example is given in listing \ref{brushparams_glsl}.
+\begin{lstlisting}[language=C++,label={brushparams_glsl},caption={The \texttt{BrushParams} data structure, in GLSL. Common to all shapes are the values \texttt{bottom} and \texttt{top}, which correspond to diagonally opposite corners of the bounding box as given in \texttt{getBoundingBox}, \texttt{type}, a constant corresponding to the type of shape represented, and \texttt{mode}, a constant describing how the shape is to be added to the SDF, for example whether it should be added or subtracted. The other values may be used however they are needed, but typically the \texttt{location} and \texttt{size} variables represent the location and size of the shape to be added.}]
 struct BrushParams {
   vec4 location;
   vec4 size;
@@ -785,7 +760,7 @@ struct BrushParams {
 \end{lstlisting}
 When a shape is added to the world, a new \texttt{Brush} object is created, containing the information about the shape. Each \texttt{Octree} node stores a list of pointers to \texttt{Brush} objects that have bounding boxes intersecting the node. When geometry is generated for a leaf node, a list of \texttt{BrushParams} objects corresponding to these brushes is passed as a parameter to the generation algorithm. Listing \ref{edit_add} shows the code responsible for this.
 
-\begin{lstlisting}[language=C++,label={edit_add},caption={Code to add a new brush into the octree. The brush is added recursively to lists at all levels, so that each leaf has a list of exactly the brushes that are partially inside it. The flag \texttt{needsRegen} indicates to the octree updating algorithm that the geometry within the chunk has changed, and needs to be regenerated.}]
+\begin{lstlisting}[language=C++,label={edit_add},caption={Code to add a new brush into the octree. The brush is added recursively to lists at all levels, so each leaf has a list of exactly the brushes that are partially inside it. The flag \texttt{needsRegen} indicates that the geometry within the chunk has changed.}]
 void Octree::insertBrush(Brush* b) {
   myBrushes.push_back(b);
   if (isLeaf) {
@@ -805,7 +780,7 @@ void Octree::insertBrush(Brush* b) {
 }
 \end{lstlisting}
 
-When the octree is modified with new leaf nodes near a brush, it is necessary to update the lists of the newly created nodes. To do this, the \texttt{split()} function is modified so that the appropriate brushes are added to each child, when it is created. Listing \ref{edit_split} shows the code responsible for this.
+When the octree is modified, it is necessary to update the lists of the newly created nodes. To do this, the \texttt{split()} function is modified so that the appropriate brushes are added to each child. Listing \ref{edit_split} shows the code responsible for this.
 
 \begin{lstlisting}[language=C++,label={edit_split},caption={Snippet from \texttt{split}, showing how brushes are associated with child nodes, when they are created.}]
 for(int i = 0; i <= 1; i++) {
@@ -825,15 +800,15 @@ for(int i = 0; i <= 1; i++) {
 }
 \end{lstlisting}
 
-Each type of shape that may be used to modify the terrain has an SDF and normal function implementation in GLSL. The shapes represented in the array passed to the generation algorithm are used in the order they are passed, to modify the SDF via the interpretations of set union and subtraction using the \texttt{min} and \texttt{max} functions. The normal function is computed by taking the shape which produces the smallest value of the SDF, and returning the normal function for that shape. Both the SDF and normal suffer from inaccuracies when a non-exact SDF is very far from the actual distance value, and in extreme cases, the resulting inaccurate interpolation can lead to cracks appearing in the geometry. Figure \ref{fig:inaccurate_sdf} shows an example of an SDF that exhibits this problem. However, with careful choices of SDF, in most cases it produces an acceptable result.
+Each type of shape that may be used to modify the terrain has an SDF and normal function implementation in GLSL. The shapes represented in the array passed to the generation algorithm are used in the order they are passed, to modify the SDF via set union or subtraction, as described in section \ref{section:sdf}. The normal function is computed by taking the shape which produces the smallest value of the SDF, and returning the normal function for that shape. Both the SDF and normal suffer from inaccuracies when a non-exact SDF is very far from the actual distance value, and in extreme cases, the resulting inaccurate interpolation can lead to cracks appearing in the geometry. Figure \ref{fig:inaccurate_sdf} shows an example of an SDF that exhibits this problem. However, with careful choices of SDF, in most cases it produces an acceptable result.
 
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{inaccurate_sdf.png}
-  \caption{An example of an inaccurate sphere SDF on an accurate plane SDF. Here the value of the SDF has been scaled to be much smaller than it should be. The result is that the incorrect SDF has been chosen for interpolation, resulting in the blocky appearance of the sphere, and the cracks on the further away sphere, where the level of detail changes. This also results in the incorrect normal being used, as shown by the dark patches underneath the spheres.}
+  \caption{An example of an inaccurate sphere SDF on an accurate plane SDF. Here the value of the SDF has been scaled to be much smaller than it should be. The result is that the incorrect SDF has been chosen for interpolation, resulting in the blocky appearance of the sphere, and cracks on the further away sphere, where the level of detail changes. This also results in the incorrect normal being used, as shown by the dark patches underneath the spheres.}
   \label{fig:inaccurate_sdf}
 \end{figure}
 
-For efficiency reasons, the SDF of a shape is only considered when the grid cell being worked on lies within its bounding box. This prevents a huge amount of SDFs being evaluated when the majority will not affect the geometry within the grid cell. This introduces discontinuities in the overall SDF being computed, and for this reason, it is necessary to enforce the bounding box really is a bounding box, such that any geometry that may be generated for the shape lies fully within it, and hence all vertices are properly generated. 
+For efficiency reasons, an SDF is only considered when the grid cell being worked on lies within its bounding box. This prevents a huge amount of SDFs being evaluated when the majority will not affect the geometry within the grid cell. This introduces discontinuities in the overall SDF being computed, and for this reason, it is necessary to enforce that the bounding box really is a bounding box, such that any geometry that may be generated for the shape lies fully within it. 
 
 \subsection{Interactive Terrain Modification}
 User interaction with the terrain modification system uses a set of pre-defined actions, defined through classes derived from a base \texttt{Action} class. The methods defined in this class are shown in listing \ref{action_methods}.
@@ -848,7 +823,7 @@ virtual void decreaseSize() {};
 
 virtual void handleInput(glm::vec3 placePos);
 \end{lstlisting}
-The first 3 of these functions are designed to be overridden, to implement the action when the mouse is pressed, released, and held, respectively. The next 3 are also designed to be overridden, to implement what should happen when the size of the brush is modified, or when a brush is cancelled midway through placing, if applicable (for example, if some control points of a curve are placed, but not all of them). The argument is the in-world position at which the mouse is pointing. The method \texttt{onCancel} is designed to be called when the action has been cancelled, to clean up any state that has been created, for example in a more complex action that may store intermediate control points. The methods \texttt{increaseSize} and \texttt{decreaseSize} are designed to provide a standard way of increasing and decreasing the size of a shape, for example changing the radius of a sphere, or thickness of a spline curve. The final method, \texttt{handleInput}, is designed for more general input for an action, which is useful for actions that require more input than the options given in the other functions. It has a default implementation, which calls the other functions, that can be overridden. This implementation is shown in listing \ref{action_handleinput}.
+These functions are designed to be overridden, to implement the corresponding functionality. The argument to the first 3 is the in-world position at which the mouse is pointing. The method \texttt{onCancel} is designed to be called when the action has been cancelled, to clean up any state that has been created, for example in a more complex action that may store intermediate control points. The methods \texttt{increaseSize} and \texttt{decreaseSize} are designed to provide a standard way of increasing and decreasing the size of a shape, for example changing the radius of a sphere, or thickness of a spline curve. The final method, \texttt{handleInput}, is designed for more general input for an action, which is useful for actions that require more input than the options given in the other functions. It has a default implementation, which calls the other functions, that can be overridden. This implementation is shown in listing \ref{action_handleinput}.
 \begin{lstlisting}[language=C++,label={action_handleinput},caption={Default implementation of \texttt{handleInput}.}]
 void Action::handleInput(glm::vec3 placePos) {
   //default input handling for an action
@@ -868,11 +843,11 @@ void Action::handleInput(glm::vec3 placePos) {
 }
 \end{lstlisting}
 
-Using the generic \texttt{Brush} and \texttt{Action} interfaces makes it fairly quick to implement new shapes for use in terrain modification, since the interfaces just need to be filled out with the required brush parameters and controller code, respectively. The only complex addition is the definition of the SDF and normal function, which is different for every shape.
+Using the generic \texttt{Brush} and \texttt{Action} interfaces makes it quick to implement new shapes, since the interfaces just need to be filled out with the required brush parameters and controller code, respectively. The only complex addition is the definition of the SDF and normal function, which is different for every shape.
 
 \subsubsection{Raycasting}
 \label{section:raycasting}
-To determine where a brush should be placed based on the orientation of the camera, we will perform a raycast from the camera in the look direction. We can take advantage of the structure of the octree to do this efficiently, considering only leaf octree nodes having geometry, such that the ray passes through the bounding box of the nodes. For each of these nodes, we perform intersection testing with the geometry on the CPU. Since the geometry data is generated by the Transvoxel algorithm, and stored on the GPU, it is necessary to copy it to the CPU. Listing \ref{mapgeometry} shows the code responsible for this.
+To determine where a brush should be placed, we will perform a raycast from the camera in the look direction. We can take advantage of the structure of the octree to do this efficiently, considering only leaf octree nodes having geometry, where the ray passes through the bounding box of the nodes. For each of these nodes, we perform intersection testing with the geometry on the CPU. Since the geometry data is generated by the Transvoxel algorithm, and stored on the GPU, it is necessary to copy it to the CPU. Listing \ref{mapgeometry} shows the code responsible for this.
 
 \begin{lstlisting}[language=C++,label={mapgeometry},caption={Snippet from the procedure \texttt{mapGeometry} to copy geometry data for a chunk from the GPU to the CPU, to be stored in the array \texttt{mappedTriangles}. \texttt{isMapped} is an atomic boolean storing whether \texttt{mapGeometry} has already been called for this chunk.}]
 if (!isMapped.load()) {
@@ -885,10 +860,10 @@ if (!isMapped.load()) {
 
 Once this is done, a ray-triangle intersection test is performed for every triangle in the chunk, to determine the closest point of intersection to the camera. This is done with a standard library function. 
 
-It would also be possible to perform ray-triangle intersection tests within an OpenGL compute shader, which would remove the need for the geometry data to be copied to the CPU. However, since copying this data to the CPU will need to be done for physics simulation anyway, and is only needed once per chunk of geometry, this method will be sufficient.
+It would also be possible to perform ray-triangle intersection tests within an OpenGL compute shader, which would remove the need for the geometry data to be copied to the CPU. However, since copying this data to the CPU will need to be done for physics simulation anyway, and is only done once per chunk of geometry, this method will be sufficient.
 \subsubsection{Example Brush Implementations}
 \label{example_brushes}
-In principle, any shape for which an SDF and normal function can be derived may be implemented as a brush, using the method described in section \ref{section:modification_implementation}. A good resource for SDF implementations is the article by Inigo Quilez referenced in section \ref{section:sdf}\cite{quilez:sdf}. It is also necessary to provide a normal function for each SDF. For this, we use the normalised gradient of the SDF. In some cases, the partial derivatives can be computed exactly, particularly when the SDF has a simple form. For example, the SDF of a sphere with radius 1, centered at the origin, is $f\left(x,y,z\right) = \sqrt{x^2+y^2+z^2}-1$. The gradient vector at point $\left(x,y,z\right)$ is $\nabla f = \left(\frac{x}{\sqrt{x^2+y^2+z^2}},\frac{y}{\sqrt{x^2+y^2+z^2}},\frac{z}{\sqrt{x^2+y^2+z^2}}\right)$.In this case, the gradient happens to already be normalised, but if it is not, it should be normalised with the GLSL \texttt{normalize} function, so a vector of length 1 is always returned. In any case, it is possible to approximate the normal of an SDF numerically. Listing \ref{numerical_gradient} shows the GLSL code for approximating the normal, using the method of finite differences.
+Any shape for which an SDF and normal function can be derived may be implemented as a brush, using the method described in section \ref{section:modification_implementation}. A good resource for SDF implementations is the article by Inigo Quilez referenced in section \ref{section:sdf}\cite{quilez:sdf}. It is also necessary to provide a normal function for each SDF. For this, we use the normalised gradient of the SDF. In some cases, the partial derivatives can be computed exactly, particularly when the SDF has a simple form. For example, the SDF of a sphere with radius 1, centered at the origin, is $f\left(x,y,z\right) = \sqrt{x^2+y^2+z^2}-1$. The gradient vector at point $\left(x,y,z\right)$ is $\nabla f = \left(\frac{x}{\sqrt{x^2+y^2+z^2}},\frac{y}{\sqrt{x^2+y^2+z^2}},\frac{z}{\sqrt{x^2+y^2+z^2}}\right)$.In this case, the gradient happens to already have length 1, but if it is not, it should be normalised with the GLSL \texttt{normalize} function. In any case, it is possible to approximate the normal of an SDF numerically. Listing \ref{numerical_gradient} shows the GLSL code for approximating the normal, using the method of finite differences.
 
 \begin{lstlisting}[language=C++,label={numerical_gradient},caption={Approximation of the normal of an SDF. Note however, that this requires 4 evaluations of the SDF. The constant \texttt{eps} can be adjusted for precision as required.}]
 vec3 normal(vec3 inPos) {

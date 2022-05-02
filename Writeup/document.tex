@@ -922,32 +922,24 @@ To avoid the complex computation that comes with finding the roots of a quintic,
   \label{fig:spline_approximation}
 \end{figure}
 
-Using approximations like this also allows for splines to be used to define more complex shapes, where calculating an exact SDF may be infeasible. It is likely that the shape used for the line segment will result in jagged areas between line segments, when the shape is very curves. Figure \ref{fig:jagged_road} illustrates this. 
+Using approximations like this also allows for splines to be used to define more complex shapes, where calculating an exact SDF may be infeasible. Often the shape used for the line segment will result in jagged areas between line segments, when the shape is very curved. To solve this issue, at the ends of the shapes, we only consider the intersection, as demonstrated in figure \ref{fig:road_double}.
 
-\begin{SCfigure}[][!h]
-  \caption{Illustration of the union of 2 shapes at an angle, so there is a jagged overlap between them.}
-  \includegraphics[width=0.5\textwidth]{jagged_road}
-  \label{fig:jagged_road}
-\end{SCfigure}
+\begin{figure}[H]
+  \caption{Left: Illustration of the union of 2 shapes at an angle, so there is a jagged overlap between them. Right: The same 2 shapes, considering only the intersection between the shapes at the end, giving a smoother appearance}
+  \includegraphics[width=0.5\textwidth]{road_double.png}
+  \label{fig:road_double}
+\end{figure}
 
-A simple solution to improve the look of the final shape when this happens is to only consider the intersection between the ends of the shapes, as shown in figure \ref{fig:smooth_road}. 
-
-\begin{SCfigure}[][!h]
-  \caption{Illustration of the union of the same 2 shapes as figure \ref{fig:jagged_road}, considering only the points on the ends that are in the intersection of the shape. This gives a much smoother appearance, although there is still a visible join between the shapes.}
-  \includegraphics[width=0.5\textwidth]{smooth_road}
-  \label{fig:smooth_road}
-\end{SCfigure}
-
-Figure \ref{fig:bezier_roads} shows a shape generated using an SDF where each line segment is represented by a capsule intersected with a half-plane, to form a shape that is flat on top.
+Figure \ref{fig:bezier_roads} shows a shape generated with this method, using an SDF where each line segment along the spline is represented by a capsule intersected with a half-plane, to form a shape that is flat on top.
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{bezier_roads.png}
-  \caption{Interpolation splines and an SDF of a capsule intersected with a half plane were used to define this shape. The method described above, which prevents as many jagged edges being generated, was used. However, since each cubic curve in the interpolation spline is passed to the shader separately, this method was not used on the boundary between the curve segments, since implementing this would require significant changes to the editing code. Some inaccuracies in the normal function are visible, due to the approximate nature of this SDF.}
+  \caption{Shape generated using splines having a more complex cross-section. Since each cubic curve in the interpolation spline is passed to the shader separately, the smoothing method was not used on the boundary between the curve segments, so some intersections between the shapes are still visible. Implementing this would require significant changes to the editing code, but would result in a smoother shape.}
   \label{fig:bezier_roads}
 \end{figure}
 
-Listing \ref{road_code} shows the GLSL code to define this SDF.
+Listing \ref{road_code} shows the GLSL code defining this SDF.
 
-\begin{lstlisting}[language=C++,label={road_code},caption={The full SDF code for the shape discussed above. \texttt{road\_distance} is the SDF for part of the shape defined by a single cubic Bezier curve. When an interpolation spline consisting of multiple curves is required, a \texttt{Brush} object is created for each.}]
+\begin{lstlisting}[language=C++,label={road_code},caption={\texttt{road\_distance} is the SDF for part of the shape defined by a single cubic Bezier curve. When an interpolation spline consisting of multiple curves is required, a \texttt{Brush} object is created for each.}]
 //SDF of capsule between a and b, with radius r
 float sdCapsule( vec3 p, vec3 a, vec3 b, float r ) {
   vec3 pa = p - a, ba = b - a;
@@ -1037,9 +1029,9 @@ float road_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
 
 \subsubsection{Limits of Terrain Modification}
 \label{edit_limits}
-As it stands now, the terrain modification system allows for a wide variety of shapes to be implemented. The efficiency improvements resulting from the use of the octree to prevent iteration over large lists of brushes, and the use of bounding boxes inside the GLSL shader means that a large number of brushes can exist within the world with little slowdown, provided they are spread out. However, the number of brushes in the world grows without bound as further editing occurs, meaning that slowdown is inevitable, particulary when the number of brushes in a single node becomes high, since this requires more work in the generation shader. This slowdown presents itself as a stutter in between frames, when a large number of chunks of geometry need to be regenerated. This can be reduced by limiting the speed of the player so that a large movement in between frames does not happen. There are other ways to address this, which we will discuss in section \ref{section:future_work}. Nevertheless, it is possible to modify the world with many thousands of brushes before significant slowdown occurs.
+As it stands now, the terrain modification system allows for a wide variety of shapes to be implemented. The efficiency improvements resulting from the use of the octree to prevent iteration over large lists of brushes, and the use of bounding boxes inside the GLSL shader means that a large number of brushes can exist at once, provided they are spread out. However, the number of brushes in the world grows without bound as editing occurs, meaning that slowdown is inevitable, particularly when the number of brushes in a single node becomes high, since this requires more work in the generation shader. This causes a stutter in between frames, when a large amount of geometry need to be regenerated. This can be reduced by limiting the speed of the player so that a large movement in between frames does not happen. There are other ways to address this, which we will discuss in section \ref{section:future_work}. Nevertheless, it is possible to modify the world with many thousands of brushes before significant slowdown occurs.
 \section{Graphical User Interface}
-To make editing more intuitive for the user, a basic graphical user interface has been implemented. Text showing information such as the camera position and currently enabled brush is displayed in the bottom left. A list of controls is displayed on the right, and can be hidden if necessary. Controls for the selected brush are shown on the top left. A crosshair is shown in the middle of the screen, to show the user what they are currently pointing at. When a brush is being placed, a preview is shown to the user, to help them understand what modification will be performed. To implement this, the methods \texttt{drawPreview}, \texttt{getDescription}, and \texttt{getDetails} have been added to the \texttt{Action} interface. Listing \ref{action_ui_methods} shows the implementation of these methods for drawing a sphere.
+To make editing more intuitive, a basic graphical user interface has been implemented. Text showing the camera position and currently enabled brush is displayed in the bottom left. A list of controls is displayed on the right, and can be hidden if necessary. Controls for the selected brush are shown on the top left. A crosshair is shown in the middle of the screen, to show the user what they are currently pointing at. When a brush is being placed, a preview is shown to the user, to help them understand what modification will be performed. To implement this, the methods \texttt{drawPreview}, \texttt{getDescription}, and \texttt{getDetails} have been added to the \texttt{Action} interface. Listing \ref{action_ui_methods} shows the implementation of these methods for drawing a sphere.
 
 \begin{lstlisting}[language=C++,label={action_ui_methods},caption={The UI methods for the \texttt{SphereAction} class. The function \texttt{Preview::drawPreviewSphere} draws a semi-transparent sphere in the scene, loaded from an external 3D model file, using standard OpenGL methods.}]
 void SphereAction::drawPreview() {
@@ -1058,7 +1050,8 @@ std::string SphereAction::getDetails() {
 }
 \end{lstlisting}
 
-Previews for shapes defined using Bezier splines are shown by approximating the curve with a series of cylinders. Some examples the UI and previews are shown in the figures below. In each case, the informational text and the preview of a shape about to be placed into the world can be seen
+Previews for shapes defined using Bezier splines are shown by approximating the curve with a series of cylinders. Some examples the UI and previews are shown in the figures below.
+
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{sphere_preview.png}
   \caption{Preview of a sphere about to be placed, next to a sphere that has already been placed for comparison.}
@@ -1071,34 +1064,35 @@ Previews for shapes defined using Bezier splines are shown by approximating the 
 \end{figure}
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{spline_preview.png}
-  \caption{Preview of an interpolation spline with multiple control points. The use of semi-transparent shapes means that visual artifacts are present when the shapes overlap. This is a standard problem when rendering translucent objects, and can be solved, for example by sorting the shapes so they are drawn in a specific order. However, since the only purpose of rendering this is to temporarily display a preview, we do not solve this issue here}
+  \caption{Preview of an interpolation spline with multiple control points. The use of semi-transparent shapes means that visual artifacts are present when the shapes are drawn in a specific order. This can be solved by drawing the shapes in a specific order. However, since the only purpose of rendering this is to display a preview, this is unneccesary.}
   \label{fig:spline_preview}
 \end{figure}
 \section{Physics}
-To be able to use the terrain we have generated in the previous sections, in many applications it is useful to have collision detection and physics simulation. This section explores a method of doing this.
+In many applications it is useful to have collision detection and physics simulation for the terrain. This section explores a method of doing this.
 \subsection{Bullet Physics}
-To implement physics simulation, we use a well-known library called Bullet Physics\cite{bullet-physics}. This library is a general-purpose CPU based physics library. The python binding of the library, PyBullet, is popular, however we will be using the C++ library.
+To implement physics simulation, we use a well-known library called Bullet Physics\cite{bullet-physics}. This library is a general-purpose CPU based physics library, written in C++.
 
-Bullet Physics supports collision between static, concave triangle meshes and other primitive objects, such as spheres. We will use this functionality, along with the triangle meshes we have already generated using the Transvoxel algorithm, to implement physics simulation.
+Bullet Physics supports collision between static, concave triangle meshes and other primitive objects, such as spheres. We will use this functionality, along with the triangle meshes we have already generated, to implement physics simulation.
 
-The library uses many optimisations for speed, and the physics simulation and collision detection procedures are complex, with multiple different phases used with each timestep. For example, one such phase computes axis-aligned bounding boxes of physics shapes, and returns pairs of objects that might be colliding based on this, and a subsequent phase computes the contact points between those objects, using an algorithm that is chosen based on the types of shape. All of this is encapsulated within a single function, \texttt{stepSimulation}, which takes a time interval, and moves the physics simulation forwards by that amount.
+The library is optimised for speed, and the physics simulation is complex, with multiple different phases used with each timestep. For example, one such phase computes axis-aligned bounding boxes of physics shapes, and returns pairs of objects where these intersect, and a subsequent phase computes the contact points between those objects, using an algorithm chosen based on the types of shape. All of this is encapsulated within a single function, \texttt{stepSimulation}, which takes a time interval, and moves the physics simulation forwards by that amount.
 
-Additionally, when creating physics objects from generic triangle meshes, a data structure is constructed for each mesh internally within the library. This step is comparatively slow, particularly for larger meshes.
+When creating physics objects from generic triangle meshes, a data structure is constructed for each mesh internally within the library. This step is particularly slow, particularly for larger meshes.
 
 Documentation for the library is automatically generated from source code comments, and as such, is often incomplete and confusing to follow. However, there is a user manual which gives an overview of how some aspects of the library work\cite{coumans_2015}.
 
 \subsection{Creation of Physics Meshes}
 
-The geometry we will use for the physics collision meshes is the same geometry used for rendering, generated by the Transvoxel algorithm. Since the geometry data is generated and stored on the GPU memory, it is necessary to copy it into the CPU memory before constructing physics meshes. For this, we make use of the \texttt{mapGeometry} function, as described in section \ref{section:raycasting}
-The library functions responsible for creating a concave collision mesh are computationally expensive, and so physics meshes are only constructed on chunks that are generated at the highest level of detail. Figure \ref{fig:meshes1} shows physics meshes being generated in a radius around the camera.
+The geometry we will use for the physics collision meshes is the same geometry used for rendering, generated by the Transvoxel algorithm. We make use of the \texttt{mapGeometry} function, as described in section \ref{section:raycasting}, to copy the geometry to the CPU memory, so it can be accessed by the library.
+Creating a concave collision mesh are computationally expensive, and so physics meshes are only constructed on chunks that are generated at the highest level of detail. Figure \ref{fig:meshes1} shows physics meshes being generated in a radius around the camera.
 
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{meshes1.png}
-  \caption{Physics meshes being generated for a plane and some spheres, based on distance to the camera. Generated meshes are shown in red outline.}
+  \caption{Generated physics meshes, shown in red outline.}
   \label{fig:meshes1}
 \end{figure}
 
-Making this restriction on the meshes generated means that there are significantly less physics meshes being generated with each octree update. This also has the benefit that physics collisions always occur with the same geometry, rather than with geometry at different levels of detail, which may otherwise produce different results. In particular, if collision with low detail geometry occurs, finer features in the geometry may be completely ignored. However, this means that collision can only occur immediately next to the camera, where the highest level of detail is used. To solve this, we make use of the genericity of the \texttt{shouldSplit} and \texttt{shouldChop} functions described in section \ref{section:octree}, as shown in listing \ref{phy_lod}.
+Making this restriction on the meshes generated means that there are significantly less physics meshes being generated with each octree update. This also has the benefit that physics collisions always occur with the same geometry, rather than with geometry at varying levels of detail. If collision with low detail geometry were to occur, finer features in the geometry may be completely ignored. However, this means that collision can only occur where the highest level of detail is used. To solve this, we modify the \texttt{shouldSplit} and \texttt{shouldChop} functions described in section \ref{section:octree}, as shown in listing \ref{phy_lod}.
+
 \begin{lstlisting}[language=C++,label={phy_lod},caption={Snippet from \texttt{shouldSplit} responsible for increasing the level of detail near a set of test physics objects. All chunks with bounding boxes that intersect the bounding box of a physics shape will be split until the highest detail level is reached. The octree refinement process described in section \ref{section:octree_refinement} ensures that this does not create any places where very different levels of detail are adjacent to each other.}]
 for (auto shape : TestShape::allShapes) {
   if (getBoundingBox().intersects(shape->getBoundingBox())) {
@@ -1117,12 +1111,12 @@ Figures \ref{fig:meshes2} and \ref{fig:meshes3} show this system in action.
 
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{meshes3.png}
-  \caption{Demonstration of the chunk sizes generated for a small, far away physics object. In particular, there is no place where a very high level of detail and very low level of detail are adjacent to each other, thanks to the refinement algorithm.}
+  \caption{Chunk sizes generated for a small, far away physics object. There is no place where a very high level of detail and very low level of detail are adjacent to each other, thanks to the refinement algorithm.}
   \label{fig:meshes3}
 \end{figure}
 
 \subsection{Player Controller}
-To handle player collision, we will use a capsule shape oriented along the y axis. To move the shape, we will apply a force in the direction we want to move. The direction of this force is determined by the directional keys being pressed. For example, if the forward key is being pressed, the force will be in the same direction as the x and z components of the look direction of the camera, and the collision shape is pushed in the direction the camera is looking. The other directional keys act similarly, applying a force relative to the direction of the camera. To move upwards, a large upwards force is applied. 
+To handle player collision, we use a capsule shape oriented along the y axis, which is moved by applying a force in the direction we want to move. The direction of this force is determined by the directional keys being pressed. For example, if the forward key is being pressed, the shape is pushed horizontally in the direction the camera is looking. The other directional keys act similarly, applying a force relative to the direction of the camera. To move upwards, a large upwards force is applied. 
 \subsubsection{Editing geometry near the player}
 If geometry is edited near the player, it is possible for the collision shape to become stuck in the collision meshes, or even pass through it entirely, resulting in incorrect collisions. To prevent this from happening, there is the option of a simple camera mode, with no collision detection, and it is possible to restrict terrain editing to only be possible in this mode. In this case, the collision shape is moved to the new position of the camera when the mode is switched again.
 \subsection{Multithreading}

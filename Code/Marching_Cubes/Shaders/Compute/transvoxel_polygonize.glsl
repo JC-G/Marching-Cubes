@@ -140,6 +140,7 @@ void generateCell() {
     //hasShifted is true if the vertex has been moved as a result of being on a transition cell
     bool hasShifted[8];
 
+    //calculate where the vertex actually is, based on which transition cells will be generated
     for (int i = 0; i < 8; i++) {
         vec3 avp = actualVertexPosition(gridPos[i]);
         transitionGridPos[i] = avp;
@@ -158,14 +159,17 @@ void generateCell() {
     uint index = 0;
     for (int i = 0; i < totalPoints; i++) {
         if (i % 3 == 0) {
+            //atomically get index into vertex and normal arrays
             index = atomicCounterIncrement(triCount);
         }
         uint vertexIndex = index * 3 + (i % 3);
 
+        //vertex positions
         uint vertexData = regularVertexData[cellIndex * 12 + regularCellData[cellClass * 16 + 1+i]];
         uint v1Index = vertexData & 0x0F;
         uint v2Index = vertexData >> 4;
 
+        //linear interpolation
         vec3 vertPos = VertexInterp(transitionGridPos[v1Index],transitionGridPos[v2Index],gridCells[v1Index],gridCells[v2Index]);
 
         if (hasShifted[v1Index] || hasShifted[v2Index]) { //if this vertex has moved
@@ -179,8 +183,10 @@ void generateCell() {
             vertPos -= (dot(n,dv)) * n;
         }
 
+        //convert to world coordinates
         vertPos = vertPos * chunkStride + chunkPosition;
 
+        //store vertex and normal
         vertices[vertexIndex] = vec4(vertPos,1);
         normals[vertexIndex] = vec4(modified_normal(vertPos),0);
         // if (i % 3 == 2) {

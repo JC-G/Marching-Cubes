@@ -68,9 +68,9 @@ static void LoadObjects()
         usedSDF = new TestSDF(50.0,0.6);
         std::cout << "Beginning chunk timing..." << std::endl;
         chunkTimer.timeDiff();
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                for (int k = 0; k < 10; k++) {
+        for (int i = 0; i < 1; i++) {
+            for (int j = 0; j < 1; j++) {
+                for (int k = 0; k < 1; k++) {
                     MarchingChunk::loadedChunks.push_back(
                         MarchingChunk::createMarchingChunk(
                             glm::vec3(

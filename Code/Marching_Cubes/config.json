@@ -24,8 +24,8 @@
     "generate_regular_cells": true,
     "interpolate": true,
 
-    "single_chunk_mode": false,
-    "load_octree": true,
+    "single_chunk_mode": true,
+    "load_octree": false,
 
     "single_chunk_size": 32,
     "single_chunk_stride":0.5,
@@ -35,8 +35,8 @@
     "show_test_cube": false,
     "draw_chunk_boundaries": false,
 
-    "terrain_mode": "scaled",
-    "generator_mode": "transvoxel",
+    "terrain_mode": "test",
+    "generator_mode": "CPU",
 
     "raycast_mode": "mesh",
 

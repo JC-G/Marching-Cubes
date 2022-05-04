@@ -26,26 +26,22 @@ Many primitive shapes have exact SDF representations \cite{quilez:sdf}. Figure \
 2 dimensional SDF representing a circle. The function shown is $f\left(x,y\right) = \sqrt{x^2+y^2}-1$, with the area where $f\left(x,y\right) < 0 $ shaded. Also shown are the contours where $f\left(x,y\right) = 0.1,0.2,...0.5$. Note that at the center point $\left(0,0\right)$, the gradient is undefined. However, since this point is not close to the surface, $f$ can still be used as an SDF without issue.}
 
 
-Many useful shapes, including shapes widespread in procedural terrain generation, are not easy to represent as an exact SDF. For this sort of shape, we use an approximate SDF. Figure \ref{fig:Hill_SDF} shows a 2 dimensional approximate SDF for the heightmap defined by $y=1-\frac{x^2}{3}$. It is possible to define the exact distance function for any implicit shape, however such problems are often minimisation problems with with solutions that are expensive to compute. For example, computing the exact distance to a quadratic curve requires computing the roots of a cubic polynomial, and computing the exact distance to a cubic curve requires solving a polynomial of degree 5, for which there is no elementary solution. We will revisit this case in section \ref{example_brushes}.
+Many useful shapes, including shapes widespread in procedural terrain generation, are not easy to represent as an exact SDF. For this sort of shape, we use an approximate SDF. Figure \ref{fig:Hill_SDF} shows a 2 dimensional approximate SDF for the shape defined by $f\left(x,y\right)=y-\left(1-\frac{x^2}{3}\right)$. Computing the exact SDF for a complex shape is often a minimisation problem with solutions that are expensive to compute. We will see an example of this in section \ref{example_brushes}.
 
-Plot of an approximate SDF. The contour lines are no longer uniformly spaced, as they would be with an exact SDF. In fact, the distance approximation gets worse, as the slope of the surface increases.}
+Plot of an approximate SDF. The contour lines are no longer uniformly spaced, as they would be with an exact SDF. 
 
 The basic set-theoretical operations of union, intersection, and difference have equivalent representations using the $\min$ and $\max$ functions. The function $\min\left(f,g\right)$ may fail to be differentiable at the point where $f = g$, and in this case we choose the derivative of either $f$ or $g$. Using these functions, it is possible to combine SDFs of many shapes to produce a surface that is more complex.
 
 \subsection{Noise}
-Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output. This means that the function is smooth. One such noise function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Figure \ref{fig:valuenoise1} shows some value noise.
+Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output. This means that the function is smooth. One such noise function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. Figure \ref{fig:value_noise} shows some value noise.
 
-A single layer of value noise.
-
-Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. Figure \ref{fig:valuenoise} shows an example of this.
-
-8 octaves of value noise.
+Left: A single layer of value noise. Right: 8 octaves of value noise.
 
 Other, more advanced noise algorithms exist, that show fewer regularities. Figure \ref{fig:better_noise} shows the output of 2 such algorithms.
 
 Left: Perlin Noise. Right: Simplex Noise. Algorithms originally devised by Ken Perlin\cite{PerlinChapter2N}. Images generated using functions \texttt{cnoise} and \texttt{snoise} respectively, from the cited collection of reference implementations\cite{github_2014}.}
 
-The output of a noise function can be used to define the terrain height at a given point to generate a convincing heightmap, and typical implementations are as a function of the form $y = h\left(x,z\right)$ giving the height of the terrain at a given $\left(x,z\right)$ coordinate. This can be simply extended to an approximate SDF, using the formula $f\left(x,y,z\right) = y - h\left(x,z\right)$. In this case, the distance approximation worsens as the steepness of the slope of $h\left(x,z\right)$ increases.
+The output of a noise function can be scaled to define a convincing heightmap, typically giving a function of the form $y = h\left(x,z\right)$ defining the height of the terrain at a given $\left(x,z\right)$ coordinate. We will extend this to an approximate SDF, using the formula $f\left(x,y,z\right) = y - h\left(x,z\right)$. In this case, the distance approximation worsens as the steepness of the slope of $h\left(x,z\right)$ increases.
 
 Using 3 dimensional noise in an SDF also yields interesting results. In particular, this type of SDF is useful for generating terrain features such as caves. Using 3D noise function $n\left(x,y,z\right)$, and defining a value at which the surface will be, for example $0.5$, we can use the SDF $f\left(x,y,z\right) = n\left(x,y,z\right) - 0.5$ to represent a shape such that only points with noise values greater than 0.5 are outside of the shape. With careful choices of parameters, this creates empty pockets throughout the shape. We will use this type of SDF for benchmarking purposes, since it represents a shape that cannot be created using a heightmap approach, and it generates a relatively large amount of geometry. 
 
@@ -76,26 +72,6 @@ To display geometry, and to interact with the OpenGL API, we will make use of so
 In this implementation, a \textit{chunk} is a region of space consisting of $n_x \cdot n_y \cdot n_z$ Marching Cubes grid cells. The algorithm works with chunks of any size, however we will usually use chunks of size $32^3$. 
 
 
-\subsubsection{Downsides of parallelisation}
-
-This method of parallelisation presents some downsides. Triangles are placed into the vertex buffer as parallel invocations of the third compute shader increment the atomic counter, which is likely to be different between calls, due to race conditions. This means that there is no way to reliably use an index buffer for vertices that are generated in the same place, a common occurance since a vertex on the edge between neighboring cells is part of the geometry generated for both of the cells. This results in many duplicate vertices in the vertex array. This is also the reason that vertex indexing data has been removed from the Transvoxel tables. Nevertheless, this is a worthwhile tradeoff, with the GPU implementation greatly outperforming the CPU implementation, as demonstrated in section \ref{section:GPUCPUcomparison}.
-
-\subsubsection{Algorithm speed comparison}
-
-In this section, we evaluate the performance of the above Transvoxel implementation, comparing to a CPU implementation of Marching Cubes based on one by Paul Bourke\cite{bourke_1994}. We also include an implementation of the same Marching Cubes algorithm, parallelised using the same 3-phase technique.
-
-The SDF used for these comparison tests is a scaled 3D fractal noise function, as described in section \ref{section:noise}.
-
-An effort has been made to ensure the SDF is the same on the CPU and GPU, however due to floating point inaccuracies and differences between these implementations, the SDF occasionally produces slightly different values between implementations, and this results in the number of triangles generated being different. However, this difference is very small compared to the total number of triangles generated, so is unlikely to have a significant impact on the runtime comparison. For example, the largest test, generating 1000 chunks of size $32^3$, produces 4394195 triangles on the CPU, and 4394045 on the GPU.
-
-Table \ref{tab:comparison-time} shows the time taken to generate different numbers of chunks of 3D noise, of size $32^3$, using the reference CPU implementation, the parallel Marching Cubes implementation, and the parallel Transvoxel implementation. When using the Transvoxel algorithm, transition cells have been generated on 3 of the 6 faces of each chunk, the +x, +y, and +z faces. This means that the number of triangles generated is also higher for the Transvoxel algorithm. Table \ref{tab:comparison-tris} shows the number of triangles generated in each experiment. All experiments were run using an Intel i9-9900k and Nvidia RTX 2080ti. Each experiment was run 5 times, and the average time is shown.
-
-Performance comparison between the 3 implementations
-
-Difference in number of triangles generated between the 3 implementations. The number of triangles in the 1 chunk test happens to be the same, even for the Transvoxel test, because no geometry is generated on the edge of the chunk.
-
-A wireframe of the 10x1x10 chunk test.
-
 \subsection{LOD System}
 Even with an efficient GPU-based implementation, it becomes infeasible to generate and render a large uniform grid of Marching Cubes chunks. Generating large amounts of triangles far from the camera is unnecessary, since the detail will not be visible. For this reason, it is necessary to have a dynamic level of detail (LOD) system.
 
@@ -108,7 +84,7 @@ To implement a versatile LOD system, an octree data structure is used. Each octr
 
 \subsection{The Transvoxel Algorithm}
 
-Using Marching Cubes with multiple different grid cell sizes causes undesirable cracks in the surface of the generated geometry on the boundary between chunks of different levels of detail. A demonstration of what causes this is shown in figure \ref{fig:cracks_demo}, and an example is shown in figure \ref{fig:cracks2}.
+Using Marching Cubes with multiple different grid cell sizes causes cracks on the boundary between chunks of different levels of detail. A demonstration of what causes this is shown in figure \ref{fig:cracks_demo}, and an example is shown in figure \ref{fig:cracks2}.
 
 This figure shows the faces of 2 adjacent grid cells. The exact surface represented by the SDF is shown in purple, and the dotted lines show edges that may be produced by Marching Cubes at the level of detail of these grid cells, and the level below. When these 2 cases occur next to each other, the space in between the 2 dotted lines forms a crack in the geometry.
 
@@ -224,6 +200,26 @@ Code for finding the neighbor of a node at the same level of detail in an octree
 
 The blue cell has 3 neighbors at the same level of detail. The green neighbor is within the same parent octree cell, and no recursive calls are needed. The red neighbor is not within the same parent cell, so the neighbor of the parent is found, and the corresponding child of this neighbor is returned. The orange neighbor is not a leaf, so \texttt{edgeIndex} is updated to reflect this. There is no neighbor at the same level of detail above the blue cell.}
 
+\subsubsection{Downsides of parallelisation}
+
+This method of parallelisation presents some downsides. Triangles are placed into the vertex buffer as parallel invocations of the third compute shader increment the atomic counter, which is likely to be different between calls, due to race conditions. This means that there is no way to reliably use an index buffer for vertices that are generated in the same place, a common occurance since a vertex on the edge between neighboring cells is part of the geometry generated for both of the cells. This results in many duplicate vertices in the vertex array. This is also the reason that vertex indexing data has been removed from the Transvoxel tables. Nevertheless, this is a worthwhile tradeoff, with the GPU implementation greatly outperforming the CPU implementation, as demonstrated in section \ref{section:GPUCPUcomparison}.
+
+\subsubsection{Algorithm speed comparison}
+
+In this section, we evaluate the performance of the above Transvoxel implementation, comparing to a CPU implementation of Marching Cubes based on one by Paul Bourke\cite{bourke_1994}. We also include an implementation of the same Marching Cubes algorithm, parallelised using the same 3-phase technique.
+
+The SDF used for these comparison tests is a scaled 3D fractal noise function, as described in section \ref{section:noise}.
+
+An effort has been made to ensure the SDF is the same on the CPU and GPU, however due to floating point inaccuracies and differences between these implementations, the SDF occasionally produces slightly different values between implementations, and this results in the number of triangles generated being different. However, this difference is very small compared to the total number of triangles generated, so is unlikely to have a significant impact on the runtime comparison. For example, the largest test, generating 1000 chunks of size $32^3$, produces 4394195 triangles on the CPU, and 4394045 on the GPU.
+
+Table \ref{tab:comparison-time} shows the time taken to generate different numbers of chunks of 3D noise, of size $32^3$, using the reference CPU implementation, the parallel Marching Cubes implementation, and the parallel Transvoxel implementation. When using the Transvoxel algorithm, transition cells have been generated on 3 of the 6 faces of each chunk, the +x, +y, and +z faces. This means that the number of triangles generated is also higher for the Transvoxel algorithm. Table \ref{tab:comparison-tris} shows the number of triangles generated in each experiment. All experiments were run using an Intel i9-9900k and Nvidia RTX 2080ti. Each experiment was run 5 times, and the average time is shown.
+
+Performance comparison between the 3 implementations
+
+Difference in number of triangles generated between the 3 implementations. The number of triangles in the 1 chunk test happens to be the same, even for the Transvoxel test, because no geometry is generated on the edge of the chunk.
+
+A wireframe of the 10x1x10 chunk test.
+
 \subsubsection{Octree Refinement}
 
 An illustration of where different levels of detail may occur next to each other. Areas where transition cells are generated are shaded in blue. The area where transition cells are generated, but different levels of detail will still be adjacent to each other, is shaded in red.
@@ -291,7 +287,6 @@ These functions are designed to be overridden, to implement the corresponding fu
 
 Default implementation of \texttt{handleInput}.}]
 
-
 Using the generic \texttt{Brush} and \texttt{Action} interfaces makes it quick to implement new shapes, since the interfaces just need to be filled out with the required brush parameters and controller code, respectively. The only complex addition is the definition of the SDF and normal function, which is different for every shape.
 
 \subsubsection{Raycasting}
@@ -323,12 +318,12 @@ Figure \ref{fig:editing_ellipsoids} shows a number of ellipsoids of various size
 
 \paragraph{Shapes Using Bezier Curves}
 \subparagraph{Exact Method}
-A smooth interpolation spline between given points can be defined using cubic Bezier curves. Intermediate control points are calculated between each consecutive pair of interpolation points, such that the section of curve between them is a parametric cubic curve. As was alluded to in section \ref{section:sdf}, calculating the exact distance to a Bezier curve requires solving a quintic. The general form of a parametric cubic is $c\left(t\right) = \vec{P_0} + t\vec{P_1} + t^2\vec{P_2} + t^3\vec{P_3}, t \in \left[0,1\right]$, and the value of the SDF at point $p$ is the minimum of $\| c\left(t\right) -p\|$ for t in the interval $\left[0,1\right]$. To avoid computing the derivative with a square root, the dot product $\left(c\left(t\right) -p\right) \cdot \left(c\left(t\right) -p\right) = \| c\left(t\right) -p\|^2$ can be minimised. This is a polynomial of degree 6, and hence the derivative is of degree 5. 
+
+To define a smooth curve between interpolation points, we will use Bezier interpolation. Intermediate control points are calculated between each consecutive pair of interpolation points, such that the section of curve between them is a cubic Bezier spline. As was alluded to in section \ref{section:sdf}, calculating the minimum distance to a Bezier curve is best done by minimising the value of a degree 6 polynomial. A general cubic Bezier is a cubic $c\left(t\right), t \in \left[0,1\right]$, and the value of the SDF at point $p$ is the minimum of $\| c\left(t\right) -p\|$. This minimum is found by differentiating $\| c\left(t\right) -p\|^2$, a degree 6 polynomial, to give a polynomial of degree 5.
 
 Since it is impossible to solve a general degree 5 polynomial analytically, we instead use a numerical approach. We will use an existing implementation\cite{kraus_2021} that uses interval approximation to find the first root, followed by polynomial long division to obtain the coefficients of a degree 4 polynomial, and finally computes the 4 remaining roots exactly. Once the minimum distance to the curve has been computed, It is simple to define a shape with a circular cross-section by defining a radius, such that points closer than that radius are considered inside, and points further away are considered outside. Figure \ref{fig:exact_bezier} shows an example of such a shape.
 
   \caption{A number of Bezier interpolation splines, using the exact SDF.}
-
 
 There is no simple form for the gradient of this SDF, and so we are forced to use the numerical derivative as implemented in listing \ref{numerical_gradient}. Note however that this now requires solving 5 cubics for every SDF sample point.
 

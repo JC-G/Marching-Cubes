@@ -52,24 +52,24 @@
 \end{figure}
 \newpage
 
-\section*{Abstract}
+\section*{Abstract} %88 words
 This project explores a method for procedurally generating terrain by applying a variation of Marching Cubes known as Transvoxel. We use an octree data structure to break down a large world into chunks at varying levels of detail, and apply parallel processing on the GPU to rapidly generate geometry on a per-chunk basis. We explore applications of this approach, modifying geometry in real-time by making localized changes to the underlying distance function. Finally, we use the generated meshes with a well-known physics library, and apply procedural shading.
 \newpage
 
 \tableofcontents
 
 \newpage
-\section{Introduction}
+\section{Introduction} %167 words
 
 
 Marching Cubes is an algorithm for polygonising a scalar field. Designed by William E. Lorensen and Harvey E. Cline in 1987\cite{10.1145/37402.37422}, the original application was in medical imaging, to create anatomical models using data from 3D scans such as CT scans. When it was written, the algorithm was comparatively expensive to execute, due to the limited hardware available. 
- 
+
 Procedural terrain generation is a popular technique within the video game industry, allowing for large areas of geometry to be created, according to mathematical rules, rather than the traditional method of 3D modelling, which is time-consuming for the modeller, and takes up a large amount of storage space.
 
-The increase in processing power available, as well as the parallel design of the GPU, means that it is achievable to use Marching Cubes to generate large amounts of geometry at an interactive framerate. When combined with a level-of-detail system, it is possible to render very large regions of terrain, that can be interacted with and modified in real time.
+The increase in processing power available, as well as the parallel design of the GPU, means that it is achievable to use Marching Cubes to procedurally generate large amounts of geometry at an interactive framerate. When combined with a level-of-detail system, it is possible to render very large regions of terrain, that can be interacted with and modified in real time.
 
 \section{Background}
-\subsection{Signed Distance Functions}
+\subsection{Signed Distance Functions} %466 words
 \label{section:sdf}
 At the core of Marching Cubes is the scalar field passed to it. We will provide this data using a signed distance function (SDF). This is a function of the form $f:\mathbb{R}^3 \rightarrow \mathbb{R}$. The shape represented by an SDF is the implicit surface $f\left(x,y,z\right) = 0$. An SDF should have the following properties:
 \begin{enumerate}[label=\roman*.]
@@ -86,30 +86,26 @@ Many primitive shapes have exact SDF representations \cite{quilez:sdf}. Figure \
 \label{fig:Circle_SDF}
 \end{SCfigure}
 
-Many useful shapes, including shapes widespread in procedural terrain generation, are not easy to represent as an exact SDF. For this sort of shape, we use an approximate SDF. Figure \ref{fig:Hill_SDF} shows a 2 dimensional approximate SDF for the heightmap defined by $y=1-\frac{x^2}{3}$. It is possible to define the exact distance function for any implicit shape, however such problems are often minimisation problems with with solutions that are expensive to compute. For example, computing the exact distance to a quadratic curve requires computing the roots of a cubic polynomial, and computing the exact distance to a cubic curve requires solving a polynomial of degree 5, for which there is no elementary solution. We will revisit this case in section \ref{example_brushes}.
+Many useful shapes, including shapes widespread in procedural terrain generation, are not easy to represent as an exact SDF. For this sort of shape, we use an approximate SDF. Figure \ref{fig:Hill_SDF} shows a 2 dimensional approximate SDF for the shape defined by $f\left(x,y\right)=y-\left(1-\frac{x^2}{3}\right)$. Computing the exact SDF for a complex shape is often a minimisation problem with solutions that are expensive to compute. We will see an example of this in section \ref{example_brushes}.
 
 \begin{SCfigure}[][!h]
-\caption{Plot of an approximate SDF. The contour lines are no longer uniformly spaced, as they would be with an exact SDF. In fact, the distance approximation gets worse, as the slope of the surface increases.}
+\caption{Plot of an approximate SDF. The contour lines are no longer uniformly spaced, as they would be with an exact SDF.}
 \includegraphics[width=0.5\textwidth]{Hill_SDF}
 \label{fig:Hill_SDF}
 \end{SCfigure}
 
 The basic set-theoretical operations of union, intersection, and difference have equivalent representations using the $\min$ and $\max$ functions. The function $\min\left(f,g\right)$ may fail to be differentiable at the point where $f = g$, and in this case we choose the derivative of either $f$ or $g$. Using these functions, it is possible to combine SDFs of many shapes to produce a surface that is more complex.
 
-\subsection{Noise}
+\subsection{Noise} %365 words
 \label{section:noise}
-Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output. This means that the function is smooth. One such noise function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Figure \ref{fig:valuenoise1} shows some value noise.
+Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output. This means that the function is smooth. One such noise function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. Figure \ref{fig:value_noise} shows some value noise.
+
 \begin{SCfigure}[][!h]
-  \caption{A single layer of value noise.}
-  \includegraphics[width=0.5\textwidth]{valuenoise1.png}
-  \label{fig:valuenoise1}
+  \caption{Left: A single layer of value noise. Right: 8 octaves of value noise.}
+  \includegraphics[width=0.5\textwidth]{value_noise.png}
+  \label{fig:value_noise}
 \end{SCfigure}
-Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. Figure \ref{fig:valuenoise} shows an example of this.
-\begin{SCfigure}[][!h]
-  \caption{8 octaves of value noise.}
-  \includegraphics[width=0.5\textwidth]{valuenoise.png}
-  \label{fig:valuenoise}
-\end{SCfigure}
+
 Other, more advanced noise algorithms exist, that show fewer regularities. Figure \ref{fig:better_noise} shows the output of 2 such algorithms.
 \begin{SCfigure}[][!h]
   \caption{Left: Perlin Noise. Right: Simplex Noise. Algorithms originally devised by Ken Perlin\cite{PerlinChapter2N}. Images generated using functions \texttt{cnoise} and \texttt{snoise} respectively, from the cited collection of reference implementations\cite{github_2014}.}
@@ -117,11 +113,11 @@ Other, more advanced noise algorithms exist, that show fewer regularities. Figur
   \label{fig:better_noise}
 \end{SCfigure}
 
-The output of a noise function can be used to define the terrain height at a given point to generate a convincing heightmap, and typical implementations are as a function of the form $y = h\left(x,z\right)$ giving the height of the terrain at a given $\left(x,z\right)$ coordinate. This can be simply extended to an approximate SDF, using the formula $f\left(x,y,z\right) = y - h\left(x,z\right)$. In this case, the distance approximation worsens as the steepness of the slope of $h\left(x,z\right)$ increases.
+The output of a noise function can be scaled to define a convincing heightmap, typically giving a function of the form $y = h\left(x,z\right)$ defining the height of the terrain at a given $\left(x,z\right)$ coordinate. We will extend this to an approximate SDF, using the formula $f\left(x,y,z\right) = y - h\left(x,z\right)$. In this case, the distance approximation worsens as the steepness of the slope of $h\left(x,z\right)$ increases.
 \\
 Using 3 dimensional noise in an SDF also yields interesting results. In particular, this type of SDF is useful for generating terrain features such as caves. Using 3D noise function $n\left(x,y,z\right)$, and defining a value at which the surface will be, for example $0.5$, we can use the SDF $f\left(x,y,z\right) = n\left(x,y,z\right) - 0.5$ to represent a shape such that only points with noise values greater than 0.5 are outside of the shape. With careful choices of parameters, this creates empty pockets throughout the shape. We will use this type of SDF for benchmarking purposes, since it represents a shape that cannot be created using a heightmap approach, and it generates a relatively large amount of geometry. 
 
-\subsection{Marching Cubes Algorithm}
+\subsection{Marching Cubes Algorithm} %304 words
 \label{section:mc}
 Marching Cubes is an algorithm for polygonising a 3 dimensional scalar field. It works by splitting the space into a uniform grid of cubes (\textit{cells}), and sampling the scalar field at each cell vertex. Pre-computed lookup tables, are used to determine the geometry that exists within each cell, and the position of each geometry vertex is adjusted by linearly interpolating the sampled values of the scalar field at the cell vertices, such that the vertex is placed approximately on the surface described by the scalar field. We will see an example of such lookup tables in section \ref{section:lookup_tables}. Figure \ref{fig:linear_interpolation} shows how this linear interpolation is done.
 
@@ -145,7 +141,7 @@ Marching Cubes is an ideal algorithm for this project because the geometry for e
 \end{figure}
 For this purpose, an algorithm such as Dual Contouring\cite{10.1145/566654.566586} may produce better results. However, this algorithm is out of scope for this project, since it cannot be parallelised with the same method, because generated triangles span multiple grid cells.
 
-\subsection{GPU Programming}
+\subsection{GPU Programming} %272 words
 A GPU is designed for applications where a similar calculation is performed many times on varying data. Traditionally, this covers uses such as vertex shaders, which determine the screen-space position of every vertex in a 3D scene, or fragment shaders, which determine the color of every pixel on a screen. A modern GPU is capable of performing many millions of individual calculations per frame. In this project, we will use the OpenGL API, and the GLSL shader language that comes with it, to write code for the GPU. The syntax for GLSL shaders is very similar to C code. 
 
 A program written for the GPU is called a shader, and we will consider compute shaders, which are not part of the graphics rendering pipeline, but are called by the OpenGL API and take advantage of the parallel architecture of the GPU. When a compute shader is executed, many separate invocations of the same code are executed at once, through the API function \texttt{glDispatchCompute}. These are indexed by the built-in GLSL variable \texttt{gl\_GlobalInvocationID}, which is a 3-component integer vector, and is different for each invocation. For example, invocation of a shader designed to calculate $f\left(x,y,z\right)$, for $ \left(x,y,z\right)$ ranging over integer-valued triples in $\left[0,32\right]^3$ would need to be configured so that \texttt{gl\_GlobalInvocationID} varies over all of the triples in this range.
@@ -153,13 +149,13 @@ A program written for the GPU is called a shader, and we will consider compute s
 To display geometry, and to interact with the OpenGL API, we will make use of some useful open source OpenGL libraries, namely GLFW\cite{glfw}, for creating a window and handling input, GLEW\cite{glew}, to load the OpenGL API functions, and GLM\cite{g-truc_2005}, to provide mathematical functions such as manipulation of vectors, in C++.
 
 
-\section{Algorithm Design}
-In this implementation, a \textit{chunk} is a region of space consisting of $n_x \cdot n_y \cdot n_z$ Marching Cubes grid cells. The algorithm works with chunks of any size, however we will usually use chunks of size $32^3$. 
+\section{Algorithm Design} %40 words
+In this implementation, a \textit{chunk} is a region of space consisting of $n_x \cdot n_y \cdot n_z$ Marching Cubes grid cells. The algorithm works with chunks of any size, however we will usually use chunks of size $32^3$.
 
-\subsection{LOD System}
+\subsection{LOD System} %56 words
 Even with an efficient GPU-based implementation, it becomes infeasible to generate and render a large uniform grid of Marching Cubes chunks. Generating large amounts of triangles far from the camera is unnecessary, since the detail will not be visible. For this reason, it is necessary to have a dynamic level of detail (LOD) system.
 
-\subsubsection{Octree}
+\subsubsection{Octree} %275 words
 \label{section:octree}
 To implement a versatile LOD system, an octree data structure is used. Each octree node represents a cuboid of space, such that the root node of the octree represents the entire renderable world, and the 8 children of an octree node equally divide the space represented by the parent node into octants. Each leaf node contains a reference to a chunk of generated geometry. The depth of the octree in any given region corresponds to the level of detail at which that region will have geometry generated. Each Marching Cubes chunk is generated with the same number of grid cells, however the size of the grid cells within the chunk doubles in each direction, for each detail level increase. Using an octree provides versatility since any condition can be used to set the level of detail at a specific point in space. For example, it will be desirable to use the maximum level of detail near physics objects, so the physics collision is as accurate as possible, even if the camera is very far away. We will control the level of detail using the function \texttt{shouldSplit}, which returns whether a leaf node should split into its 8 children, and \texttt{shouldChop}, which returns whether a non-leaf node should become a leaf, removing the rest of the octree below that node. When the octree changes, geometry associated with octree leaves that became branches is deleted, and new geometry is generated at each new leaf.
 
@@ -168,9 +164,9 @@ To implement a versatile LOD system, an octree data structure is used. Each octr
   \caption{A plane generated using Marching Cubes, within this octree LOD system. Here, the chunk size is $4^3$. The level of detail is configured to decrease as the distance from the camera increases.}
 \end{figure}
 
-\subsection{The Transvoxel Algorithm}
+\subsection{The Transvoxel Algorithm} %413 words
 \label{section:cracks}
-Using Marching Cubes with multiple different grid cell sizes causes undesirable cracks in the surface of the generated geometry on the boundary between chunks of different levels of detail. A demonstration of what causes this is shown in figure \ref{fig:cracks_demo}, and an example is shown in figure \ref{fig:cracks2}.
+Using Marching Cubes with multiple different grid cell sizes causes cracks on the boundary between chunks of different levels of detail. A demonstration of what causes this is shown in figure \ref{fig:cracks_demo}, and an example is shown in figure \ref{fig:cracks2}.
 
 \begin{SCfigure}[][!h]
   \caption{This figure shows the faces of 2 adjacent grid cells. The exact surface represented by the SDF is shown in purple, and the dotted lines show edges that may be produced by Marching Cubes at the level of detail of these grid cells, and the level below. When these 2 cases occur next to each other, the space in between the 2 dotted lines forms a crack in the geometry.}
@@ -901,10 +897,10 @@ Figure \ref{fig:editing_ellipsoids} shows a number of ellipsoids of various size
 \end{figure}
 
 \paragraph{Shapes Using Bezier Curves}
-\subparagraph{Exact Method}
-A smooth interpolation spline between given points can be defined using cubic Bezier curves. Intermediate control points are calculated between each consecutive pair of interpolation points, such that the section of curve between them is a parametric cubic curve. As was alluded to in section \ref{section:sdf}, calculating the exact distance to a Bezier curve requires solving a quintic. The general form of a parametric cubic is $c\left(t\right) = \vec{P_0} + t\vec{P_1} + t^2\vec{P_2} + t^3\vec{P_3}, t \in \left[0,1\right]$, and the value of the SDF at point $p$ is the minimum of $\| c\left(t\right) -p\|$ for t in the interval $\left[0,1\right]$. To avoid computing the derivative with a square root, the dot product $\left(c\left(t\right) -p\right) \cdot \left(c\left(t\right) -p\right) = \| c\left(t\right) -p\|^2$ can be minimised. This is a polynomial of degree 6, and hence the derivative is of degree 5. 
-Since it is impossible to solve a general degree 5 polynomial analytically, we instead require a numerical approach. We will use an existing implementation\cite{kraus_2021} that uses interval approximation to find the first root, followed by polynomial long division to obtain the coefficients of a degree 4 polynomial, and finally computes the 4 remaining roots exactly. Once the minimum distance to the curve has been computed, It is simple to define a shape with a circular cross-section by defining a radius, such that points closer than that radius are considered inside, and points further away are considered outside. Figure \ref{fig:exact_bezier} shows an example of such a shape.
+\subparagraph{Exact Method} %TODO - reference on bezier interpolation
+To define a smooth curve between interpolation points, we will use Bezier interpolation. Intermediate control points are calculated between each consecutive pair of interpolation points, such that the section of curve between them is a cubic Bezier spline. As was alluded to in section \ref{section:sdf}, calculating the minimum distance to a Bezier curve is best done by minimising the value of a degree 6 polynomial. A general cubic Bezier is a cubic $c\left(t\right), t \in \left[0,1\right]$, and the value of the SDF at point $p$ is the minimum of $\| c\left(t\right) -p\|$. This minimum is found by differentiating $\| c\left(t\right) -p\|^2$, a degree 6 polynomial, to give a polynomial of degree 5.
 
+Since it is impossible to solve a general degree 5 polynomial analytically, we instead use a numerical approach. We will use an existing implementation\cite{kraus_2021} that uses interval approximation to find the first root, followed by polynomial long division to obtain the coefficients of a degree 4 polynomial, and finally computes the 4 remaining roots exactly. Once the minimum distance to the curve has been computed, It is simple to define a shape with a circular cross-section by defining a radius, such that points closer than that radius are considered inside, and points further away are considered outside. Figure \ref{fig:exact_bezier} shows an example of such a shape.
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{exact_bezier}
   \caption{A number of Bezier interpolation splines, using the exact SDF.}
@@ -925,7 +921,7 @@ Using approximation also allows for splines to be used to define more complex sh
 
 \begin{figure}[H]
   \caption{Left: Illustration of the union of 2 shapes at an angle, so there is a jagged overlap between them. Right: The same 2 shapes, considering only the intersection between the shapes at the end, giving a smoother appearance}
-  \includegraphics[width=0.5\textwidth]{road_double.png}
+  \includegraphics[width=\textwidth]{road_double.png}
   \label{fig:road_double}
 \end{figure}
 

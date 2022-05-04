@@ -149,7 +149,7 @@ A program written for the GPU is called a shader, and we will consider compute s
 To display geometry, and to interact with the OpenGL API, we will make use of some open source OpenGL libraries, namely GLFW\cite{glfw}, for creating a window and handling input, GLEW\cite{glew}, to load the OpenGL API functions, and GLM\cite{g-truc_2005}, to provide mathematical functions such as manipulation of vectors, in C++.
 
 
-\section{Algorithm Design} %Merge this into octree description
+\section{Algorithm Design}
 
 \subsection{LOD System} %56 words
 Even with an efficient GPU-based implementation, it becomes infeasible to generate and render a large uniform grid of Marching Cubes chunks. Generating large amounts of triangles far from the camera is unnecessary, since the detail will not be visible. For this reason, it is necessary to have a dynamic level of detail (LOD) system.
@@ -190,7 +190,7 @@ To solve this problem, we will switch the algorithm used to generate geometry. T
   \label{fig:transition_cells}
 \end{figure}
 
-Like Marching Cubes, the original Transvoxel implementation was written for a standard CPU. It works similarly to Marching Cubes, and can be implemented to work independently on grid cells, so it is possible to take advantage of the parallel processing power of the GPU. The algorithm relies on large lookup tables. For these, we will modify a set of lookup tables provided by the original author of the Transvoxel algorithm \footnote{https://transvoxel.org/Transvoxel.cpp}.
+Like Marching Cubes, the original Transvoxel implementation was written for a standard CPU. It works similarly to Marching Cubes, and can be implemented to work independently on grid cells, so it is possible to take advantage of the parallel processing power of the GPU. The algorithm relies on large lookup tables. For these, we will modify a set of lookup tables provided by the original author of the Transvoxel algorithm\cite{lengyel_2009}.
 A useful graphic of all of the possible regular and transition cells in the Transvoxel algorithm is also available from the same source\cite{lengyel}.
 
 \subsubsection{Lookup Tables}

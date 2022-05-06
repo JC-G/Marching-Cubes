@@ -64,11 +64,11 @@ Inaccuracies near the sharp edge of this cylinder are visible.
 For this purpose, an algorithm such as Dual Contouring\cite{10.1145/566654.566586} may produce better results. However, this algorithm generates triangles that span multiple grid cells, so it cannot be parallelised with the same method.
 
 \subsection{GPU Programming}
-A GPU is designed for applications where a similar calculation is performed many times on varying data. Traditionally, this covers uses such as vertex shaders, which determine the screen-space position of every vertex in a 3D scene, or fragment shaders, which determine the color of every pixel on a screen. A modern GPU is capable of performing many millions of individual calculations per frame. In this project, we will use the OpenGL API, and the C-style GLSL shader language that comes with it, to write code for the GPU.
+A GPU is designed for applications where a similar calculation is performed many times on varying data. Traditionally, this covers uses such as vertex shaders, which determine the screen-space position of every vertex in a 3D scene, or fragment shaders, which determine the color of every pixel on a screen. A modern GPU is capable of performing many millions of individual calculations per frame. In this project, we use the OpenGL API, and the C-style GLSL shader language that comes with it, to write code for the GPU.
 
-A program written for the GPU is called a shader, and we will consider compute shaders, which are not part of the graphics rendering pipeline, but are called by the OpenGL API and take advantage of the parallel architecture of the GPU. When a compute shader is executed, many separate invocations of the same code are executed in parallel, through the API function \texttt{glDispatchCompute}. These are indexed by the built-in GLSL variable \texttt{gl\_GlobalInvocationID}, a 3-component integer vector, that is different for each invocation. For example, a shader designed to calculate $f\left(x,y,z\right)$, for $ \left(x,y,z\right)$ ranging over integer-valued triples in $\left[0,32\right]^3$ would need to be configured so that \texttt{gl\_GlobalInvocationID} varies over all of the triples in this range.
+A program written for the GPU is called a shader, We make use of compute shaders, which are not part of the graphics rendering pipeline, but are called by the OpenGL API and take advantage of the parallel architecture of the GPU. When a compute shader is executed, many invocations of the same code are executed in parallel, through the API function \texttt{glDispatchCompute}. These are indexed by the built-in GLSL variable \texttt{gl\_GlobalInvocationID}, a 3-component integer vector, that is different for each invocation. For example, a shader designed to calculate $f\left(x,y,z\right)$, for $ \left(x,y,z\right)$ ranging over integer-valued triples in $\left[0,32\right]^3$ would need to be configured so that \texttt{gl\_GlobalInvocationID} varies over all of the triples in this range.
 
-To display geometry, and to interact with the OpenGL API, we will make use of some open source OpenGL libraries, namely GLFW\cite{glfw}, for creating a window and handling input, GLEW\cite{glew}, to load the OpenGL API functions, and GLM\cite{g-truc_2005}, to provide mathematical functions such as manipulation of vectors, in C++.
+To display geometry, and to interact with OpenGL, we make use of some open source libraries, namely GLFW\cite{glfw}, for creating a window and handling input, GLEW\cite{glew}, to load the OpenGL API functions, and GLM\cite{g-truc_2005}, to provide mathematical functions such as manipulation of vectors, in C++.
 
 \section{Algorithm Design}
 
@@ -81,18 +81,17 @@ To implement a versatile LOD system, an octree data structure is used. Each octr
 
 A \textit{chunk} refers to one of these regions of space, and consists of $n_x \cdot n_y \cdot n_z$ grid cells. The scale of these grid cells is determined by the depth of the octree node, with each level in the octree corresponding to a halving of the scale of a grid cell in each dimension. Geometry is generated at each leaf node, so the depth of the leaf node corresponds to the scale of the grid used within the generation algorithm, and hence the level of detail at which the geometry is generated. We will usually use chunks of size $32^3$, although other sizes are useful for demonstration purposes.
 
-With an octree, any condition could be used to determine the level of detail at any given point. We will use this in section \ref{section:physics_meshes} to control the level of detail around physics objects, for consistent collision detection. We will control the level of detail using the function \texttt{shouldSplit}, which returns whether a leaf node should split into its 8 children, and \texttt{shouldChop}, which returns whether a non-leaf node should become a leaf. When the octree changes, geometry associated with octree leaves that became branches, or were removed from the octree, is deleted, and new geometry is generated at each new leaf.
+Using an octree, any condition can be used to determine the level of detail at any given point. We will use this in section \ref{section:physics_meshes} to control the level of detail around physics objects, for consistent collision detection. The level of detail is controlled with the functions \texttt{shouldSplit}, which returns whether a leaf node should split into its 8 children, and \texttt{shouldChop}, which returns whether a non-leaf node should become a leaf. When the octree changes, geometry associated with octree leaves that became branches, or were removed from the octree, is deleted, and new geometry is generated at each new leaf.
 
 \caption{A plane generated using Marching Cubes, within this octree LOD system. Here, the chunk size is $4^3$. The level of detail is configured to decrease as the distance from the camera increases.}
 
 \subsection{The Transvoxel Algorithm}
 
-Using Marching Cubes with multiple different grid cell sizes causes cracks on the boundary between chunks of different levels of detail. A demonstration of what causes this is shown in figure \ref{fig:cracks_demo}, and an example is shown in figure \ref{fig:cracks2}.
+Using Marching Cubes with multiple different grid cell sizes causes cracks on the boundary between chunks at different scales. A demonstration of what causes this is shown in figure \ref{fig:cracks_demo}, and an example is shown in figure \ref{fig:cracks2}.
 
-This figure shows the faces of 2 adjacent grid cells. The exact surface represented by the SDF is shown in purple, and the dotted lines show edges that may be produced by Marching Cubes at the level of detail of these grid cells, and the level below. When these 2 cases occur next to each other, the space in between the 2 dotted lines forms a crack in the geometry.
+This figure shows the faces of 2 adjacent grid cells. The exact surface represented by the SDF is shown in purple, The dotted lines show the edges produced by Marching Cubes at the level of detail of these grid cells, and the level below. When these 2 cases occur next to each other, the space in between the 2 dotted lines forms a crack in the geometry.
 
-
-An example demonstrating the cracks between levels of detail. Here, parts of the blue background can be seen in the gaps between the chunks.
+Cracks between different levels of detail cause the blue background to be visible between chunks.
 
 To solve this problem, we will switch the algorithm used to generate geometry. The Transvoxel algorithm \cite{lengyel_2010} is an algorithm based on Marching Cubes that solves this problem by adding additional vertices into the less detailed mesh, on the faces of Marching Cubes cells adjacent to cells of a higher level of detail. This is done by splitting a cell at the lower resolution (a half-resolution cell) into a regular cell and some amount of transition cells, so that the transition cells border the regular cells at the higher resolution (full-resolution cells). These transition cells serve as a method of stitching the gap in between half-resolution and full-resolution cells. Figure \ref{fig:transition_cells}, reproduced from figure 4.9 in the Transvoxel algorithm paper\cite{lengyel_2010}, shows the position of transition cells in 2 different configurations.
 
@@ -104,16 +103,14 @@ A useful graphic showing all of the possible triangulations in the Transvoxel al
 
 \subsubsection{Lookup Tables}
 
-This section demonstrates the functions of the Transvoxel lookup tables. These tables have been flattened from multidimensional arrays, since they will be passed to compute shaders in the form of a buffer. Vertex indexing data that would allow for reuse of vertices has been removed, for the reason described in section \ref{section:downsides}.
+This section demonstrates the functions of the Transvoxel lookup tables. These tables have been flattened from multidimensional arrays, since they will be passed to shaders as buffers. Vertex indexing data that would allow for reuse of vertices has been removed, for the reason described in section \ref{section:downsides}.
 
 \paragraph{Regular cell lookup tables}
 Regular cells have 8 cell vertices, each of which has a distinct SDF sample value. Figure \ref{fig:tv_labels}, reproduced from figure 3.7 of the Transvoxel paper\cite{lengyel_2010} shows the labelling conventions for these vertices.
 
-Cell vertex naming convention for regular cells in the Transvoxel algorithm.}
+Cell vertex naming convention for regular cells.
 
-Listing \ref{tv_tables} shows excerpts from these tables.
-
-Calculation of \texttt{cellIndex}, and lookup tables for regular cells in the Transvoxel algorithm. An example of their usage is given below.
+Calculation of \texttt{cellIndex}, and lookup tables, for regular cells. An example of their usage is given below.
 
 
 The array \texttt{gridCells} contains the SDF sample values, and \texttt{cellIndex} is an index into the subsequent tables, calculated based on these values. 
@@ -131,17 +128,19 @@ A cell of the same class as the example used above, reproduced from the diagram 
 
 The labelling convention for the cell vertices of a transition cell is shown in figure \ref{fig:tv_transition_labels}, and the order in which transition cell vertices are considered for the purpose of calculating \texttt{cellIndex} is shown in figure \ref{fig:tv_transition_cellIndex}.
 
-Cell vertex naming convention for transition cells in the Transvoxel algorithm. (a) shows the higher resolution face of the cell, and (b) shows the opposite, lower resolution face. Reproduced from figure 4.16 of the Transvoxel paper\cite{lengyel_2010}
+Cell vertex naming convention for transition cells. (a) shows the higher resolution face of the cell, and (b) shows the opposite, lower resolution face. Reproduced from figure 4.16 of the Transvoxel paper\cite{lengyel_2010}
 
 Hexadecimal contribution to \texttt{cellIndex} by each cell vertex on the higher resolution face of a transition cell. Reproduced from figure 4.17 of the Transvoxel paper\cite{lengyel_2010}
 
-A transition cell uses 9 distinct SDF sample values, at vertices 0 through 8 in figure \ref{fig:tv_transition_labels}. Cell vertices 9, A, B, and C take their sample values from the vertices directly opposite them: vertices 0, 2, 6, and 8 respectively. Thus there are 512 possible cases to consider, rather than 256 cases in the case of a regular cell. Listing \ref{tv_transition_tables} shows excerpts from the lookup tables used for transition cells.
+A transition cell uses 9 distinct SDF sample values, at vertices 0 through 8 in figure \ref{fig:tv_transition_labels}. Cell vertices 9, A, B, and C take their sample values from the vertices directly opposite them: vertices 0, 2, 6, and 8 respectively. Thus there are 512 possible cases to consider, rather than 256 cases in the case of a regular cell.
 
-Calculation of \texttt{transitionCellIndex}, and lookup tables for transition cells in the Transvoxel algorithm. An example of their usage is given below.}]
+Calculation of \texttt{transitionCellIndex}, and lookup tables for transition cells. An example of their usage is given below.
 
 
-The tables perform the same roles as their regular cell counterparts. There are now 73 classes of transition cell, although by considering classes using the same triangulation with different vertices, this can be reduced to 56 classes. In addition, the highest bit in the 8-bit \texttt{transitionCellClass} corresponds to a triangulation where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass}, having binary value $10000111$, corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
-For example, consider the transition cell where vertex 0 is inside the terrain. Then vertex 9 will also be considered as inside the terrain. The variable \texttt{transitionCellIndex} will be calculated as $000000001$, corresponding to a cell class of \texttt{0x01} in \texttt{transitionCellClass}.
+The tables perform the same roles as their regular cell counterparts. There are 73 classes of transition cell, although by considering classes using the same triangulation with different vertices, this can be reduced to 56 classes. In addition, the highest bit in the 8-bit \texttt{transitionCellClass} corresponds to a triangulation where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass}, having binary value $10000111$, corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
+
+For example, consider the transition cell where vertex 0 is inside the terrain. Then vertex 9 will also be considered as inside. \texttt{transitionCellIndex} will be calculated as $000000001$, corresponding to a cell class of \texttt{0x01} in \texttt{transitionCellClass}. 
+
 The number of vertices to generate is found in \texttt{transitionTotalTable}; in this case, there are 6. The vertex indices to be used are found in \texttt{transitionCellData}: The first triangle uses vertices 0, 1, and 3, in that order, from the corresponding row in \texttt{transitionVertexData}, and the second uses vertices 1, 2, and 3.
 The locations of these vertices are found in the corresponding row in \texttt{transitionVertexData}, so vertex 0 is between cell vertices 0 and 1, vertex 1 is between cell vertices 0 and 3, and so on.
 
@@ -150,17 +149,17 @@ A transition cell of the same class as the example used above, reproduced from t
 
 \subsubsection{Adaptation of the algorithm to GPU}
 
-We now describe a Transvoxel implementation on the GPU, using GLSL, making use of the modified lookup tables from section \ref{section:lookup_tables}. The algorithm is implemented in 3 separate compute shader phases, executed in order, to generate the geometry for a single chunk.
+We now describe a Transvoxel implementation on the GPU, making use of the modified lookup tables from section \ref{section:lookup_tables}. The algorithm is implemented in 3 separate compute shader phases, executed in order, to generate the geometry for a single chunk.
 
 The chunk faces where transition cells should be generated are encoded in the variable \texttt{edgeIndex}, which is discussed in section \ref{section:edgeIndex}.
 
 \underline{Distance function computation}: For each grid cell vertex, the SDF is sampled, and stored in a buffer. If this vertex lies on the face of the chunk, the SDF is sampled at additional points on the face, for use in transition cells. This shader is invoked once for each grid cell vertex, and the invocations corresponding to the vertices on the faces where transition cells are generated are responsible for calculating the additional sample points. This is done separately to the following stages to avoid unnecessary recomputation of the SDF, since one grid cell vertex may belong to up to 8 neighboring grid cells.
 
-Part of the GLSL code responsible for sampling the SDF. This snippet samples the SDF at the grid point, as well as at the points needed for any transition cells on the -X and +X facing faces. The \texttt{generate} function is responsible for sampling the SDF and storing the value in a buffer, and takes 2 parameters: the first is the actual position of the grid cell vertex, and the second is an offset parameter, for generating sample values halfway beetween grid vertices. For example, a value of \texttt{uvec3(0,1,0)} corresponds to a point that is offset from the position in the first argument by half a grid cell in the Y direction.}]
+Code snippet that samples the SDF at the grid point, as well as at the points needed for any transition cells on the -X and +X facing faces. The \texttt{generate} function is responsible for sampling the SDF and storing the value in a buffer, and takes 2 parameters: the first is the actual position of the grid cell vertex, and the second is an offset parameter, for generating sample values halfway beetween grid vertices. For example, a value of \texttt{uvec3(0,1,0)} corresponds to a point that is offset from the position in the first argument by half a grid cell in the Y direction.
 
 Illustration of the points to be sampled on the face of a 2x2x2 chunk when transition cells will be generated. The 4 blue points in the bottom left are those that will be sampled by an invocation on the vertex at $\left(0,0\right)$, the 2 green points in the bottom right will be sampled by an invocation on the vertex at $\left(2,0\right)$, and the singular purple point will be sampled by an invocation on the vertex at $\left(2,2\right)$.
 
-\underline{Counting phase}: For each regular cell, calculate the number of mesh triangles within it, and if this number is non-zero (the cell is not all air, or all solid), add it to the list of cells to generate geometry for in the next phase. Listing \ref{tv_count_regular} shows the code responsible for this.
+\underline{Counting phase}: For each regular cell, calculate the number of mesh triangles within it, and if this number is non-zero (the cell is not all air, or all solid), add it to the list of cells to generate geometry for in the next phase.
 
 Code for counting the number of vertices and marchable grid cells in the chunk. Variable \texttt{cellIndex} is calculated according to listing \ref{tv_transition_tables}, using the SDF values from the previous stage.
  
@@ -179,7 +178,7 @@ Part of the code responsible for counting the triangles in transition cells, and
 
  \underline{Polygonisation phase}: For each cell passed by the previous phase through the buffer \texttt{marchableList}, the actual geometry is created, and the vertices of the geometry are linearly interpolated as described in section \ref{section:mc}. 
 
- Code for generating the geometry in a regular cell 
+ Code for generating the geometry in a regular cell.
  
 When a regular cell has been made smaller to accommodate transition cells, the SDF has been sampled at the grid cell vertices, rather than the vertices of the regular cell. This introduces inaccuracies in the resulting geometry. The Transvoxel algorithm paper describes a transformation that solves this issue by moving vertices on the lower resolution face of the transition cell, and the corresponding vertex on the neighboring regular cell, so they are on the edge that the regular cell would have generated. This has been implemented in listing \ref{tv_poly_regular}.
 

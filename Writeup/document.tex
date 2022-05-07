@@ -490,7 +490,7 @@ There is a case where multiple vertices of a transition cell may be moved to the
 
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{tv_transition_plane}
-  \caption{A plane being generated with the Transvoxel algorithm. The circled transition cell has vertices placed on top of each other, leading to zero-width triangles.}
+  \caption{A plane generated with the Transvoxel algorithm. The circled transition cell has vertices placed on top of each other, leading to zero-width triangles.}
   \label{fig:tv_transition_plane}
 \end{figure}
 
@@ -499,7 +499,7 @@ There is a case where multiple vertices of a transition cell may be moved to the
 \subsubsection{Calculation of edgeIndex}
 \label{section:edgeIndex}
 
-The variable \texttt{edgeIndex} is a 6-bit integer, with each bit storing whether a face of a chunk should have transition cells. For each octree leaf containing geometry, the algorithm searches the octree described in section \ref{section:octree} using a recursive algorithm, to find neighboring nodes in each direction at the same level of detail. If a neighbor is a leaf, then the neighboring geometry is at the same level of detail. If no neighbor exists at the same level of detail in some direction, then the neighboring geometry is at a lower level of detail. \texttt{edgeIndex} is not modified in this case, since it will be modified for the lower level of detail geometry. If the neighbor is not a leaf, then the neighboring geometry is at a higher level of detail, and \texttt{edgeIndex} is modified to record that transition cells should be generated in that direction. Listing \ref{octree_neighbor} shows the code responsible for finding the neighbors of an octree cell.
+The variable \texttt{edgeIndex} is a 6-bit integer, with each bit storing whether a face of a chunk should have transition cells. For each octree leaf containing geometry, the algorithm searches the octree described in section \ref{section:octree} using a recursive algorithm, to find neighboring nodes in each direction at the same level of detail. If a neighbor is a leaf, then the neighboring geometry is at the same level of detail. If no neighbor exists at the same level of detail in some direction, then the neighboring geometry is at a lower level of detail. \texttt{edgeIndex} is not modified in this case, since it will be modified for the lower level of detail geometry. If the neighbor is not a leaf, then the neighboring geometry is at a higher level of detail, and \texttt{edgeIndex} is modified to record that transition cells should be generated in that direction.
 
 \begin{lstlisting}[language=C++,label={octree_neighbor},caption={Code for finding the neighbor of a node at the same level of detail in an octree. The children of a node are stored as a 3D array of pointers: \texttt{Octree* myChildren[2][2][2];}. \texttt{relativePosition} is a 3-component vector, where exactly one component is non-zero, corresponding to the direction in which to look for the neighbor. For example, a value of $\left(1,0,0\right)$ searches in the positive X direction.}]
 //return the neighbor at the same LOD if one exists, or NULL if none exists
@@ -738,7 +738,7 @@ To implement terrain modification, the \texttt{Brush} interface is used. Each \t
 
 For example, it may contain the radius of a sphere, or the control points and thickness of a shape defined by a Bezier spline. It always contains the values \texttt{bottom} and \texttt{top}, which correspond to diagonally opposite corners of the bounding box, \texttt{type}, a constant denoting the type of shape, and \texttt{mode}, a constant describing whether the shape should be added or subtracted from the SDF.
 
-A new \texttt{Brush} object is created each time a shape is added to the world. Each \texttt{Octree} node stores a list of pointers to the \texttt{Brush} objects that are inside the region the node represents. Listing \ref{edit_add} shows the code responsible for inserting a new \texttt{Brush}.
+A new \texttt{Brush} object is created each time a shape is added to the world. Each \texttt{Octree} node stores a list of pointers to the \texttt{Brush} objects that are inside the region the node represents. 
 
 \begin{lstlisting}[language=C++,label={edit_add},caption={Code to add a new brush into the octree. The brush is added recursively to lists at all levels, so each leaf has a list of exactly the brushes that are partially inside it. The flag \texttt{needsRegen} indicates that the geometry within the chunk has changed.}]
 void Octree::insertBrush(Brush* b) {
@@ -760,7 +760,7 @@ void Octree::insertBrush(Brush* b) {
 }
 \end{lstlisting}
 
-When the octree is modified, it is necessary to update the lists of the newly created nodes. To do this, the \texttt{split()} function is modified to update the brush lists of each child. Listing \ref{edit_split} shows the code responsible for this.
+When the octree is modified, it is necessary to update the lists of the newly created nodes. To do this, the \texttt{split()} function is modified to update the brush lists of each child.
 
 \begin{lstlisting}[language=C++,label={edit_split},caption={Snippet from \texttt{split}, showing how brushes are added to child nodes, when they are created.}]
 for(int i = 0; i <= 1; i++) {
@@ -788,12 +788,13 @@ Each brush type has an SDF and normal function implementation in GLSL. When geom
   \label{fig:inaccurate_sdf}
 \end{figure}
 
-For efficiency reasons, an SDF is only considered when the grid cell being worked on lies within its bounding box. This prevents a huge amount of SDFs being evaluated when the majority will not affect the geometry within the grid cell. This introduces discontinuities in the overall SDF being computed, and for this reason, it is necessary to enforce that the bounding box always contains the grid cells containing geometry generated for the brush.
+For efficiency reasons, an SDF is only considered when the grid cell being worked on lies within its bounding box,
+preventing unneccesary evaluation of SDFs that will not affect the geometry within the cell. This introduces discontinuities in the overall SDF being computed, and for this reason, it is necessary to enforce that the bounding box always contains the grid cells containing geometry generated for the brush.
 
 \subsection{Interactive Terrain Modification}
 User interaction with the terrain modification system uses a set of pre-defined actions, defined through classes derived from a base \texttt{Action} class, shown in listing \ref{action_methods}.
 
-\begin{lstlisting}[language=C++,label={action_methods},caption={The methods of the \texttt{Action} class responsible for handling user interaction}]
+\begin{lstlisting}[language=C++,label={action_methods},caption={Methods of the \texttt{Action} class responsible for handling user interaction.}]
 virtual void onMouseDown(glm::vec3 pos) {};
 virtual void onMouseUp(glm::vec3 pos) {};
 virtual void onMouseHold(glm::vec3 pos) {};
@@ -803,7 +804,7 @@ virtual void decreaseSize() {};
 
 virtual void handleInput(glm::vec3 placePos);
 \end{lstlisting}
-These functions are designed to be overridden, to implement the corresponding functionality. The argument to the first 3 is the in-world position at which the mouse is pointing. The method \texttt{onCancel} is designed to be called when the action has been cancelled, to clean up any state that has been created, for example in a more complex action that may store intermediate control points. The methods \texttt{increaseSize} and \texttt{decreaseSize} are designed to provide a standard way of increasing and decreasing the size of a shape, for example changing the radius of a sphere, or thickness of a spline curve. The final method, \texttt{handleInput}, is designed for more general input for an action, which is useful for actions that require more input than the options given in the other functions. It has a default implementation, which calls the other functions, that can be overridden.
+These functions are designed to be overridden, to implement the corresponding functionality. The argument to the first 3 is the in-world position at which the mouse is pointing. The method \texttt{onCancel} is called when the action has been cancelled, to clean up any state that has been created, for example in a more complex action that may store intermediate control points. The methods \texttt{increaseSize} and \texttt{decreaseSize} provide a standard way of increasing and decreasing the size of a shape, for example changing the radius of a sphere, or thickness of a spline curve. The final method, \texttt{handleInput}, allows more general input for an action, which is useful for actions that require more input than the options given in the other functions. It has a default implementation, which calls the other functions, that can be overridden.
 \begin{lstlisting}[language=C++,label={action_handleinput},caption={Default implementation of \texttt{handleInput}.}]
 void Action::handleInput(glm::vec3 placePos) {
   //default input handling for an action
@@ -823,11 +824,11 @@ void Action::handleInput(glm::vec3 placePos) {
 }
 \end{lstlisting}
 
-Using the generic \texttt{Brush} and \texttt{Action} interfaces makes it quick to implement new shapes, since the interfaces just need to be filled out with the required brush parameters and controller code, respectively. The only complex addition is the definition of the SDF and normal function, which is different for every shape.
+The generic \texttt{Brush} and \texttt{Action} interfaces makes it quick to implement new shapes, since the interfaces just need to be filled out with the required brush parameters and controller code, respectively. The only complex addition is the definition of the SDF and normal function, which is different for every shape.
 
 \subsubsection{Raycasting}
 \label{section:raycasting}
-To determine where a brush should be placed, we perform a raycast from the camera in the look direction. We can take advantage of the structure of the octree to do this efficiently, considering only leaf nodes where the ray passes through the bounding box of the nodes. For each of these nodes, we perform intersection testing with the geometry on the CPU. Since the geometry data is generated on the GPU, it is necessary to copy it to the CPU. Listing \ref{mapgeometry} shows the code responsible for this.
+To determine where a brush should be placed, we perform a raycast from the camera in the look direction. We take advantage of the structure of the octree to do this efficiently, considering only leaf nodes where the ray passes through their bounding box. For each of these nodes, we perform ray-triangle intersection tests to determine the closest point of intersection to the camera, using a library function. Since the geometry data is generated on the GPU, it first needs to be copied to the CPU.
 
 \begin{lstlisting}[language=C++,label={mapgeometry},caption={Snippet from the procedure \texttt{mapGeometry} to copy geometry data for a chunk from the GPU to the array \texttt{mappedTriangles}. \texttt{isMapped} is an atomic boolean storing whether \texttt{mapGeometry} has already been called for this chunk.}]
 if (!isMapped.load()) {
@@ -838,15 +839,13 @@ if (!isMapped.load()) {
 }
 \end{lstlisting}
 
-Once this is done, a ray-triangle intersection test is performed for every triangle in the chunk, to determine the closest point of intersection to the camera. This is done with a standard library function. 
-
 It would be possible to perform ray-triangle intersection tests within an OpenGL compute shader, removing the need for the geometry data to be copied to the CPU. However, this copying will need to be done for physics simulation anyway, and is only done once per chunk of geometry, this method will be sufficient.
 
 \subsubsection{Example Brush Implementations}
 \label{example_brushes}
-Any shape for which an SDF and normal function can be derived may be implemented as a brush, using the method described in section \ref{section:modification_implementation}. A good resource for SDF implementations is the article by Inigo Quilez referenced in section \ref{section:sdf}\cite{quilez:sdf}. It is also necessary to provide a normal function for each SDF. In some cases, the partial derivatives can be computed exactly, particularly when the SDF has a simple form. For example, the SDF of a sphere with radius 1, centered at the origin, is $f\left(x,y,z\right) = \sqrt{x^2+y^2+z^2}-1$. The gradient vector at point $\left(x,y,z\right)$ is $\nabla f = \left(\frac{x}{\sqrt{x^2+y^2+z^2}},\frac{y}{\sqrt{x^2+y^2+z^2}},\frac{z}{\sqrt{x^2+y^2+z^2}}\right)$.In this case, the gradient happens to already have length 1, but if it is not, it should be normalised with the GLSL \texttt{normalize} function. It is always possible to approximate the normal of an SDF numerically, however this can be computationally expensive, because it requires multiple evaluations of the SDF. Listing \ref{numerical_gradient} shows the GLSL code for approximating the normal, using the method of finite differences.
+Any shape for which an SDF and normal function can be derived may be implemented as a brush, using the method described in section \ref{section:modification_implementation}. A good resource for SDF implementations is the article by Inigo Quilez referenced in section \ref{section:sdf}\cite{quilez:sdf}. It is also necessary to provide a normal function for each SDF. In some cases, the partial derivatives can be computed exactly, particularly when the SDF has a simple form. For example, the SDF of a sphere with radius 1, centered at the origin, is $f\left(x,y,z\right) = \sqrt{x^2+y^2+z^2}-1$. The gradient vector at point $\left(x,y,z\right)$ is $\nabla f = \left(\frac{x}{\sqrt{x^2+y^2+z^2}},\frac{y}{\sqrt{x^2+y^2+z^2}},\frac{z}{\sqrt{x^2+y^2+z^2}}\right)$. In this case, the gradient happens to already have length 1, but if it is not, it should be normalised with the GLSL \texttt{normalize} function. It is always possible to approximate the normal of an SDF numerically, however this can be computationally expensive, because it requires multiple evaluations of the SDF.
 
-\begin{lstlisting}[language=C++,label={numerical_gradient},caption={Approximation of the normal of an SDF.}]
+\begin{lstlisting}[language=C++,label={numerical_gradient},caption={Approximation of the normal of an SDF, using the method of finite differences.}]
 vec3 normal(vec3 inPos) {
   //numerical normal of more complex distance function
   float eps = 0.001;
@@ -1150,9 +1149,9 @@ The situation is more complicated with approximate SDFs, since the value of the 
 Furthermore, collision between an SDF and a different shape is more complicated, even if the SDF is exact. Since the distance from a surface at which a shape is colliding with it is different depending on the orientation of the shape relative to the surface, and the evaluation of an SDF gives no information about direction to the nearest point on the surface, such a system would be inaccurate. This method could still be used with an approximate SDF which provides a lower bound of the distance to the surface, along with a spherical bounding volume for physics shapes, to perform culling on objects to determine when it is impossible for them to intersect. However, we will not explore this here, choosing instead to remain with the library implementation.  
 
 \section{Shading}
-A good way to improve the appearance of the generated terrain is to apply some shading. For lighting, we make use of a modified version of Phong lighting, with 2 light sources. We will have a far away light source to represent the sun, with both diffuse and specular reflection. We will also have a light source which is positioned directly above the camera, that only contributes a diffuse component. This gives the appearance that nearby geometry is lighter than geometry that is further away, and excluding the specular component from the player light source prevents everything from appearing as shiny. Listing \ref{lighting} shows the code responsible for this.
+A good way to improve the appearance of the generated terrain is to apply some shading. For lighting, we make use of a modified version of Phong lighting, with 2 light sources. We will have a far away light source to represent the sun, with both diffuse and specular reflection. We will also have a light source which is positioned directly above the camera, that only contributes a diffuse component. This gives the appearance that nearby geometry is lighter than geometry that is further away, and excluding the specular component from the player light source prevents everything from appearing as shiny.
 
-\begin{lstlisting}[language=C++,label={lighting},caption={Part of the fragment shader used to determine the light intensity for a given pixel.}]
+\begin{lstlisting}[language=C++,label={lighting},caption={Part of the fragment shader implementing this lighting model.}]
 //ambient
 float ambientTotal = ambientPower;
 

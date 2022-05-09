@@ -435,43 +435,44 @@ Part of the fragment shader used to determine the color of each pixel. We use no
 
 Figure \ref{fig:procedural_shading_shapes} shows the shading produced by this algorithm.
 
-  \caption{Plane, cylinder and sphere, textured using this procedural texturing method.}
+Plane, cylinder and sphere, textured using this procedural texturing method.
   
 
 When these techniques are applied alongside a well-chosen noise-based terrain function, the result is a visually appealing landscape.
 
 
-  \caption{Mountainous landscape generated using noise, and textured with procedural texturing. }
+Mountainous landscape generated using noise, and textured with procedural texturing.
 
 \section{Changes in the Implementation}
 The code has been iteratively improved over the course of the project. This section briefly explores some of the improvements implemented during development.
 
 \subsection{Storage of Transvoxel Sample Values}
-Each of the SDF sample values calculated in the first shader stage must be stored in an OpenGL buffer,so that it can be retrieved by the later stages. To do this, a function \texttt{getArrID} is implemented, that takes the position of the sample relative to the chunk, and returns an index into a flat buffer. For Marching Cubes, this is simple, since the sample values are always arranged in a cuboid. Listing \ref{mc_arrID} shows how this is done.
-Function mapping grid position \texttt{gid} to flat array id}]
+Each of the SDF sample values calculated in the first shader stage is stored in an OpenGL buffer, so it can be retrieved by the later stages. To do this, a function \texttt{getArrID} is implemented, that takes the position of the sample relative to the chunk, and returns an index into a flat buffer. For Marching Cubes, this is simple, since the sample values are always arranged in a cuboid.
 
-Things become more complicated for the sample points in the Transvoxel algorithm, since there are sample points that are midway between the grid cell vertices, on the faces of the chunk, when transition cells are generated. A simple solution is to use a very large array, doubling the size in each dimension, so that sample points halfway between grid cells fit in as though the grid size was changed. Listing \ref{tv_arrID_1} shows this.
+Function mapping grid position \texttt{gid} to a flat array.
 
-Inefficient function mapping grid position \texttt{gid} and information about whether the sample point is in between the grid positions, \texttt{halfXYZ}, to a flat array id}]
+Things become more complicated for the sample points in the Transvoxel algorithm, since there are sample points that are midway between the grid cell vertices, on the faces of the chunk, when transition cells are generated. A simple solution is to use a very large array, doubling the size in each dimension, so that sample points halfway between grid cells fit in as though the grid size was changed.
 
-This leads to a very sparse buffer that is far larger than it needs to be. A more space-efficient solution stores the sample points not on the faces of the chunk as a cuboid. Then, each face of the chunk is stored at the end of the buffer, so that additional sample points on the face can fit. This may still result in a sparse array when these additional points are not needed, however there is much less wasted space. Listing \ref{tv_arrID_2} shows this.
+Inefficient function mapping grid position \texttt{gid} and information about whether the sample point is in between the grid positions, \texttt{halfXYZ}, to a flat array.
+
+This leads to a very sparse buffer that is far larger than it needs to be. A more space-efficient solution stores the sample points not on the faces of the chunk as a cuboid. Then, each face of the chunk is stored at the end of the buffer, so that additional sample points on the face can fit. This may still result in a sparse array when these additional points are not needed, however there is much less wasted space.
 
 A more efficient \texttt{getArrID} function.
 
 \subsection{Storage of Editing Brushes}
 The first iteration of the editing algorithm stored all brushes for the entire world in one single array. This made it simple to add brushes, but meant that the entire array of brushes had to be iterated through for every chunk, which was prohibitively slow for a large number of brushes, even on chunks that had a small amount of brushes within them. Listing \ref{edit_storage_1} shows this iteration.
 
-Iteration over every brush, returning those that intersect the bounding box of the chunk.}]
+Iteration over every brush, returning those that intersect the bounding box of the chunk.
 
 
 Using the pre-existing octree to store lists of brushes for each chunk, as described in section \ref{section:modification_implementation}, removes the need to do this iteration, at the expense of having to iterate over the octree to add a brush.
 
 \subsection{Bounding Boxes and Grid Cells}
-As described in section \ref{section:modification_implementation}, an SDF is only evaluated if the grid cell being worked on intersects its bounding box. A previous iteration only considered whether the sample point was within this bounding box. However, this resulted in the interpolation of geometry vertices being incorrect in grid cells that were partially inside the SDF bounding box, where geometry was generated on the edge. This was due to the discontinuity introduced by not evaluating the SDF at one of the points. 
+As described in section \ref{section:modification_implementation}, an SDF is only evaluated if the grid cell being worked on intersects its bounding box. A previous iteration only considered whether the sample point was within this bounding box. However, this resulted in incorrect interpolation of geometry vertices in grid cells partially inside the SDF bounding box, due to the discontinuity introduced by not evaluating the SDF at one of the points. 
 
 The first iteration of the test of a grid cell point against an SDF bounding box defined by \texttt{bottom} and \texttt{top}, followed by the second iteration, which includes the value \texttt{chunkStride} to ensure that the SDF is considered if the sample point is within 1 grid cell of the bounding box.
 
-Since this extends the area in which a brush may affect the geometry, the corresponding C++ code must also be changed, to ensure that the brush is included when this expanded bounding box change intersects a chunk.
+Since this extended the area in which a brush may affect the geometry, the corresponding C++ code was also changed in the same way, so the brush was included when this expanded bounding box intersects a chunk.
 
 
   
@@ -494,8 +495,8 @@ The octree refinement algorithm could be improved when considering physics objec
 \subsubsection{Bounding the main SDF}
 No equivalent to a bounding box has been implemented for the main SDF. For a simple SDF such as a plane, this would be trivial to implement, however for functions defined by noise, this becomes more difficult, since there could be large regions within the area affected by the SDF, which do not contain any of the surface. This would enable improvements similar to those described in \ref{section:modification_implementation}, preventing SDF computation at a point that is clearly not near the boundary. If every part of the SDF was bounded, it would be possible to completely eliminate computation of the SDF in chunks that were outside of these bounds. 
 \subsubsection{Additional Multithreading}
-Currently, any geometry generated as a result of an octree update is generated before the next frame is drawn, and this causes stuttering when a lot of editing is performed, as seen in section \ref{edit_limits}, or when the camera moves very fast. Running the geometry generation and rendering on separate threads would allow for techniques that prevent this slowdown, such as artificially limiting the rate at which new chunks are generated. This would reduce the speed at which the octree can be updated, but would improve the framerate.
+Currently, any geometry generated as a result of an octree update is generated before the next frame is drawn, causing stuttering when a lot of editing is performed, as seen in section \ref{edit_limits}, or when the camera moves very fast. Performing geometry generation and rendering on separate threads would allow for techniques that prevent this slowdown, such as artificially limiting the rate at which new chunks are generated. This would reduce the speed at which the octree can be updated, but would improve the framerate.
 \subsubsection{Blends}
 Using a blend function rather than set union or subtraction to modify the geometry would reduce the number of places where sharp corners appear in the SDF. However, care would have to be taken that the blend function does not result in geometry being modified outside of the bounding box of the shape being added, or this would result in incorrect generation.
 \subsubsection{Terrain Materials}
-Alongside a distance and normal function, a material function could also be defined. Such a function would describe the type of geometry at some point, for example distinguishing between grass and rock. Grid cells could then be shaded by sampling the material function at their vertices. Care would have to be taken when deciding how to shade cells where different materials are present at different vertices.
+Alongside a distance and normal function, a material function could also be defined, describing the type of geometry at each point, for example distinguishing between grass and rock. Grid cells could then be shaded by sampling the material function at their vertices. Care would have to be taken when shading cells having different materials at each vertex.

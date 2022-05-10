@@ -61,7 +61,7 @@ This project explores a method for procedurally generating terrain by applying a
 \newpage
 \section{Introduction} 
 
-Marching Cubes is an algorithm for polygonising a scalar field. Designed by William E. Lorensen and Harvey E. Cline in 1987\cite{10.1145/37402.37422}, the original application was in medical imaging, to create anatomical models using data from 3D scans such as CT scans. When it was written, the algorithm was comparatively expensive to execute, due to the limited hardware available. 
+Marching Cubes is an algorithm for polygonising a scalar field. Designed by William E. Lorensen and Harvey E. Cline in 1987~\cite{10.1145/37402.37422}, the original application was in medical imaging, to create anatomical models using data from 3D scans such as CT scans. When it was written, the algorithm was comparatively expensive to execute, due to the limited hardware available. 
 
 Procedural terrain generation is a popular technique within the video game industry, allowing for large areas of geometry to be created, according to mathematical rules, rather than the traditional method of 3D modelling, which is time-consuming for the modeller, and takes up a large amount of storage space.
 
@@ -70,34 +70,35 @@ The increase in processing power available, as well as the parallel design of th
 \section{Background}
 \subsection{Signed Distance Functions} 
 \label{section:sdf}
-At the core of Marching Cubes is the scalar field passed to it. We will provide this data using a signed distance function (SDF). This is a function of the form $f:\mathbb{R}^3 \rightarrow \mathbb{R}$. The shape represented by an SDF is the implicit surface $f\left(x,y,z\right) = 0$. An SDF should have the following properties:
+To pass a scalar field to the Marching Cubes algorithm, we will use a signed distance function (SDF). This is a function of the form $f:\mathbb{R}^3 \rightarrow \mathbb{R}$. The shape represented by an SDF is the implicit surface $f\left(x,y,z\right) = 0$. An SDF should have the following properties:
 \begin{enumerate}[label=\roman*.]
 \item If $\left(x,y,z\right)$ is inside the surface, $f\left(x,y,z\right) < 0$. If $\left(x,y,z\right)$ is outside the surface, $f\left(x,y,z\right) > 0$. This is the defining property of an SDF, without which Marching Cubes will not produce valid geometry.
-\item The value $f\left(x,y,z\right)$ represents the smallest (signed) euclidean distance from the point $\left(x,y,z\right)$ to the surface. Many functions we are using do not give the exact distance, however for best results the value should be a good approximation, and for floating point precision reasons, must be at least the same order of magnitude. This property is used to interpolate the positions of vertices, and as such the accuracy of the distance approximation impacts the accuracy of the generated surface. An SDF such that $f\left(x,y,z\right)$ gives the correct distance everywhere is an \textit{exact} SDF. Otherwise, it is an \textit{approximate} SDF.
+\item $f\left(x,y,z\right)$ represents the smallest (signed) euclidean distance from the point $\left(x,y,z\right)$ to the surface. Many functions we are using do not give the exact distance, however for best results the value should be a good approximation, and for floating point precision reasons, must be at least the same order of magnitude. This property is used to interpolate the positions of vertices, and as such the accuracy of the distance approximation impacts the accuracy of the generated surface. An SDF such that $f\left(x,y,z\right)$ gives the correct distance everywhere is an \textit{exact} SDF. Otherwise, it is an \textit{approximate} SDF.
 \item Near the surface, $f$ is continuous, and has all first partial derivatives. This is useful since the gradient of an SDF on the surface gives the normal vector to the surface at that point.
 \end{enumerate}
 
-Many primitive shapes have exact SDF representations \cite{quilez:sdf}. Figure \ref{fig:Circle_SDF} shows a 2 dimensional exact SDF for a circle.
+An article by Inigo Quilez lists some useful SDFs~\cite{quilez:sdf}.
 
 \begin{SCfigure}[][!h]
-\caption{2 dimensional SDF representing a circle. The function shown is $f\left(x,y\right) = \sqrt{x^2+y^2}-1$, with the area where $f\left(x,y\right) < 0 $ shaded. Also shown are the contours where $f\left(x,y\right) = 0.1,0.2,...0.5$. Note that at the center point $\left(0,0\right)$, the gradient is undefined. However, since this point is not close to the surface, $f$ can still be used as an SDF without issue.}
+\caption{2 dimensional exact SDF representing a circle. The SDF shown is $f\left(x,y\right)=\sqrt{x^2+y^2}-1$, with the area where $f\left(x,y\right)<0$ shaded. Also shown are the contours where $f\left(x,y\right)=0.1,0.2,...0.5$. At the center point $\left(0,0\right)$, the gradient is undefined. However, since this point is not close to the surface, $f$ can still be used as an SDF without issue.}
 \includegraphics[width=0.5\textwidth]{Circle_SDF}
 \label{fig:Circle_SDF}
 \end{SCfigure}
 
-Many useful shapes, including shapes widespread in procedural terrain generation, are not easy to represent as an exact SDF, so we use an approximate SDF. Figure \ref{fig:Hill_SDF} shows a 2 dimensional approximate SDF for the shape defined by $f\left(x,y\right)=y-\left(1-\frac{x^2}{3}\right)$. We will see an example where the exact SDF can be computed, but the computation is complex, in section \ref{example_brushes}.
 
 \begin{SCfigure}[][!h]
-\caption{Plot of an approximate SDF. The contour lines are no longer uniformly spaced, as they would be with an exact SDF.}
+\caption{2 dimensional approximate SDF for the curved surface defined by $f\left(x,y\right)=y-\left(1-\frac{x^2}{3}\right)$. The contour lines are no longer uniformly spaced, as they would be with an exact SDF.}
 \includegraphics[width=0.5\textwidth]{Hill_SDF}
 \label{fig:Hill_SDF}
 \end{SCfigure}
+
+Many shapes have an exact SDF that is complex to evaluate, so it is more efficient to use an approximate SDF instead. We will see an example of this in section \ref{example_brushes}.
 
 The set-theoretical operations of union, intersection, and difference have representations using the $\min$ and $\max$ functions. Where the function $\min\left(f,g\right)$ is not differentiable at the point where $f = g$, we choose the derivative of either $f$ or $g$. Using these functions, it is possible to combine SDFs of many shapes to produce a surface that is more complex.
 
 \subsection{Noise}
 \label{section:noise}
-Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output. This means that the function is smooth. One such noise function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. Figure \ref{fig:value_noise} shows some value noise.
+Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output. This means that the function is smooth. One such function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. More advanced noise algorithms exist, such as Perlin or Simplex noise~\cite{PerlinChapter2N}, that show fewer regularities.
 
 \begin{SCfigure}[][!h]
   \caption{Left: A single layer of value noise. Right: 8 octaves of value noise.}
@@ -105,14 +106,13 @@ Use of noise to create natural-looking heightmaps is a commonly used technique. 
   \label{fig:value_noise}
 \end{SCfigure}
 
-Other, more advanced noise algorithms exist, that show fewer regularities. Figure \ref{fig:better_noise} shows the output of 2 such algorithms.
 \begin{SCfigure}[][!h]
-  \caption{Left: Perlin Noise. Right: Simplex Noise. Algorithms originally devised by Ken Perlin\cite{PerlinChapter2N}. Images generated using functions \texttt{cnoise} and \texttt{snoise} respectively, from the cited collection of reference implementations\cite{github_2014}.}
+  \caption{Left: Perlin Noise. Right: Simplex Noise. Images generated using functions \texttt{cnoise} and \texttt{snoise} respectively, from the cited collection of reference implementations~\cite{github_2014}.}
   \includegraphics[width=0.5\textwidth]{better_noise.png}
   \label{fig:better_noise}
 \end{SCfigure}
 
-The output of a noise function can be scaled to define a convincing heightmap, typically giving a function of the form $y = h\left(x,z\right)$ defining the height of the terrain at a given $\left(x,z\right)$ coordinate. We will extend this to an approximate SDF, using the formula $f\left(x,y,z\right) = y - h\left(x,z\right)$. In this case, the distance approximation worsens as the steepness of the slope of $h\left(x,z\right)$ increases.
+The output of a noise function can be scaled to define a convincing heightmap, typically giving a function $y = h\left(x,z\right)$ defining the height of the terrain at a given $\left(x,z\right)$ coordinate. We will extend this to an approximate SDF, using the formula $f\left(x,y,z\right) = y - h\left(x,z\right)$. In this case, the distance approximation worsens as the steepness of the slope of $h\left(x,z\right)$ increases.
 \\
 It is also possible to use a 3D noise function in an SDF, for example in generating features such as caves. By defining a value at which the surface will be, for example $0.5$, we can use the SDF $f\left(x,y,z\right) = \mathrm{noise}\left(x,y,z\right) - 0.5$ to represent a shape such that only points with noise values greater than 0.5 are outside of the shape. With careful choices of parameters, this creates empty pockets throughout the shape. We will use this type of SDF for benchmarking purposes, since it generates a relatively large amount of geometry, and represents a shape that cannot be created using a heightmap approach. 
 
@@ -120,10 +120,10 @@ It is also possible to use a 3D noise function in an SDF, for example in generat
 \label{section:mc}
 Marching Cubes is an algorithm for polygonising a 3 dimensional scalar field. It works by splitting the space into a uniform grid of cubes (\textit{cells}), and sampling the scalar field at each cell vertex. Pre-computed lookup tables, are used to determine the geometry that exists within each cell. We show examples of such tables in section \ref{section:lookup_tables}. 
 
-The sampled values of the scalar field at each cell vertex are linearly interpolated, and the geometry vertex is placed where the value of this linear interpolation is 0. This approximates the position where the edge of the cell intersects the surface.Figure \ref{fig:linear_interpolation} shows how this linear interpolation is done.
+The sampled values of the scalar field at each cell vertex are linearly interpolated, and the geometry vertex is placed where the value of this linear interpolation is 0. This approximates the position where the edge of the cell intersects the surface.
 
 \begin{SCfigure}[][!h]
-  \caption{2D example of cells that contain the same class of geometry, but with different SDF values, and hence different vertex positions. The red lines show the generated geometry.}
+  \caption{2D demonstration of linear interpolation. These cells contain the same class of geometry, but with different SDF values, and hence different vertex positions. The red lines show the generated geometry.}
   \includegraphics[width=0.5\textwidth]{linear_interpolation.png}
   \label{fig:linear_interpolation}
 \end{SCfigure}
@@ -140,14 +140,14 @@ Marching Cubes was chosen for this project because the geometry for each grid ce
   \includegraphics[width=\textwidth]{mc_cylinder.png}
   \caption{Inaccuracies near the sharp edge of this cylinder are visible.}
 \end{figure}
-For this purpose, an algorithm such as Dual Contouring\cite{10.1145/566654.566586} may produce better results. However, this algorithm generates triangles that span multiple grid cells, so it cannot be parallelised with the same method.
+For this purpose, an algorithm such as Dual Contouring~\cite{10.1145/566654.566586} may produce better results. However, this algorithm generates triangles that span multiple grid cells, so it cannot be parallelised with the same method.
 
 \subsection{GPU Programming} 
-A GPU is designed for applications where a similar calculation is performed many times on varying data. Traditionally, this covers uses such as vertex shaders, which determine the screen-space position of every vertex in a 3D scene, or fragment shaders, which determine the color of every pixel on a screen. A modern GPU is capable of performing many millions of individual calculations per frame. In this project, we use the OpenGL API, and the C-style GLSL shader language that comes with it, to write code for the GPU.
+A GPU is designed for applications where a similar calculation is performed many times on varying data. Traditionally, this covers uses such as vertex shaders, which determine the position of every vertex in a 3D scene, or fragment shaders, which determine the color of every pixel on a screen. A modern GPU is capable of performing many millions of individual calculations per frame. In this project, we use the OpenGL API, and the C-style GLSL shader language that comes with it, to write code for the GPU.
 
-A program written for the GPU is called a shader, We make use of compute shaders, which are not part of the graphics rendering pipeline, but are called by the OpenGL API and take advantage of the parallel architecture of the GPU. When a compute shader is executed, many invocations of the same code are executed in parallel, through the API function \texttt{glDispatchCompute}. These are indexed by the built-in GLSL variable \texttt{gl\_GlobalInvocationID}, a 3-component integer vector, that is different for each invocation. For example, a shader designed to calculate $f\left(x,y,z\right)$, for $ \left(x,y,z\right)$ ranging over integer-valued triples in $\left[0,32\right]^3$ would need to be configured so that \texttt{gl\_GlobalInvocationID} varies over all of the triples in this range.
+We make use of compute shaders, which are not part of the graphics rendering pipeline, but are called by the OpenGL API and take advantage of the parallel architecture of the GPU. When a compute shader is executed, many invocations of the same code are executed in parallel, through the API function \texttt{glDispatchCompute}. These are indexed by the built-in GLSL variable \texttt{gl\_GlobalInvocationID}, a 3-component integer vector, that is different for each invocation. For example, a shader designed to calculate $f\left(x,y,z\right)$, for $ \left(x,y,z\right)$ ranging over integer-valued triples in $\left[0,32\right]^3$ would need to be configured so that \texttt{gl\_GlobalInvocationID} varies over all of the triples in this range.
 
-To display geometry, and to interact with OpenGL, we make use of some open source libraries, namely GLFW\cite{glfw}, for creating a window and handling input, GLEW\cite{glew}, to load the OpenGL API functions, and GLM\cite{g-truc_2005}, to provide mathematical functions such as manipulation of vectors, in C++.
+To display geometry, and to interact with OpenGL, we make use of some open source libraries, namely GLFW~\cite{glfw}, for creating a window and handling input, GLEW~\cite{glew}, to load the OpenGL API functions, and GLM~\cite{g-truc_2005}, to provide mathematical functions such as manipulation of vectors, in C++.
 
 
 \section{Algorithm Design}
@@ -170,10 +170,10 @@ Using an octree, any condition can be used to determine the level of detail at a
 
 \subsection{The Transvoxel Algorithm}
 \label{section:cracks}
-Using Marching Cubes with multiple different grid cell sizes causes cracks on the boundary between chunks at different scales. A demonstration of what causes this is shown in figure \ref{fig:cracks_demo}, and an example is shown in figure \ref{fig:cracks2}.
+Using Marching Cubes with multiple different grid cell sizes causes cracks on the boundary between chunks at different scales, since the vertices generated at different grid scales do not always line up with each other.
 
 \begin{SCfigure}[][!h]
-  \caption{This figure shows the faces of 2 adjacent grid cells. The exact surface represented by the SDF is shown in purple, The dotted lines show the edges produced by Marching Cubes at the level of detail of these grid cells, and the level below. When these 2 cases occur next to each other, the space in between the 2 dotted lines forms a crack in the geometry.}
+  \caption{This figure shows the faces of 2 adjacent grid cells. The exact surface represented by the SDF is shaded in purple. The dotted lines show the edges produced by Marching Cubes at the level of detail of these grid cells, and the level below. When these cases occur next to each other, the red space in between the dotted lines forms a crack in the geometry.}
   \includegraphics[width=0.5\textwidth]{cracks_demo.png}
   \label{fig:cracks_demo}
 \end{SCfigure}
@@ -184,16 +184,16 @@ Using Marching Cubes with multiple different grid cell sizes causes cracks on th
   \label{fig:cracks2}
 \end{figure}
 
-To solve this problem, we will switch the algorithm used to generate geometry. The Transvoxel algorithm \cite{lengyel_2010} is an algorithm based on Marching Cubes that solves this problem by adding additional vertices into the less detailed mesh, on the faces of Marching Cubes cells adjacent to cells of a higher level of detail. This is done by splitting a cell at the lower resolution (a half-resolution cell) into a regular cell and some amount of transition cells, so that the transition cells border the regular cells at the higher resolution (full-resolution cells). These transition cells serve as a method of stitching the gap in between half-resolution and full-resolution cells. Figure \ref{fig:transition_cells}, reproduced from figure 4.9 in the Transvoxel algorithm paper\cite{lengyel_2010}, shows the position of transition cells in 2 different configurations.
+The Transvoxel algorithm~\cite{lengyel_2010} is an algorithm based on Marching Cubes that solves this problem by adding additional vertices along cell edges that are adjacent to higher resolution grid cells.
+
+This is done by splitting a cell at the lower resolution (a half-resolution cell) into a regular cell and some amount of transition cells, so that the transition cells border the regular cells at the higher resolution (full-resolution cells). These transition cells serve as a method of stitching the gap in between half-resolution and full-resolution cells.
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{transition_cells}
-  \caption{Illustration of possible configurations of transition cells on the boundary between levels of detail. The half-resolution regular cell has been resized, and transition cells fit in the space made in between the cells}
+  \caption{Illustration of 2 possible configurations of transition cells on the boundary between levels of detail. The half-resolution regular cell has been resized, and transition cells fit in the space made in between the cells. Reproduced from figure 4.9 in the Transvoxel algorithm paper~\cite{lengyel_2010}.}
   \label{fig:transition_cells}
 \end{figure}
 
-Like Marching Cubes, the original Transvoxel implementation was written for a standard CPU. It works similarly to Marching Cubes, relying on large lookup tables, and can be implemented to work independently on grid cells, so it is possible to take advantage of the parallel processing power of the GPU. We will modify a set of lookup tables provided by the original author of the Transvoxel algorithm\cite{lengyel_2009}.
-
-A useful graphic showing all of the possible triangulations in the Transvoxel algorithm is available from the same source\cite{lengyel}.
+Like Marching Cubes, the original Transvoxel implementation was written for a standard CPU. It works similarly to Marching Cubes, relying on large lookup tables, and can be implemented to work independently on grid cells, so it is possible to take advantage of the parallel processing power of the GPU. We will modify a set of lookup tables provided by the original author of the Transvoxel algorithm~\cite{lengyel_2009}. A useful graphic showing all of the possible triangulations in the Transvoxel algorithm is available from the same source~\cite{lengyel}.
 
 \subsubsection{Lookup Tables}
 \label{section:lookup_tables}
@@ -201,15 +201,16 @@ A useful graphic showing all of the possible triangulations in the Transvoxel al
 This section demonstrates the functions of the Transvoxel lookup tables. These tables have been flattened from multidimensional arrays, since they will be passed to shaders as buffers. Vertex indexing data that would allow for reuse of vertices has been removed, for the reason described in section \ref{section:downsides}.
 
 \paragraph{Regular cell lookup tables}
-Regular cells have 8 cell vertices, each of which has a distinct SDF sample value. Figure \ref{fig:tv_labels}, reproduced from figure 3.7 of the Transvoxel paper\cite{lengyel_2010} shows the labelling conventions for these vertices.
+Regular cells have 8 cell vertices, each of which has a distinct SDF sample value.
 
 \begin{SCfigure}[][!h]
-  \caption{Cell vertex naming convention for regular cells.}
+  \caption{Cell vertex naming convention for regular cells. Figure reproduced from figure 3.7 of the Transvoxel paper~\cite{lengyel_2010}.}
   \includegraphics[width=0.5\textwidth]{tv_labels.PNG}
   \label{fig:tv_labels}
 \end{SCfigure}
 
 \begin{lstlisting}[language=C++,label={tv_tables},caption={Calculation of \texttt{cellIndex}, and lookup tables, for regular cells. An example of their usage is given below.}]
+int cellIndex = 0;
 int cellMask = 1;
 for (int i = 0; i < 8; i++) {
   if (gridCells[i] < 0) cellIndex |= cellMask;
@@ -250,25 +251,22 @@ The array \texttt{gridCells} contains the SDF sample values, and \texttt{cellInd
 Finally, \texttt{regularTotalTable} contains the number of vertices in the triangulation for each class, including duplicates. This acts as a replacement for the unused triangle count in \texttt{regularCellData}.
 As an example, consider the case where only vertex 0 is inside the terrain, giving a binary \texttt{cellIndex} of $00000001$. The cell class, from \texttt{regularCellClass}, is \texttt{0x01}. The number of vertices to be generated, from \texttt{regularTotalTable}, is 3. The vertex indices to be used, from \texttt{regularCellData}, are 0, 1, and 2. The vertex positions, from \texttt{regularVertexData}, are \texttt{0x01, 0x02, 0x04}. Hence a triangle will be generated with a vertex on the edge between grid cell vertices 0 and 1, a vertex on the edge between grid cell vertices 0 and 2, and a vertex on the edge between grid cell vertices 0 and 4, in that order.
 
-Figure \ref{fig:regular_cell_example_case} shows a cell of this type.
 \begin{SCfigure}[][!h]
-  \caption{A cell of the same class as the example used above, reproduced from the diagram of all Transvoxel cell classes\cite{lengyel}. Note however that this cell is not oriented the same as figure \ref{fig:tv_labels}.}
+  \caption{A regular cell of the same class as the example, reproduced from the diagram of all Transvoxel cell classes~\cite{lengyel}. Note however that this cell is not oriented the same as figure \ref{fig:tv_labels}.}
   \includegraphics[width=0.5\textwidth]{regular_cell_example_case.PNG}
   \label{fig:regular_cell_example_case}
 \end{SCfigure}
 
 \paragraph{Transition cell lookup tables}
 
-The labelling convention for the cell vertices of a transition cell is shown in figure \ref{fig:tv_transition_labels}, and the order in which transition cell vertices are considered for the purpose of calculating \texttt{cellIndex} is shown in figure \ref{fig:tv_transition_cellIndex}.
-
 \begin{SCfigure}[][!h]
-  \caption{Cell vertex naming convention for transition cells. (a) shows the higher resolution face of the cell, and (b) shows the opposite, lower resolution face. Reproduced from figure 4.16 of the Transvoxel paper\cite{lengyel_2010}}
+  \caption{Cell vertex naming convention for transition cells. (a) shows the higher resolution face of the cell, and (b) shows the opposite, lower resolution face. Reproduced from figure 4.16 of the Transvoxel paper~\cite{lengyel_2010}.}
   \includegraphics[width=0.5\textwidth]{tv_transition_labels.PNG}
   \label{fig:tv_transition_labels}
 \end{SCfigure}
 
 \begin{SCfigure}[][!h]
-  \caption{Hexadecimal contribution to \texttt{cellIndex} by each cell vertex on the higher resolution face of a transition cell. Reproduced from figure 4.17 of the Transvoxel paper\cite{lengyel_2010}}
+  \caption{Hexadecimal contribution to \texttt{transitionCellIndex} by each cell vertex on the higher resolution face of a transition cell. Reproduced from figure 4.17 of the Transvoxel paper~\cite{lengyel_2010}.}
   \includegraphics[width=0.5\textwidth]{tv_transition_cellIndex.PNG}
   \label{fig:tv_transition_cellIndex}
 \end{SCfigure}
@@ -279,12 +277,14 @@ A transition cell uses 9 distinct SDF sample values, at vertices 0 through 8 in 
 \begin{lstlisting}[language=C++, label={tv_transition_tables}, caption={Calculation of \texttt{transitionCellIndex}, and lookup tables for transition cells. An example of their usage is given below.}]
 //Note the obscure order of this - see Figure 4.17 in transvoxel paper
 //order is 0,1,2,5,8,7,6,3,4
+int transitionCellIndex = 0;
 int transitionFaceOrder[9] = int[](0,1,2,5,8,7,6,3,4);
 int transitionCellMask = 1;
 for (int i = 0; i < 9; i++) {
   if (transitionGridCells[transitionFaceOrder[i]] < 0) transitionCellIndex |= transitionCellMask;
   transitionCellMask = transitionCellMask << 1;
 }
+
 const unsigned int transitionCellClass[512] =
 {
   0x00, 0x01, 0x02, 0x84, 0x01, 0x05, 0x04, 0x04, 0x02, 0x87, 0x09, 0x8C, 0x84, 0x0B, 0x05, 0x05,
@@ -312,21 +312,20 @@ const unsigned int transitionTotalTable[56] = {
 };       
 \end{lstlisting}
 
-The tables perform the same roles as their regular cell counterparts. There are 73 classes of transition cell, although by considering classes using the same triangulation with different vertices, this can be reduced to 56 classes. In addition, the highest bit in the 8-bit \texttt{transitionCellClass} corresponds to a triangulation where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass}, having binary value $10000111$, corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
+The tables perform the same roles as their regular cell counterparts. There are 73 classes of transition cell, although by considering classes using the same triangulation with different vertices, this can be reduced to 56 classes. The highest bit in the 8-bit \texttt{transitionCellClass} corresponds to a triangulation where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass}, having binary value $10000111$, corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
 For example, consider the transition cell where vertex 0 is inside the terrain. Then vertex 9 will also be considered as inside. \texttt{transitionCellIndex} will be calculated as $000000001$, corresponding to a cell class of \texttt{0x01} in \texttt{transitionCellClass}. 
-The number of vertices to generate is found in \texttt{transitionTotalTable}; in this case, there are 6. The vertex indices to be used are found in \texttt{transitionCellData}: The first triangle uses vertices 0, 1, and 3, in that order, from the corresponding row in \texttt{transitionVertexData}, and the second uses vertices 1, 2, and 3.
+The number of vertices to generate is found in \texttt{transitionTotalTable}; in this case, there are 6. The vertex indices to be used are found in \texttt{transitionCellData}: The first triangle uses vertex indices 0, 1, and 3, in that order, and the second uses vertices 1, 2, and 3.
 The locations of these vertices are found in the corresponding row in \texttt{transitionVertexData}, so vertex 0 is between cell vertices 0 and 1, vertex 1 is between cell vertices 0 and 3, and so on.
 
-Figure \ref{fig:transition_cell_example_case} shows a transition cell of this type.
 \begin{SCfigure}[][!h]
-  \caption{A transition cell of the same class as the example used above, reproduced from the diagram of all transvoxel cell classes\cite{lengyel}.}
+  \caption{A transition cell of the same class as the example, reproduced from the diagram of all Transvoxel cell classes~\cite{lengyel}.}
   \includegraphics[width=0.5\textwidth]{transition_cell_example_case.PNG}
   \label{fig:transition_cell_example_case}
 \end{SCfigure}
 
 \subsubsection{Adaptation of the algorithm to GPU}
 
-We now describe a Transvoxel implementation on the GPU, making use of the modified lookup tables from section \ref{section:lookup_tables}. The algorithm is implemented in 3 separate compute shader phases, executed in order, to generate the geometry for a single chunk.
+We now describe a Transvoxel implementation on the GPU, making use of these modified lookup tables. The algorithm is implemented in 3 separate compute shader phases, executed in order, to generate the geometry for a single chunk.
 
 The chunk faces where transition cells should be generated are encoded in the variable \texttt{edgeIndex}, which is discussed in section \ref{section:edgeIndex}.
 
@@ -336,8 +335,8 @@ The chunk faces where transition cells should be generated are encoded in the va
 \begin{lstlisting}[language=C++,label={tv_generate},caption={Code snippet that samples the SDF at the grid point, as well as at the points needed for any transition cells on the -X and +X facing faces. The \texttt{generate} function is responsible for sampling the SDF and storing the value in a buffer, and takes 2 parameters: the first is the actual position of the grid cell vertex, and the second is an offset parameter, for generating sample values halfway beetween grid vertices. For example, a value of \texttt{uvec3(0,1,0)} corresponds to a point that is offset from the position in the first argument by half a grid cell in the Y direction.}]
 
 void generate(uvec3 gid, uvec3 halfXYZ) {
-  uint arrID = getArrID(gid, halfXYZ);
-  float value = modified_distance((gid + 0.5 * vec3(halfXYZ)) * chunkStride + chunkPosition);
+  uint arrID = getArrID(gid, halfXYZ); //get index into buffer
+  float value = modified_distance((gid + 0.5 * vec3(halfXYZ)) * chunkStride + chunkPosition); //compute the SDF
   distanceValues[arrID] = value;
 }
 void main() {
@@ -386,7 +385,7 @@ To handle transition cells, the following is done, for each possible orientation
   \item Check whether a transition cell should be generated, based on \texttt{edgeIndex}, and whether this grid cell lies on the face of the chunk. If not, then skip the rest of the generation.
   \item Determine the values of the SDF on the higher resolution face of the transition cell, using the buffer passed from the previous phase. Use this information to calculate the variable \texttt{transitionCellIndex}.
   \item Use the lookup tables to determine how much geometry exists within this transition cell, and increase the atomic counter accordingly.
-  \item Append this transition cell to the buffer of cells to be polygonised in the subsequent phase. The transition cell will be polygonised separately from the regular cell that exists within the same grid cell.
+  \item Append this transition cell to the buffer of cells to be polygonised in the subsequent phase. It will be polygonised separately from the regular cell that exists within the same grid cell.
 \end{itemize}
 
 \begin{lstlisting}[language=C++,label={tv_count},caption={Part of the code responsible for counting the triangles in transition cells, and appending them to the geometry generation buffer. The first 9 bits of \texttt{paddedTransitionCellIndex} store the value of \texttt{transitionCellIndex}, calculated as shown in figure \ref{fig:tv_transition_cellIndex}. Bit 10 records that the cell is a transition cell, and exactly one of bits 11-16 will be set, to store the orientation of the cell.}]
@@ -400,7 +399,7 @@ paddedTransitionCellIndex |= (mask<<10);
 //do not march if all inside or all outside
 if (transitionCellIndex != 0 && transitionCellIndex != 511) {
   //number of points in the mesh
-  //and with 0x7f for lookup table
+  //and with 0x7f for lookup table - handles case where opposite facing triangles are used
   atomicCounterAddARB(pointCount,transitionTotalTable[0x7F & transitionCellClass[transitionCellIndex]]);
 
   uint bufferIndex = atomicCounterIncrement(marchableCount);
@@ -410,7 +409,7 @@ if (transitionCellIndex != 0 && transitionCellIndex != 511) {
 }
 \end{lstlisting}
 
-\item \underline{Polygonisation phase}: For each cell passed by the previous phase through the buffer \texttt{marchableList}, the actual geometry is created, and the vertices of the geometry are linearly interpolated as described in section \ref{section:mc}. 
+\item \underline{Polygonisation phase}: For each cell passed by the previous phase through the buffer \texttt{marchableList}, the geometry is created, and the vertices of the geometry are linearly interpolated as described in section \ref{section:mc}. 
 
 \begin{lstlisting}[language=C++,label={tv_poly_regular},caption={Code for generating the geometry in a regular cell.}]
 void generateCell() {
@@ -482,11 +481,11 @@ uint totalPoints = regularTotalTable[cellClass];
   }
 }
 \end{lstlisting}
-When a regular cell has been made smaller to accommodate transition cells, the SDF has been sampled at the grid cell vertices, rather than the vertices of the regular cell. This introduces inaccuracies in the resulting geometry. The Transvoxel algorithm paper describes a transformation that solves this issue by moving vertices on the lower resolution face of the transition cell, and the corresponding vertex on the neighboring regular cell, so they are on the edge that the regular cell would have generated. This has been implemented in listing \ref{tv_poly_regular}.
+When a regular cell has been made smaller to accommodate transition cells, the SDF has been sampled at the grid cell vertices, rather than the vertices of the regular cell. This introduces inaccuracies in the resulting geometry. The Transvoxel algorithm paper describes a transformation that solves this issue by moving vertices on the lower resolution face of the transition cell, and the corresponding vertex on the neighboring regular cell, so they are on the edge that the regular cell would have generated. This was implemented in listing \ref{tv_poly_regular}.
 
-Transition cells are handled separately from the regular cells, even if they share the same grid cell. There are multiple possible shapes a transition cell may need to take, some of which were shown in figure \ref{fig:transition_cells}. The cell vertex positions are calculated based on \texttt{edgeIndex}. Since the presence of a transition cell means that a regular cell has been resized, the transformation described above is performed for all geometry generated on the lower resolution face of the transition cell. Otherwise, the actual code used to determine the geometry is similar, using the lookup tables from listing \ref{tv_transition_tables}.
+Transition cells are handled separately from regular cells, even if they share the same grid cell. There are multiple possible shapes a transition cell may need to take, some of which were shown in figure \ref{fig:transition_cells}. The cell vertex positions are calculated based on \texttt{edgeIndex}. Since the presence of a transition cell means that a regular cell has been resized, the transformation described above is performed for all geometry generated on the lower resolution face of the transition cell. Otherwise, the actual code used to determine the geometry is similar, using the lookup tables from listing \ref{tv_transition_tables}.
 
-There is a case where multiple vertices of a transition cell may be moved to the same place. An example of this is shown in figure \ref{fig:tv_transition_plane}. This could lead to zero-width triangles being generated, which could interfere with any other algorithms the generated geometry is used with. However, the number of zero-width triangles is likely to be small, and it turns out that in the applications considered in this report, zero-width triangles have not caused any issues.
+There is a case where multiple vertices of a transition cell may be moved to the same place, resulting in zero-width triangles being generated, which could interfere with other algorithms the generated geometry is used with. However, the number of zero-width triangles is small, and it turns out that in the applications considered in this report, zero-width triangles have not caused any issues.
 
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{tv_transition_plane}
@@ -499,7 +498,7 @@ There is a case where multiple vertices of a transition cell may be moved to the
 \subsubsection{Calculation of edgeIndex}
 \label{section:edgeIndex}
 
-The variable \texttt{edgeIndex} is a 6-bit integer, with each bit storing whether a face of a chunk should have transition cells. For each octree leaf containing geometry, the algorithm searches the octree described in section \ref{section:octree} using a recursive algorithm, to find neighboring nodes in each direction at the same level of detail. If a neighbor is a leaf, then the neighboring geometry is at the same level of detail. If no neighbor exists at the same level of detail in some direction, then the neighboring geometry is at a lower level of detail. \texttt{edgeIndex} is not modified in this case, since it will be modified for the lower level of detail geometry. If the neighbor is not a leaf, then the neighboring geometry is at a higher level of detail, and \texttt{edgeIndex} is modified to record that transition cells should be generated in that direction.
+The variable \texttt{edgeIndex} is a 6-bit integer, with each bit storing whether a face of a chunk should have transition cells. For each octree leaf containing geometry, the octree is searched using a recursive algorithm, to find neighboring nodes in each direction at the same depth. If a neighbor is a leaf, then the neighboring geometry is at the same level of detail. If no neighbor exists at the same depth in some direction, then the neighboring geometry is at a lower level of detail. \texttt{edgeIndex} is not modified in this case, since it will be modified for the lower level of detail geometry. If the neighbor is not a leaf, then the neighboring geometry is at a higher level of detail, and \texttt{edgeIndex} is modified to record that transition cells should be generated in that direction.
 
 \begin{lstlisting}[language=C++,label={octree_neighbor},caption={Code for finding the neighbor of a node at the same level of detail in an octree. The children of a node are stored as a 3D array of pointers: \texttt{Octree* myChildren[2][2][2];}. \texttt{relativePosition} is a 3-component vector, where exactly one component is non-zero, corresponding to the direction in which to look for the neighbor. For example, a value of $\left(1,0,0\right)$ searches in the positive X direction.}]
 //return the neighbor at the same LOD if one exists, or NULL if none exists
@@ -531,13 +530,13 @@ Octree* Octree::getNeighbor(glm::ivec3 relativePosition) {
 
 \subsubsection{Downsides of Parallelisation}
 \label{section:downsides}
-This method of parallelisation presents some downsides. Triangles are placed into the vertex buffer as parallel invocations of the third compute shader increment the atomic counter, which may be different between calls. This means that there is no way to reliably use an index buffer for vertices, which would be beneficial since multiple vertices are often generated in the same place, resulting in many duplicate vertices in the vertex array. This is why vertex indexing data was removed from the Transvoxel tables. Nevertheless, this is a worthwhile tradeoff, with the GPU implementation greatly outperforming the CPU implementation, as demonstrated in section \ref{section:GPUCPUcomparison}.
+This method of parallelisation presents some downsides. Triangles are placed into the vertex buffer as parallel invocations of the third compute shader increment the atomic counter, which may be different between calls. This means that there is no way to reliably use an index buffer for vertices, which would be beneficial since multiple vertices are often generated in the same place, resulting in many duplicates in the vertex array. This is why vertex indexing data was removed from the Transvoxel tables. Nevertheless, this is a worthwhile tradeoff, with the GPU implementation greatly outperforming the CPU implementation, as demonstrated in section \ref{section:GPUCPUcomparison}.
 
 
 
 \subsubsection{Algorithm Speed Comparison}
 \label{section:GPUCPUcomparison}
-We now evaluate the performance of the parallel Transvoxel implementation, against a CPU implementation of Marching Cubes based on one by Paul Bourke\cite{bourke_1994}, as well as an implementation of the same Marching Cubes algorithm, parallelised using the same 3-phase technique.
+We now evaluate the performance of the parallel Transvoxel implementation, against a CPU implementation of Marching Cubes based on one by Paul Bourke~\cite{bourke_1994}, as well as an implementation of the same Marching Cubes algorithm, parallelised using the same 3-phase technique.
 
 The SDF used for these comparison tests is a scaled 3D fractal noise function, as described in section \ref{section:noise}. An effort has been made to ensure the SDF is the same on the CPU and GPU, however due to floating point inaccuracies and differences between the GLSL and C++ implementations, the SDF occasionally produces slightly different values between implementations, and this results in the number of triangles generated being different. However, this difference is small compared to the total number of triangles generated, so is unlikely to have an impact on the runtime comparison.
 
@@ -584,7 +583,7 @@ Table \ref{tab:comparison-time} shows the time taken to generate different numbe
 
 \subsubsection{Octree Refinement}
 \label{section:octree_refinement}
-The Transvoxel algorithm is sufficient in most cases for eliminating cracks in the geometry. However, there are octree configurations which could occur, where different levels of detail appear next to each other, even once transition cells have been generated. Figure \ref{fig:octree_neighbor_error} shows an example of when this can occur.
+The Transvoxel algorithm is sufficient in most cases for eliminating cracks in the geometry. However, there are octree configurations which could occur, where different levels of detail appear next to each other, even once transition cells have been generated.
 
 \begin{SCfigure}[][!h]
   \caption{An illustration of where different levels of detail may occur next to each other. Areas where transition cells are generated are shaded in blue. The area where transition cells are generated, but different levels of detail will still be adjacent to each other, is shaded in red.}
@@ -843,7 +842,7 @@ It would be possible to perform ray-triangle intersection tests within an OpenGL
 
 \subsubsection{Example Brush Implementations}
 \label{example_brushes}
-Any shape for which an SDF and normal function can be derived may be implemented as a brush, using the method described in section \ref{section:modification_implementation}. A good resource for SDF implementations is the article by Inigo Quilez referenced in section \ref{section:sdf}\cite{quilez:sdf}. It is also necessary to provide a normal function for each SDF. In some cases, the partial derivatives can be computed exactly, particularly when the SDF has a simple form. For example, the SDF of a sphere with radius 1, centered at the origin, is $f\left(x,y,z\right) = \sqrt{x^2+y^2+z^2}-1$. The gradient vector at point $\left(x,y,z\right)$ is $\nabla f = \left(\frac{x}{\sqrt{x^2+y^2+z^2}},\frac{y}{\sqrt{x^2+y^2+z^2}},\frac{z}{\sqrt{x^2+y^2+z^2}}\right)$. In this case, the gradient happens to already have length 1, but if it is not, it should be normalised with the GLSL \texttt{normalize} function. It is always possible to approximate the normal of an SDF numerically, however this can be computationally expensive, because it requires multiple evaluations of the SDF.
+Any shape for which an SDF and normal function can be derived may be implemented as a brush, using the method described in section \ref{section:modification_implementation}. A good resource for SDF implementations is the article by Inigo Quilez referenced in section \ref{section:sdf}~\cite{quilez:sdf}. It is also necessary to provide a normal function for each SDF. In some cases, the partial derivatives can be computed exactly, particularly when the SDF has a simple form. For example, the SDF of a sphere with radius 1, centered at the origin, is $f\left(x,y,z\right) = \sqrt{x^2+y^2+z^2}-1$. The gradient vector at point $\left(x,y,z\right)$ is $\nabla f = \left(\frac{x}{\sqrt{x^2+y^2+z^2}},\frac{y}{\sqrt{x^2+y^2+z^2}},\frac{z}{\sqrt{x^2+y^2+z^2}}\right)$. In this case, the gradient happens to already have length 1, but if it is not, it should be normalised with the GLSL \texttt{normalize} function. It is always possible to approximate the normal of an SDF numerically, however this can be computationally expensive, because it requires multiple evaluations of the SDF.
 
 \begin{lstlisting}[language=C++,label={numerical_gradient},caption={Approximation of the normal of an SDF, using the method of finite differences.}]
 vec3 normal(vec3 inPos) {
@@ -862,7 +861,7 @@ vec3 normal(vec3 inPos) {
 \end{lstlisting}
 
 \paragraph{Example Shape: Ellipsoid}
-Another article by Inigo Quilez\cite{quilez:ellipsoid} lists various approximate SDFs for ellipsoids. Listing \ref{ellipsoid_sdf} shows my transformation of the first SDF listed in this article into an SDF representing an ellipsoid at any given point in space, as well as a normal function, which has been derived by computing the gradient of this SDF.
+Another article by Inigo Quilez~\cite{quilez:ellipsoid} lists various approximate SDFs for ellipsoids. Listing \ref{ellipsoid_sdf} shows my transformation of the first SDF listed in this article into an SDF representing an ellipsoid at any given point in space, as well as a normal function, which has been derived by computing the gradient of this SDF.
 
 \begin{lstlisting}[language=C++,label={ellipsoid_sdf},caption={Approximate SDF and normal function for an ellipsoid.}]
 float ellipsoid_distance(vec3 inPos, vec4 location, vec4 radius) {
@@ -886,7 +885,7 @@ Figure \ref{fig:editing_ellipsoids} shows a number of ellipsoids of various size
 \subparagraph{Exact Method} %TODO - reference on bezier interpolation
 To define a smooth curve between interpolation points, we will use Bezier interpolation. Intermediate control points are calculated between each consecutive pair of interpolation points, such that the section of curve between them is a cubic Bezier spline. Calculating the minimum distance to a Bezier curve is best done by minimising the value of a degree 6 polynomial. A general cubic Bezier is a cubic $c\left(t\right), t \in \left[0,1\right]$, and the value of the SDF at point $p$ is the minimum of $\| c\left(t\right) -p\|$. This minimum is found by differentiating $\| c\left(t\right) -p\|^2$, a degree 6 polynomial, to give a polynomial of degree 5.
 
-Since it is impossible to solve a general degree 5 polynomial analytically, we instead use a numerical approach. We will use an existing implementation\cite{kraus_2021} that uses interval approximation to find the first root, followed by polynomial long division to obtain the coefficients of a degree 4 polynomial, and finally computes the 4 remaining roots exactly. Once the minimum distance to the curve has been computed, It is simple to define a shape with a circular cross-section by defining a radius, such that points closer than that radius are considered inside, and points further away are considered outside. Figure \ref{fig:exact_bezier} shows an example of such a shape.
+Since it is impossible to solve a general degree 5 polynomial analytically, we instead use a numerical approach. We will use an existing implementation~\cite{kraus_2021} that uses interval approximation to find the first root, followed by polynomial long division to obtain the coefficients of a degree 4 polynomial, and finally computes the 4 remaining roots exactly. Once the minimum distance to the curve has been computed, It is simple to define a shape with a circular cross-section by defining a radius, such that points closer than that radius are considered inside, and points further away are considered outside. Figure \ref{fig:exact_bezier} shows an example of such a shape.
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{exact_bezier}
   \caption{A number of Bezier interpolation splines, using the exact SDF.}
@@ -1010,7 +1009,7 @@ float road_distance(vec3 inPos, vec4 A, vec4 B, vec4 C, vec4 D, float r) {
 
 \subsubsection{Limits of Terrain Modification}
 \label{edit_limits}
-This terrain modification system allows for a wide variety of shapes to be implemented. The efficiency improvements resulting from the use of the octree to prevent iteration over large lists of brushes, and the use of bounding boxes inside the GLSL shader means that a large number of brushes can exist at once, provided they are spread out. However, the number of brushes in the world grows without bound as editing occurs, meaning that slowdown is inevitable, particularly when the number of brushes in a single node becomes high, since this requires more work in the generation shader. This causes a stutter in between frames, when a large amount of geometry need to be regenerated. This can be reduced by limiting the speed of the player so that a large movement in between frames does not happen. There are other ways to address this, which we will discuss in section \ref{section:future_work}. Nevertheless, it is possible to modify the world with many thousands of brushes before significant slowdown occurs.
+This terrain modification system allows for a wide variety of shapes to be implemented. The efficiency improvements resulting from the use of the octree to prevent iteration over large lists of brushes, and the use of bounding boxes inside the GLSL shader means that a large number of brushes can exist at once, provided they are spread out. However, the number of brushes in the world grows without bound as editing occurs, meaning that slowdown is inevitable, particularly when the number of brushes in a single node becomes high, since this requires more work in the generation shader. This causes a stutter in between frames, when a large amount of geometry need to be regenerated. This can be reduced by limiting the speed of the user so that a large movement in between frames does not happen. There are other ways to address this, which we will discuss in section \ref{section:future_work}. Nevertheless, it is possible to modify the world with many thousands of brushes before significant slowdown occurs.
 
 \section{Graphical User Interface}
 
@@ -1053,11 +1052,11 @@ Previews for shapes defined using Bezier splines are shown by approximating the 
 \section{Physics}
 In many applications it is useful to have collision detection and physics simulation for the terrain. This section explores a method of doing this.
 \subsection{Bullet Physics}
-To implement physics simulation, we use a library called Bullet Physics\cite{bullet-physics}, which is a general-purpose CPU based physics library, written in C++.It supports collision detection with static, concave triangle meshes. We will use this functionality, along with the triangle meshes we have already generated, to implement physics simulation.
+To implement physics simulation, we use a library called Bullet Physics~\cite{bullet-physics}, which is a general-purpose CPU based physics library, written in C++.It supports collision detection with static, concave triangle meshes. We will use this functionality, along with the triangle meshes we have already generated, to implement physics simulation.
 
 The library is optimised for speed, and the physics simulation is complex, with multiple different phases used with each timestep. For example, one such phase computes axis-aligned bounding boxes of physics shapes, and returns pairs of objects where these intersect, and a subsequent phase computes the contact points between those objects, using an algorithm chosen based on the types of shape. All of this is encapsulated within a single function, \texttt{stepSimulation}, which takes a time interval, and moves the physics simulation forwards by that amount.
 
-Documentation for the library is automatically generated from source code comments, and as such, is often incomplete and confusing to follow. However, there is a user manual which gives an overview of how some aspects of the library work\cite{coumans_2015}.
+Documentation for the library is automatically generated from source code comments, and as such, is often incomplete and confusing to follow. However, there is a user manual which gives an overview of how some aspects of the library work~\cite{coumans_2015}.
 
 \subsection{Creation of Physics Meshes}
 \label{section:physics_meshes}
@@ -1070,7 +1069,7 @@ Creating a concave collision mesh are computationally expensive, and so physics 
   \label{fig:meshes1}
 \end{figure}
 
-Making this restriction on the meshes generated means that there are significantly less physics meshes being generated with each octree update. This also has the benefit that physics collisions always occur with the same geometry, rather than with geometry at varying levels of detail. If collision with low detail geometry were to occur, finer features in the geometry may be completely ignored. However, this means that collision can only occur where the highest level of detail is used. To solve this, we modify the \texttt{shouldSplit} and \texttt{shouldChop} functions described in section \ref{section:octree}, as shown in listing \ref{phy_lod}.
+Making this restriction on the meshes generated means that there are significantly fewer physics meshes being generated with each octree update. This also has the benefit that physics collisions always occur with the same geometry, rather than with geometry at varying levels of detail. If collision with low detail geometry were to occur, finer features in the geometry may be completely ignored. However, this means that collision can only occur where the highest level of detail is used. To solve this, we modify the \texttt{shouldSplit} and \texttt{shouldChop} functions described in section \ref{section:octree}, as shown in listing \ref{phy_lod}.
 
 \begin{lstlisting}[language=C++,label={phy_lod},caption={Snippet from \texttt{shouldSplit} responsible for increasing the level of detail near a set of test physics objects. All chunks with bounding boxes that intersect the bounding box of a physics shape will be split until the highest detail level is reached. The octree refinement process described in section \ref{section:octree_refinement} ensures that this does not create any places where very different levels of detail are adjacent to each other.}]
 for (auto shape : TestShape::allShapes) {
@@ -1097,7 +1096,7 @@ Figures \ref{fig:meshes2} and \ref{fig:meshes3} show this system in action.
 \subsection{Player Controller}
 To handle player collision, we use a capsule shape oriented along the y axis, which is moved by applying a force in the direction we want to move. The direction of this force is determined by the directional keys being pressed. For example, if the forward key is being pressed, the shape is pushed horizontally in the direction the camera is looking. The other directional keys act similarly, applying a force relative to the direction of the camera. To move upwards, a large upwards force is applied. 
 \subsubsection{Editing geometry near the player}
-If geometry is edited near the player, it is possible for the collision shape to become stuck in the collision meshes, or even pass through it entirely, resulting in incorrect collisions. To prevent this from happening, there is the option of a simple camera mode, with no collision detection, and it is possible to restrict terrain editing to only be possible in this mode. In this case, the collision shape is moved to the new position of the camera when the mode is switched again.
+If geometry is edited near the player, it is possible for the collision shape to become stuck in the collision meshes, or even pass through them entirely, resulting in incorrect collisions. To prevent this from happening, there is the option of a simple camera mode, with no collision detection, and it is possible to restrict terrain editing to only be possible in this mode. In this case, the collision shape is moved to the new position of the camera when the mode is switched again.
 \subsection{Multithreading}
 \label{section:multithreading}
 Even when meshes are only generated for chunks at the highest level of detail, mesh generation for a large chunk of geometry still takes long enough to cause a noticable slowdown. This is because a data structure is created internally for each mesh collision object.

@@ -332,39 +332,10 @@ We now describe a Transvoxel implementation on the GPU, making use of these modi
 The chunk faces where transition cells should be generated are encoded in the variable \texttt{edgeIndex}, which is discussed in section \ref{section:edgeIndex}.
 
 \begin{enumerate}
-\item \underline{Distance function computation}: For each grid cell vertex, the SDF is sampled, and stored in a buffer. If this vertex lies on the face of the chunk, the SDF is sampled at additional points on the face, for use in transition cells. This shader is invoked once for each grid cell vertex, and the invocations corresponding to the vertices on the faces where transition cells are generated are responsible for calculating the additional sample points. This is done separately to the following stages to avoid unnecessary recomputation of the SDF, since one grid cell vertex may belong to up to 8 neighboring grid cells.
-
-\begin{lstlisting}[language=C++,label={tv_generate},caption={Code snippet that samples the SDF at the grid point, as well as at the points needed for any transition cells on the -X and +X facing faces. The \texttt{generate} function is responsible for sampling the SDF and storing the value in a buffer, and takes 2 parameters: the first is the actual position of the grid cell vertex, and the second is an offset parameter, for generating sample values halfway beetween grid vertices. For example, a value of \texttt{uvec3(0,1,0)} corresponds to a point that is offset from the position in the first argument by half a grid cell in the Y direction.}]
-
-void generate(uvec3 gid, uvec3 halfXYZ) {
-  uint arrID = getArrID(gid, halfXYZ); //get index into buffer
-  float value = modified_distance((gid + 0.5 * vec3(halfXYZ)) * chunkStride + chunkPosition); //compute the SDF
-  distanceValues[arrID] = value;
-}
-void main() {
-  uvec3 gid = gl_GlobalInvocationID;
-  if (gid.x > chunkSize.x || gid.y > chunkSize.y || gid.z > chunkSize.z) {
-    return;
-  }
-  generate(gid,uvec3(0)); //calculate the SDF at this grid point
-
-  if ((gid.x == 0 && (edgeIndex & 1) != 0) || (gid.x == chunkSize.x && (edgeIndex & 2) != 0)) {
-    if (gid.y < chunkSize.y) {
-      generate(gid,uvec3(0,1,0)); //calculate the SDF at this grid point, offset by half the grid width in the y direction
-    }
-    if (gid.z < chunkSize.z) {
-      generate(gid,uvec3(0,0,1));
-    }
-    if (gid.y < chunkSize.y && gid.z < chunkSize.z) {
-      generate(gid,uvec3(0,1,1));
-    }
-  }
-  ... //do the same for the y and z oriented faces  
-}
-\end{lstlisting}
+\item \underline{Distance function computation}: For each grid cell vertex, the SDF is sampled, and stored in a buffer. If this vertex lies on the face of the chunk, the SDF is sampled at additional points on the face, for use in transition cells. This shader is invoked once for each grid cell vertex, and the invocations corresponding to the vertices on the faces where transition cells are generated are responsible for calculating the additional sample points. This is done separately to the following stages to avoid unnecessary recomputation of the SDF, since one grid cell vertex may belong to up to 8 neighboring grid cells. Figure \ref{fig:tv_gen_grid} shows the points to be sampled on the face of a 2x2x2 chunk for various invocations.
 
 \begin{SCfigure}[][!h]
-  \caption{Illustration of the points to be sampled on the face of a 2x2x2 chunk when transition cells will be generated. The 4 blue points in the bottom left are those that will be sampled by an invocation on the vertex at $\left(0,0\right)$, the 2 green points in the bottom right will be sampled by an invocation on the vertex at $\left(2,0\right)$, and the singular purple point will be sampled by an invocation on the vertex at $\left(2,2\right)$.}
+  \caption{The 4 blue points in the bottom left are those that will be sampled by an invocation on the vertex at $\left(0,0\right)$, the 2 green points in the bottom right will be sampled by an invocation on the vertex at $\left(2,0\right)$, and the singular purple point will be sampled by an invocation on the vertex at $\left(2,2\right)$.}
   \includegraphics[width=0.5\textwidth]{tv_gen_grid}
   \label{fig:tv_gen_grid}
 \end{SCfigure}
@@ -382,34 +353,12 @@ if (cellIndex != 0 && cellIndex != 255) { //cell is not completely solid or air
   marchableList[bufferIndex] = mc;
 }
 \end{lstlisting}
-To handle transition cells, the following is done, for each possible orientation of transition cell:
+When a transition cell needs to be generated, the following is done:
 \begin{itemize}
-  \item Check whether a transition cell should be generated, based on \texttt{edgeIndex}, and whether this grid cell lies on the face of the chunk. If not, then skip the rest of the generation.
   \item Determine the values of the SDF on the higher resolution face of the transition cell, using the buffer passed from the previous phase. Use this information to calculate the variable \texttt{transitionCellIndex}.
-  \item Use the lookup tables to determine how much geometry exists within this transition cell, and increase the atomic counter accordingly.
-  \item Append this transition cell to the buffer of cells to be polygonised in the subsequent phase. It will be polygonised separately from the regular cell that exists within the same grid cell.
+  \item Use the lookup tables to determine how much geometry exists within this transition cell, and increase the atomic counter accordingly, using the same method as in listing \ref{tv_count_regular}.
+  \item Append this transition cell to the buffer of cells to be polygonised in the subsequent phase. Also store that the cell is a transition cell, and its orientation.
 \end{itemize}
-
-\begin{lstlisting}[language=C++,label={tv_count},caption={Part of the code responsible for counting the triangles in transition cells, and appending them to the geometry generation buffer. The first 9 bits of \texttt{paddedTransitionCellIndex} store the value of \texttt{transitionCellIndex}, calculated as shown in figure \ref{fig:tv_transition_cellIndex}. Bit 10 records that the cell is a transition cell, and exactly one of bits 11-16 will be set, to store the orientation of the cell.}]
-//cell is a transition cell:
-int paddedTransitionCellIndex = transitionCellIndex;
-paddedTransitionCellIndex |= (1<<9);
-
-//store cell orientation:
-paddedTransitionCellIndex |= (mask<<10);
-
-//do not march if all inside or all outside
-if (transitionCellIndex != 0 && transitionCellIndex != 511) {
-  //number of points in the mesh
-  //and with 0x7f for lookup table - handles case where opposite facing triangles are used
-  atomicCounterAddARB(pointCount,transitionTotalTable[0x7F & transitionCellClass[transitionCellIndex]]);
-
-  uint bufferIndex = atomicCounterIncrement(marchableCount);
-  //store grid position in the first 3 coordinates, cell index and orientation padded into single int in the 4th coordinate
-  uvec4 mc = uvec4(gid.x,gid.y,gid.z,paddedTransitionCellIndex);
-  marchableList[bufferIndex] = mc;
-}
-\end{lstlisting}
 
 \item \underline{Polygonisation phase}: For each cell passed by the previous phase through the buffer \texttt{marchableList}, the geometry is created, and the vertices of the geometry are linearly interpolated as described in section \ref{section:mc}. 
 
@@ -483,9 +432,9 @@ uint totalPoints = regularTotalTable[cellClass];
   }
 }
 \end{lstlisting}
-When a regular cell has been made smaller to accommodate transition cells, the SDF has been sampled at the grid cell vertices, rather than the vertices of the regular cell. This introduces inaccuracies in the resulting geometry. The Transvoxel algorithm paper describes a transformation that solves this issue by moving vertices on the lower resolution face of the transition cell, and the corresponding vertex on the neighboring regular cell, so they are on the edge that the regular cell would have generated. This was implemented in listing \ref{tv_poly_regular}.
+When a regular cell has been made smaller to accommodate transition cells, the SDF has been sampled at the grid cell vertices, rather than the vertices of the regular cell. This introduces inaccuracies in the resulting geometry. The Transvoxel paper~\cite{lengyel_2010} describes a transformation that solves this issue by moving vertices on the lower resolution face of the transition cell, and the corresponding vertex on the neighboring regular cell, so they are on the edge that the regular cell would have generated. This was implemented in listing \ref{tv_poly_regular}.
 
-Transition cells are handled separately from regular cells, even if they share the same grid cell. There are multiple possible shapes a transition cell may need to take, some of which were shown in figure \ref{fig:transition_cells}. The cell vertex positions are calculated based on \texttt{edgeIndex}. Since the presence of a transition cell means that a regular cell has been resized, the transformation described above is performed for all geometry generated on the lower resolution face of the transition cell. Otherwise, the actual code used to determine the geometry is similar, using the lookup tables from listing \ref{tv_transition_tables}.
+Transition cells are handled separately from regular cells, even if they share the same grid cell. There are multiple possible shapes a transition cell may need to take, some of which were shown in figure \ref{fig:transition_cells}. The cell vertex positions are calculated based on \texttt{edgeIndex}. Since the presence of a transition cell means that a regular cell has been resized, the above transformation is performed for all geometry generated on the lower resolution face of the transition cell. Otherwise, the actual code used to determine the geometry is similar, using the lookup tables from listing \ref{tv_transition_tables}.
 
 There is a case where multiple vertices of a transition cell may be moved to the same place, resulting in zero-width triangles being generated, which could interfere with other algorithms the generated geometry is used with. However, the number of zero-width triangles is small, and it turns out that in the applications considered in this report, zero-width triangles have not caused any issues.
 
@@ -543,7 +492,7 @@ We now evaluate the performance of the parallel Transvoxel implementation, again
 
 The SDF used for these comparison tests is a scaled 3D fractal noise function, as described in section \ref{section:noise}. An effort has been made to ensure the SDF is the same on the CPU and GPU, however due to floating point inaccuracies and differences between the GLSL and C++ implementations, the SDF occasionally produces slightly different values between implementations, and this results in the number of triangles generated being different. However, this difference is small compared to the total number of triangles generated, so is unlikely to have an impact on the runtime comparison.
 
-Table \ref{tab:comparison-time} shows the time taken to generate different numbers of chunks of 3D noise, of size $32^3$, using each of the implementations described. When using the Transvoxel algorithm, transition cells have been generated on the +x, +y, and +z faces. This means that the number of triangles generated is also higher for the Transvoxel algorithm. Table \ref{tab:comparison-tris} shows the number of triangles generated in each experiment. All experiments were run using an Intel i9-9900k and Nvidia RTX 2080ti. Each experiment was run 5 times, and the average time is shown.
+Table \ref{tab:comparison-time} shows the time taken to generate different numbers of chunks of 3D noise, of size $32^3$, using each of the implementations described. When using the Transvoxel algorithm, transition cells have been generated on the +X, +Y, and +Z faces. This means that the number of triangles generated is also higher for the Transvoxel algorithm. Table \ref{tab:comparison-tris} shows the number of triangles generated in each experiment. All experiments were run using an Intel i9-9900k and Nvidia RTX 2080ti. Each experiment was run 5 times, and the average time is shown.
 \begin{table}[H]
   \begin{tabular}{|c|c|c|c|}
     \hline
@@ -650,7 +599,7 @@ bool Octree::refine() {
             //if child exists, and is not a leaf, then this chunk is inconsistent
             //if it is a leaf, split it, otherwise just unflag it
             if (child && !child->isLeaf) {
-              if (isLeaf && myDetailLevel < Config::get<int>("octree_max_depth")) {
+              if (isLeaf && myDetailLevel < octree_max_depth)) {
                 result = false;
                 split();
               } else {
@@ -1212,7 +1161,7 @@ The code has been iteratively improved over the course of the project. This sect
 
 \subsection{Storage of Transvoxel sample values}
 
-Each SDF sample value calculated in the first shader stage is stored in a flat buffer, to be retrieved by the later stages. This is implemented with the function \texttt{getArrID} that takes the position of the sample relative to the chunk, and returns an index into the buffer. When the sample points are arranged in a grid, this is relatively simple, however things become more complicated for the sample points in the Transvoxel algorithm, since there are sample points that are midway between the grid cell vertices when transition cells are generated. A simple solution was to double the size of the array in each dimension, so that sample points halfway between grid cells fit in as though the grid size was changed, however this leads to a very sparse buffer that is far larger than it needs to be. A more space-efficient solution stores the sample points not on the faces of the chunk as a cuboid. Then, each face of the chunk is stored at the end of the buffer, so that additional sample points on the face can fit. This results in much less wasted space.
+Each SDF sample value calculated in the first shader stage is stored in a flat buffer, to be retrieved by the later stages. Values are indexed into this buffer with the function \texttt{getArrID} that takes the position of the sample relative to the chunk, and returns an index. When the sample points are arranged in a grid, this is relatively simple, however things become more complicated for the sample points in the Transvoxel algorithm, since there are sample points that are midway between the grid cell vertices when transition cells are generated. A simple solution was to double the size of the array in each dimension, so that sample points halfway between grid cells fit in as though the grid size was changed, however this leads to a very sparse buffer that is far larger than it needs to be. A more space-efficient solution stores the sample points not on the faces of the chunk as a cuboid. Then, each face of the chunk is stored at the end of the buffer, so that additional sample points on the face can fit. This results in much less wasted space.
 
 \begin{lstlisting}[language=C++,label={tv_arrID_2},caption={The more efficient \texttt{getArrID} function.}]
   uint getArrID(uvec3 gid, uvec3 halfXYZ) {

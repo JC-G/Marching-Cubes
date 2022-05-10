@@ -45,13 +45,11 @@ It is also possible to use a 3D noise function in an SDF, for example in generat
 
 \subsection{Marching Cubes Algorithm}
 
-Marching Cubes is an algorithm for polygonising a 3 dimensional scalar field. It works by splitting the space into a uniform grid of cubes (\textit{cells}), and sampling the scalar field at each cell vertex. Pre-computed lookup tables, are used to determine the geometry that exists within each cell. We show examples of such tables in section \ref{section:lookup_tables}. 
-
-The sampled values of the scalar field at each cell vertex are linearly interpolated, as shown in figure \ref{fig:linear_interpolation}, and the geometry vertex is placed where the value of this linear interpolation is 0. This approximates the position where the edge of the cell intersects the surface. Figure \ref{fig:ms_example} illustrates the Marching Cubes algorithm.
+Marching Cubes is an algorithm for polygonising a 3 dimensional scalar field. It works by splitting the space into a uniform grid of cubes (\textit{cells}), and sampling the scalar field at each cell vertex. When the sign of the SDF changes on adjacent cell vertices, these sample values are linearly interpolated along the edge, and a vertex is placed where the value of this linear interpolation is 0, approximating the position where the cell edge intersects the surface. This is shown in figure \ref{fig:linear_interpolation}. Pre-computed lookup tables, such as those to be discussed in section \ref{section:lookup_tables}, determine the triangulation between these vertices in each cell. Figure \ref{fig:ms_example} illustrates the Marching Cubes algorithm.
 
 2D demonstration of linear interpolation. These cells contain the same class of geometry, but with different SDF values, and hence different vertex positions. The red lines show the generated geometry.
 
-2D example of Marching Cubes approximating a circle on a 6x6 grid.
+2D example of Marching Cubes approximating a circle.
 
 \subsubsection{Limitations of Marching Cubes}
 Marching Cubes was chosen for this project because the geometry for each grid cell can be generated independently from other cells. It produces a relatively accurate result for smooth shapes. However, it is not the best choice of algorithm for shapes with sharp corners, such as the shape in figure \ref{fig:sharp_corner}.
@@ -62,7 +60,7 @@ Inaccuracies near the sharp edge of this cylinder are visible.
 For this purpose, an algorithm such as Dual Contouring\cite{10.1145/566654.566586} may produce better results. However, this algorithm generates triangles that span multiple grid cells, so it cannot be parallelised with the same method.
 
 \subsection{GPU Programming}
-A GPU is designed for applications where a similar calculation is performed many times on varying data. Traditionally, this covers uses such as vertex shaders, which determine the position of every vertex in a 3D scene, or fragment shaders, which determine the color of every pixel on a screen. A modern GPU is capable of performing many millions of individual calculations per frame. In this project, we use the OpenGL API, and the C-style GLSL shader language that comes with it, to write code for the GPU.
+A GPU is designed for applications where a similar calculation is performed many times on varying data. Traditionally, this covers uses such as vertex shaders, which determine the position of every vertex in a 3D scene, or fragment shaders, which determine the color of every pixel on a screen. A modern GPU is capable of performing millions of individual shader invocations per frame. We use the OpenGL API, and the C-style GLSL shader language that comes with it, to write code for the GPU.
 
 We make use of compute shaders, which are not part of the graphics rendering pipeline, but are called by the OpenGL API and take advantage of the parallel architecture of the GPU. When a compute shader is executed, many invocations of the same code are executed in parallel, through the API function \texttt{glDispatchCompute}. These are indexed by the built-in GLSL variable \texttt{gl\_GlobalInvocationID}, a 3-component integer vector, that is different for each invocation. For example, a shader designed to calculate $f\left(x,y,z\right)$, for $ \left(x,y,z\right)$ ranging over integer-valued triples in $\left[0,32\right]^3$ would need to be configured so that \texttt{gl\_GlobalInvocationID} varies over all of the triples in this range.
 
@@ -122,16 +120,16 @@ A regular cell of the same class as the example, reproduced from the diagram of 
 
 \subsubsection{Transition cell lookup tables}
 
-A transition cell uses 9 distinct SDF sample values, at vertices 0 through 8 in figure \ref{fig:tv_transition_labels}. Cell vertices 9, A, B, and C take their sample values from the vertices directly opposite them: vertices 0, 2, 6, and 8 respectively. Thus there are 512 possible cases to consider, rather than 256 cases in the case of a regular cell. Figure \ref{fig:tv_transition_cellIndex} shows how cell vertices are considered, for the purpose of calculating \texttt{transitionCellIndex}, as implemented in listing \ref{tv_transition_tables}.
+A transition cell uses 9 distinct SDF sample values, at vertices 0 through 8 in figure \ref{fig:tv_transition_labels}. Cell vertices 9, A, B, and C take their sample values from the vertices directly opposite them: vertices 0, 2, 6, and 8 respectively. Thus there are 512 possible cases to consider. Figure \ref{fig:tv_transition_cellIndex} shows how cell vertices are considered, for the purpose of calculating \texttt{transitionCellIndex}, as implemented in listing \ref{tv_transition_tables}.
 
-Cell vertex naming convention for transition cells. (a) shows the higher resolution face of the cell, and (b) shows the opposite, lower resolution face. Reproduced from figure 4.16 of the Transvoxel paper\cite{lengyel_2010}
+Hexadecimal vertex naming convention for transition cells. (a) shows the higher resolution face of the cell, and (b) shows the opposite, lower resolution face. Reproduced from figure 4.16 of the Transvoxel paper\cite{lengyel_2010}
 
 Hexadecimal contribution to \texttt{transitionCellIndex} by each cell vertex on the higher resolution face of a transition cell. Reproduced from figure 4.17 of the Transvoxel paper\cite{lengyel_2010}
 
 Calculation of \texttt{transitionCellIndex}, and lookup tables for transition cells. An example of their usage is given below.
 
 
-The tables perform the same roles as their regular cell counterparts. There are 73 classes of transition cell, although by considering classes using the same triangulation with different vertices, this can be reduced to 56 classes. The highest bit in the 8-bit \texttt{transitionCellClass} corresponds to a triangulation where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass}, having binary value $10000111$, corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
+The tables perform the same roles as their regular cell counterparts. There are 73 classes of transition cell, although by considering classes using the same triangulation with different vertices, this can be reduced to 56 classes. The highest bit in the 8-bit \texttt{transitionCellClass} corresponds to a triangulation where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass} corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
 
 For example, consider the transition cell where vertex 0 is inside the terrain. Then vertex 9 will also be considered as inside. This will generate geometry like figure \ref{fig:transition_cell_example_case}. \texttt{transitionCellIndex} will be calculated as $000000001$, corresponding to a cell class of \texttt{0x01} in \texttt{transitionCellClass}. 
 
@@ -154,13 +152,13 @@ The 4 blue points in the bottom left are those that will be sampled by an invoca
 
 \underline{Counting phase}: For each regular cell, calculate the number of mesh triangles within it, and if this number is non-zero (the cell is not all air, or all solid), add it to the list of cells to generate geometry for in the next phase.
 
-Code for counting the number of vertices and marchable grid cells in the chunk. Variable \texttt{cellIndex} is calculated according to listing \ref{tv_transition_tables}, using the SDF values from the previous stage.
+Code for counting the number of vertices and marchable grid cells in the chunk. \texttt{cellIndex} is calculated according to listing \ref{tv_transition_tables}, using the SDF values from the previous stage.
 
 When a transition cell needs to be generated, the following is done:
   
 Determine the values of the SDF on the higher resolution face of the transition cell, using the buffer passed from the previous phase. Use this information to calculate the variable \texttt{transitionCellIndex}.
 
-Use the lookup tables to determine how much geometry exists within this transition cell, and increase the atomic counter accordingly, using the same method as in listing \ref{tv_count_regular}.
+Use the lookup tables to determine how much geometry exists within this transition cell, and increase the atomic counter accordingly, similarly to listing \ref{tv_count_regular}.
   
 Append this transition cell to the buffer of cells to be polygonised in the subsequent phase. Also store that the cell is a transition cell, and its orientation.
 
@@ -351,7 +349,7 @@ Preview of an interpolation spline with multiple control points. The use of semi
 \section{Physics}
 In many applications it is useful to have collision detection and physics simulation for the terrain. This section explores a method of doing this.
 \subsection{Bullet Physics}
-To implement physics simulation, we use a library called Bullet Physics\cite{bullet-physics}, which is a general-purpose CPU based physics library, written in C++.It supports collision detection with static, concave triangle meshes. We will use this functionality, along with the triangle meshes we have already generated, to implement physics simulation.
+To implement physics simulation, the Bullet Physics library~\cite{bullet-physics}, which is a general-purpose CPU based physics library, written in C++. We will use the generic triangle mesh shapes it supports, along with the triangle meshes we have already generated, to implement physics simulation. In particular, these static triangle mesh shapes can be non-convex, making them ideal for our use case.
 
 The library is optimised for speed, and the physics simulation is complex, with multiple different phases used with each timestep. For example, one such phase computes axis-aligned bounding boxes of physics shapes, and returns pairs of objects where these intersect, and a subsequent phase computes the contact points between those objects, using an algorithm chosen based on the types of shape. All of this is encapsulated within a single function, \texttt{stepSimulation}, which takes a time interval, and moves the physics simulation forwards by that amount.
 
@@ -360,35 +358,35 @@ Documentation for the library is automatically generated from source code commen
 \subsection{Creation of Physics Meshes}
 
 The geometry we will use for the physics collision meshes is the same geometry used for rendering, generated by the Transvoxel algorithm. We make use of the \texttt{mapGeometry} function, as described in section \ref{section:raycasting}, to copy the geometry to the CPU memory, so it can be accessed by the library.
-Creating a concave collision mesh are computationally expensive, and so physics meshes are only constructed on chunks that are generated at the highest level of detail. Figure \ref{fig:meshes1} shows physics meshes being generated in a radius around the camera.
+Creating a large collision mesh is computationally expensive, and so physics meshes are only constructed on chunks that are generated at the highest level of detail. Figure \ref{fig:meshes1} shows physics meshes being generated in a radius around the camera.
 
 
   \caption{Generated physics meshes, shown in red outline.}
 
 
-Making this restriction on the meshes generated means that there are significantly less physics meshes being generated with each octree update. This also has the benefit that physics collisions always occur with the same geometry, rather than with geometry at varying levels of detail. If collision with low detail geometry were to occur, finer features in the geometry may be completely ignored. However, this means that collision can only occur where the highest level of detail is used. To solve this, we modify the \texttt{shouldSplit} and \texttt{shouldChop} functions described in section \ref{section:octree}, as shown in listing \ref{phy_lod}.
+Making this restriction on the meshes generated means that there are significantly less physics meshes being generated with each octree update, and also that physics collisions always occur with the same geometry, rather than with geometry at varying levels of detail. If collision with low detail geometry were to occur, finer features in the geometry may be completely ignored. However, this means that collision can only occur where the highest level of detail is used. To solve this, we modify the \texttt{shouldSplit} and \texttt{shouldChop} functions described in section \ref{section:octree}, as shown in listing \ref{phy_lod}.
 
-Snippet from \texttt{shouldSplit} responsible for increasing the level of detail near a set of test physics objects. All chunks with bounding boxes that intersect the bounding box of a physics shape will be split until the highest detail level is reached. The octree refinement process described in section \ref{section:octree_refinement} ensures that this does not create any places where very different levels of detail are adjacent to each other.}]
+Snippet from \texttt{shouldSplit} responsible for increasing the level of detail near a set of test objects. All chunks with bounding boxes that intersect the bounding box of a physics shape will be split until the highest detail level is reached. The octree refinement process described in section \ref{section:octree_refinement} ensures that this does not create any places where different levels of detail are adjacent to each other.}]
 
 
 Figures \ref{fig:meshes2} and \ref{fig:meshes3} show this system in action.
 
 
-  \caption{Physics meshes generated for large, far away objects. Meshes are shown in red outline. Due to the distance from the camera and the high level of detail, the mesh appears to be rendered as a solid block of color.}
+Physics meshes generated for large, far away objects. Meshes are shown in red outline. Due to the high level of detail, the mesh appears to be rendered as a solid block of color.
 
 
-  \caption{Chunk sizes generated for a small, far away physics object. There is no place where a very high level of detail and very low level of detail are adjacent to each other, thanks to the refinement algorithm.}
+Chunks generated for a small, far away physics object. There is no place where a very high level of detail and very low level of detail are adjacent to each other, thanks to the refinement algorithm.
 
 
 \subsection{Player Controller}
-To handle player collision, we will use a capsule shape oriented along the y axis. To move the shape, we will apply a force in the direction we want to move. The direction of this force is determined by the directional keys being pressed. For example, if the forward key is being pressed, the force will be in the same direction as the x and z components of the look direction of the camera, and the collision shape is pushed in the direction the camera is looking. The other directional keys act similarly, applying a force relative to the direction of the camera. To move upwards, a large upwards force is applied. 
+To handle player collision, we will use a capsule shape oriented along the y axis. To move the shape, we apply a force in the direction we want to move. The direction of this force is determined by the directional keys being pressed. For example, if the forward key is being pressed, the force will be in the same direction as the x and z components of the look direction of the camera, and the collision shape is pushed in the direction the camera is looking. The other directional keys act similarly. To move upwards, a large upwards force is applied. 
 \subsubsection{Editing geometry near the player}
-If geometry is edited near the player, it is possible for the collision shape to become stuck in the collision meshes, or even pass through it entirely, resulting in incorrect collisions. To prevent this from happening, there is the option of a simple camera mode, with no collision detection, and it is possible to restrict terrain editing to only be possible in this mode. In this case, the collision shape is moved to the new position of the camera when the mode is switched again.
+If geometry is edited near the player, it is possible for the collision shape to become stuck in the collision meshes, or even pass through it entirely, resulting in incorrect collisions. To prevent this from happening, there is the option of a simple camera mode, with no collision detection, and terrain editing can be restricted to only this mode. In this case, the collision shape is moved to the new position of the camera when the mode is switched again.
 \subsection{Multithreading}
 
 Even when meshes are only generated for chunks at the highest level of detail, mesh generation for a large chunk of geometry still takes long enough to cause a noticable slowdown. This is because a data structure is created internally for each mesh collision object.
 
-To enable physics meshes to be generated whilst maintaining an interactive framerate, they are generated on a separate thread. All of the information about the collision mesh for a chunk is stored in a \texttt{ChunkMesh} object. There are numerous ways in which race conditions can occur as a result of this multithreading, for example:
+So physics meshes can be generated whilst maintaining an interactive framerate, they are generated on a separate thread. All of the information about the collision mesh for a chunk is stored in a \texttt{ChunkMesh} object. There are numerous ways in which race conditions can occur as a result of this multithreading, for example:
 
   A chunk is deleted, whilst a mesh computation that relies on the geometry within is still ongoing on another thread, causing deallocated memory to be read.
   A generated physics mesh is added to the simulation by a secondary thread whilst the main thread is performing other calculations to simulate the world, causing errors within the library. This occurs particularly when library functions are iterating over collections of objects already in the simulation, since modifying such collections during iteration can cause unpredictable behaviour. Due to the complexity of the library, it is impractical to anticipate all of the situations where this could occur, and hence we will treat the library function \texttt{stepSimulation} as a black box, only modifying the objects inside the physics simulation within the same thread as this function.
@@ -465,7 +463,7 @@ At the start of this project, I had some experience working with C++ and the lib
 
 I particularly enjoyed creating SDFs to represent terrain, and it was satisfying to be able to define a shape using an equation and immediately see it rendered. 
 
-The final implementation contains XXXX lines of code, and can be found at \url{https://github.com/JC-G/Marching-Cubes}.
+The final implementation contains XXXX lines of code.
 
 \subsection{Future Work}
 \subsection{Octree Refinement Improvements}

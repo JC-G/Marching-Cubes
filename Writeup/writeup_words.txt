@@ -21,7 +21,7 @@ $f\left(x,y,z\right)$ represents the smallest (signed) euclidean distance from t
 Near the surface, $f$ is continuous, and has all first partial derivatives. This is useful since the gradient of an SDF on the surface gives the normal vector to the surface at that point.
 
 
-An article by Inigo Quilez lists some useful SDFs\cite{quilez:sdf}.
+An article by Inigo Quilez lists some useful SDFs~\cite{quilez:sdf}. Figures \ref{fig:Circle_SDF} and \ref{fig:Hill_SDF} show some examples.
 
 2 dimensional exact SDF representing a circle. The SDF shown is $f\left(x,y\right)=\sqrt{x^2+y^2}-1$, with the area where $f\left(x,y\right)<0$ shaded. Also shown are the contours where $f\left(x,y\right)=0.1,0.2,...0.5$. At the center point $\left(0,0\right)$, the gradient is undefined. However, since this point is not close to the surface, $f$ can still be used as an SDF without issue.
 
@@ -33,7 +33,7 @@ Many shapes have an exact SDF that is complex to evaluate, so it is more efficie
 The set-theoretical operations of union, intersection, and difference have representations using the $\min$ and $\max$ functions. Where the function $\min\left(f,g\right)$ is not differentiable at the point where $f = g$, we choose the derivative of either $f$ or $g$. Using these functions, it is possible to combine SDFs of many shapes to produce a surface that is more complex.
 
 \subsection{Noise}
-Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output. This means that the function is smooth. One such function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. More advanced noise algorithms exist, such as Perlin or Simplex noise\cite{PerlinChapter2N}, that show fewer regularities.
+Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output. This means that the function is smooth. One such function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. More advanced noise algorithms exist, such as Perlin or Simplex noise\cite{PerlinChapter2N}, that show fewer regularities. Figures \ref{fig:value_noise} and \ref{fig:better_noise} show some example noise functions.
 
 Left: A single layer of value noise. Right: 8 octaves of value noise.
 
@@ -47,14 +47,14 @@ It is also possible to use a 3D noise function in an SDF, for example in generat
 
 Marching Cubes is an algorithm for polygonising a 3 dimensional scalar field. It works by splitting the space into a uniform grid of cubes (\textit{cells}), and sampling the scalar field at each cell vertex. Pre-computed lookup tables, are used to determine the geometry that exists within each cell. We show examples of such tables in section \ref{section:lookup_tables}. 
 
-The sampled values of the scalar field at each cell vertex are linearly interpolated, and the geometry vertex is placed where the value of this linear interpolation is 0. This approximates the position where the edge of the cell intersects the surface.
+The sampled values of the scalar field at each cell vertex are linearly interpolated, as shown in figure \ref{fig:linear_interpolation}, and the geometry vertex is placed where the value of this linear interpolation is 0. This approximates the position where the edge of the cell intersects the surface. Figure \ref{fig:ms_example} illustrates the Marching Cubes algorithm.
 
 2D demonstration of linear interpolation. These cells contain the same class of geometry, but with different SDF values, and hence different vertex positions. The red lines show the generated geometry.
 
 2D example of Marching Cubes approximating a circle on a 6x6 grid.
 
 \subsubsection{Limitations of Marching Cubes}
-Marching Cubes was chosen for this project because the geometry for each grid cell can be generated independently from other cells. It produces a relatively accurate result for smooth shapes. However, it is not the best choice of algorithm for shapes that have a lot of sharp corners.
+Marching Cubes was chosen for this project because the geometry for each grid cell can be generated independently from other cells. It produces a relatively accurate result for smooth shapes. However, it is not the best choice of algorithm for shapes with sharp corners, such as the shape in figure \ref{fig:sharp_corner}.
 
 Inaccuracies near the sharp edge of this cylinder are visible.
 
@@ -85,7 +85,7 @@ Using an octree, any condition can be used to determine the level of detail at a
 
 \subsection{The Transvoxel Algorithm}
 
-Using Marching Cubes with multiple different grid cell sizes causes cracks on the boundary between chunks at different scales, since the vertices generated at different grid scales do not always line up with each other.
+Using Marching Cubes with multiple different grid cell sizes causes cracks on the boundary between chunks at different scales, since the vertices generated at different grid scales do not always line up with each other. Figure \ref{fig:cracks_demo} illustrates this, and figure \ref{fig:cracks2} shows the problem within my implementation.
 
 This figure shows the faces of 2 adjacent grid cells. The exact surface represented by the SDF is shaded in purple. The dotted lines show the edges produced by Marching Cubes at the level of detail of these grid cells, and the level below. When these cases occur next to each other, the red space in between the dotted lines forms a crack in the geometry.
 
@@ -93,7 +93,7 @@ Cracks between different levels of detail cause the blue background to be visibl
 
 The Transvoxel algorithm\cite{lengyel_2010} is an algorithm based on Marching Cubes that solves this problem by adding additional vertices along cell edges that are adjacent to higher resolution grid cells.
 
-This is done by splitting a cell at the lower resolution (a half-resolution cell) into a regular cell and some amount of transition cells, so that the transition cells border the regular cells at the higher resolution (full-resolution cells). These transition cells serve as a method of stitching the gap in between half-resolution and full-resolution cells.
+This is done by splitting a cell at the lower resolution (a half-resolution cell) into a regular cell and some amount of transition cells, so that transition cells border the regular cells at the higher resolution (full-resolution cells). These transition cells serve as a method of stitching the gap in between half-resolution and full-resolution cells.
 
 Illustration of 2 possible configurations of transition cells on the boundary between levels of detail. The half-resolution regular cell has been resized, and transition cells fit in the space made in between the cells. Reproduced from figure 4.9 in the Transvoxel algorithm paper\cite{lengyel_2010}.
 
@@ -104,9 +104,9 @@ Like Marching Cubes, the original Transvoxel implementation was written for a st
 This section demonstrates the functions of the Transvoxel lookup tables. These tables have been flattened from multidimensional arrays, since they will be passed to shaders as buffers. Vertex indexing data that would allow for reuse of vertices has been removed, for the reason described in section \ref{section:downsides}.
 
 \paragraph{Regular cell lookup tables}
-Regular cells have 8 cell vertices, each of which has a distinct SDF sample value.
+Regular cells have 8 cell vertices, each of which has a distinct SDF sample value. Figure \ref{fig:tv_labels} shows the vertex naming conventions for regular cells.
 
-Cell vertex naming convention for regular cells. Figure reproduced from figure 3.7 of the Transvoxel paper\cite{lengyel_2010}.
+Regular cell vertex naming convention. Reproduced from figure 3.7 of the Transvoxel paper~\cite{lengyel_2010}.
 
 Calculation of \texttt{cellIndex}, and lookup tables, for regular cells. An example of their usage is given below.
 
@@ -116,26 +116,27 @@ The array \texttt{gridCells} contains the SDF sample values, and \texttt{cellInd
 \texttt{regularCellData} contains a row of 16 numbers for each of the 16 cell classes. Each row starts with a value that encodes the number of distinct vertices and triangles in the triangulation, which is unused in my implementation. The following 15 entries are indices into \texttt{regularVertexData}, storing the order in which the vertices in the cell triangulation will be used. 
 \texttt{regularVertexData} contains a row of 12 numbers for each \texttt{cellIndex}. Each number encodes an edge of the grid cell using 2 vertex indices, as in figure \ref{fig:tv_labels}. 
 Finally, \texttt{regularTotalTable} contains the number of vertices in the triangulation for each class, including duplicates. This acts as a replacement for the unused triangle count in \texttt{regularCellData}.
-As an example, consider the case where only vertex 0 is inside the terrain, giving a binary \texttt{cellIndex} of $00000001$. The cell class, from \texttt{regularCellClass}, is \texttt{0x01}. The number of vertices to be generated, from \texttt{regularTotalTable}, is 3. The vertex indices to be used, from \texttt{regularCellData}, are 0, 1, and 2. The vertex positions, from \texttt{regularVertexData}, are \texttt{0x01, 0x02, 0x04}. Hence a triangle will be generated with a vertex on the edge between grid cell vertices 0 and 1, a vertex on the edge between grid cell vertices 0 and 2, and a vertex on the edge between grid cell vertices 0 and 4, in that order.
+As an example, consider the case where only vertex 0 is inside the terrain, giving a binary \texttt{cellIndex} of $00000001$. This will generate geometry like figure \ref{fig:regular_cell_example_case}. The cell class, from \texttt{regularCellClass}, is \texttt{0x01}. The number of vertices to be generated, from \texttt{regularTotalTable}, is 3. The vertex indices to be used, from \texttt{regularCellData}, are 0, 1, and 2. The vertex positions, from \texttt{regularVertexData}, are \texttt{0x01, 0x02, 0x04}. Hence a triangle will be generated with a vertex on the edge between grid cell vertices 0 and 1, a vertex on the edge between grid cell vertices 0 and 2, and a vertex on the edge between grid cell vertices 0 and 4, in that order.
 
 A regular cell of the same class as the example, reproduced from the diagram of all Transvoxel cell classes\cite{lengyel}. Note however that this cell is not oriented the same as figure \ref{fig:tv_labels}.
 
 \subsubsection{Transition cell lookup tables}
 
+A transition cell uses 9 distinct SDF sample values, at vertices 0 through 8 in figure \ref{fig:tv_transition_labels}. Cell vertices 9, A, B, and C take their sample values from the vertices directly opposite them: vertices 0, 2, 6, and 8 respectively. Thus there are 512 possible cases to consider, rather than 256 cases in the case of a regular cell. Figure \ref{fig:tv_transition_cellIndex} shows how cell vertices are considered, for the purpose of calculating \texttt{transitionCellIndex}, as implemented in listing \ref{tv_transition_tables}.
+
 Cell vertex naming convention for transition cells. (a) shows the higher resolution face of the cell, and (b) shows the opposite, lower resolution face. Reproduced from figure 4.16 of the Transvoxel paper\cite{lengyel_2010}
 
 Hexadecimal contribution to \texttt{transitionCellIndex} by each cell vertex on the higher resolution face of a transition cell. Reproduced from figure 4.17 of the Transvoxel paper\cite{lengyel_2010}
-
-A transition cell uses 9 distinct SDF sample values, at vertices 0 through 8 in figure \ref{fig:tv_transition_labels}. Cell vertices 9, A, B, and C take their sample values from the vertices directly opposite them: vertices 0, 2, 6, and 8 respectively. Thus there are 512 possible cases to consider, rather than 256 cases in the case of a regular cell.
 
 Calculation of \texttt{transitionCellIndex}, and lookup tables for transition cells. An example of their usage is given below.
 
 
 The tables perform the same roles as their regular cell counterparts. There are 73 classes of transition cell, although by considering classes using the same triangulation with different vertices, this can be reduced to 56 classes. The highest bit in the 8-bit \texttt{transitionCellClass} corresponds to a triangulation where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass}, having binary value $10000111$, corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
 
-For example, consider the transition cell where vertex 0 is inside the terrain. Then vertex 9 will also be considered as inside. \texttt{transitionCellIndex} will be calculated as $000000001$, corresponding to a cell class of \texttt{0x01} in \texttt{transitionCellClass}. 
+For example, consider the transition cell where vertex 0 is inside the terrain. Then vertex 9 will also be considered as inside. This will generate geometry like figure \ref{fig:transition_cell_example_case}. \texttt{transitionCellIndex} will be calculated as $000000001$, corresponding to a cell class of \texttt{0x01} in \texttt{transitionCellClass}. 
 
 The number of vertices to generate is found in \texttt{transitionTotalTable}; in this case, there are 6. The vertex indices to be used are found in \texttt{transitionCellData}: The first triangle uses vertex indices 0, 1, and 3, in that order, and the second uses vertices 1, 2, and 3.
+
 The locations of these vertices are found in the corresponding row in \texttt{transitionVertexData}, so vertex 0 is between cell vertices 0 and 1, vertex 1 is between cell vertices 0 and 3, and so on.
 
 A transition cell of the same class as the example, reproduced from the diagram of all Transvoxel cell classes\cite{lengyel}.
@@ -185,11 +186,11 @@ A plane generated with the Transvoxel algorithm. The circled transition cell has
   
 \subsubsection{Calculation of edgeIndex}
 
-The variable \texttt{edgeIndex} is a 6-bit integer, with each bit storing whether a face of a chunk should have transition cells. For each octree leaf containing geometry, the octree is searched using a recursive algorithm, to find neighboring nodes in each direction at the same depth. If a neighbor is a leaf, then the neighboring geometry is at the same level of detail. If no neighbor exists at the same depth in some direction, then the neighboring geometry is at a lower level of detail. \texttt{edgeIndex} is not modified in this case, since it will be modified for the lower level of detail geometry. If the neighbor is not a leaf, then the neighboring geometry is at a higher level of detail, and \texttt{edgeIndex} is modified to record that transition cells should be generated in that direction.
+The variable \texttt{edgeIndex} is a 6-bit integer, with each bit storing whether a face of a chunk should have transition cells. For each octree leaf containing geometry, the octree is searched using a recursive algorithm, to find neighboring nodes in each direction at the same depth. If a neighbor is a leaf, then the neighboring geometry is at the same level of detail. If no neighbor exists at the same depth in some direction, then the neighboring geometry is at a lower level of detail. \texttt{edgeIndex} is not modified in this case, since it will be modified for the lower level of detail geometry. If the neighbor is not a leaf, then the neighboring geometry is at a higher level of detail, and \texttt{edgeIndex} is modified to record that transition cells should be generated in that direction. Figure \ref{fig:octree_neighbors} shows some example cases.
+
+The blue cell has 3 neighbors at the same level of detail. The green neighbor is within the same parent octree cell, and no recursive calls are needed. The red neighbor is not within the same parent cell, so the neighbor of the parent is found, and the corresponding child of this neighbor is returned. The orange neighbor is not a leaf, so \texttt{edgeIndex} is updated to reflect this. There is no neighbor at the same level of detail above the blue cell.
 
 Code for finding the neighbor of a node at the same level of detail in an octree. The children of a node are stored as a 3D array of pointers: \texttt{Octree* myChildren[2][2][2];}. \texttt{relativePosition} is a 3-component vector, where exactly one component is non-zero, corresponding to the direction in which to look for the neighbor. For example, a value of $\left(1,0,0\right)$ searches in the positive X direction.
-
-The blue cell has 3 neighbors at the same level of detail. The green neighbor is within the same parent octree cell, and no recursive calls are needed. The red neighbor is not within the same parent cell, so the neighbor of the parent is found, and the corresponding child of this neighbor is returned. The orange neighbor is not a leaf, so \texttt{edgeIndex} is updated to reflect this. There is no neighbor at the same level of detail above the blue cell.}
 
 \subsubsection{Downsides of parallelisation}
 
@@ -211,7 +212,7 @@ A wireframe of the 10x1x10 chunk test.
 
 \subsubsection{Octree Refinement}
 
-The Transvoxel algorithm is sufficient in most cases for eliminating cracks in the geometry. However, there are octree configurations which could occur, where different levels of detail appear next to each other, even once transition cells have been generated.
+The Transvoxel algorithm is sufficient in most cases for eliminating cracks in the geometry. However, there are octree configurations which could occur, where different levels of detail appear next to each other, even once transition cells have been generated. Figure \ref{fig:octree_neighbor_error} shows an example of this.
 
 An illustration of where different levels of detail may occur next to each other. Areas where transition cells are generated are shaded in blue. The area where transition cells are generated, but different levels of detail will still be adjacent to each other, is shaded in red.
 
@@ -319,14 +320,13 @@ To avoid the complex computation that comes with finding the roots of a quintic,
 
 Using approximations also allows for splines to be used to define more complex shapes, where calculating an exact SDF may be infeasible. Often the shape used for the line segment will result in jagged areas between line segments, when the shape is very curved. To solve this issue, at the ends of the shapes, we only consider the intersection, as demonstrated in figure \ref{fig:road_double}.
 
-Left: Illustration of the union of 2 shapes at an angle, so there is a jagged overlap between them. Right: The same 2 shapes, considering only the intersection between the shapes at the end, giving a smoother appearance
+Left: Illustration of the union of 2 shapes at an angle, so there is a jagged overlap between them. Right: The same 2 shapes, considering only the intersection between the shapes at the end, giving a smoother appearance.
 
 
-Figure \ref{fig:bezier_roads} shows a shape generated using an SDF where each line segment is represented by a capsule intersected with a half-plane, to form a shape that is flat on top.
+Figure \ref{fig:bezier_roads} shows a shape generated with this method, using an SDF where each line segment along the spline is represented by a capsule intersected with a half-plane, to form a shape that is flat on top.
 
 
-  \caption{Shape generated using splines having a more complex cross-section. Since each cubic curve in the interpolation spline is passed to the shader separately, the smoothing method was not used on the boundary between the curve segments, so some intersections between the shapes are still visible. Implementing this would require significant changes to the editing code, but would result in a smoother shape.}
-
+Shape generated using splines having a more complex cross-section. Since each cubic curve in the interpolation spline is passed to the shader separately, the smoothing method was not used on the boundary between the curve segments, so some intersections between the shapes are still visible. Implementing this would require significant changes to the editing code, but would result in a smoother shape.
 
 Listing \ref{road_code} shows the GLSL code defining this SDF.
 

@@ -1207,25 +1207,10 @@ When these techniques are applied alongside a well-chosen noise-based terrain fu
 The code has been iteratively improved over the course of the project. This section briefly explores some of the improvements implemented during development.
 
 \subsection{Storage of Transvoxel sample values}
-Each of the SDF sample values calculated in the first shader stage is stored in an OpenGL buffer, so it can be retrieved by the later stages. To do this, a function \texttt{getArrID} is implemented, that takes the position of the sample relative to the chunk, and returns an index into a flat buffer. For Marching Cubes, this is simple, since the sample values are always arranged in a cuboid.
-\begin{lstlisting}[language=C++,label={mc_arrID},caption={Function mapping grid position \texttt{gid} to a flat array.}]
-uint getArrID(uvec3 gid) {
-  return gid.x + gid.y * (1+chunkSize.x) + gid.z * (1+chunkSize.x) * (1+chunkSize.y);
-}
-\end{lstlisting}
 
-Things become more complicated for the sample points in the Transvoxel algorithm, since there are sample points that are midway between the grid cell vertices, on the faces of the chunk, when transition cells are generated. A simple solution is to use a very large array, doubling the size in each dimension, so that sample points halfway between grid cells fit in as though the grid size was changed.
+Each SDF sample value calculated in the first shader stage is stored in a flat buffer, to be retrieved by the later stages. This is implemented with the function \texttt{getArrID} that takes the position of the sample relative to the chunk, and returns an index into the buffer. When the sample points are arranged in a grid, this is relatively simple, however things become more complicated for the sample points in the Transvoxel algorithm, since there are sample points that are midway between the grid cell vertices when transition cells are generated. A simple solution was to double the size of the array in each dimension, so that sample points halfway between grid cells fit in as though the grid size was changed, however this leads to a very sparse buffer that is far larger than it needs to be. A more space-efficient solution stores the sample points not on the faces of the chunk as a cuboid. Then, each face of the chunk is stored at the end of the buffer, so that additional sample points on the face can fit. This results in much less wasted space.
 
-\begin{lstlisting}[language=C++,label={tv_arrID_1},caption={Inefficient function mapping grid position \texttt{gid} and information about whether the sample point is in between the grid positions, \texttt{halfXYZ}, to a flat array.}]
-uint getArrID(uvec3 gid, uvec3 halfXYZ) {
-  uvec3 temp = 2 * gid + halfXYZ;
-  return temp.x + temp.y * (2 * chunkSize.x + 1) + temp.z * (2 * chunkSize.x + 1) * (2 * chunkSize.y + 1);
-}
-\end{lstlisting}
-
-This leads to a very sparse buffer that is far larger than it needs to be. A more space-efficient solution stores the sample points not on the faces of the chunk as a cuboid. Then, each face of the chunk is stored at the end of the buffer, so that additional sample points on the face can fit. This may still result in a sparse array when these additional points are not needed, however there is much less wasted space.
-
-\begin{lstlisting}[language=C++,label={tv_arrID_2},caption={A more efficient \texttt{getArrID} function.}]
+\begin{lstlisting}[language=C++,label={tv_arrID_2},caption={The more efficient \texttt{getArrID} function.}]
   uint getArrID(uvec3 gid, uvec3 halfXYZ) {
     //Store the main volume
     if (gid.x > 0 && gid.x < chunkSize.x &&
@@ -1284,37 +1269,23 @@ This leads to a very sparse buffer that is far larger than it needs to be. A mor
 \end{lstlisting}
 
 \subsection{Storage of Editing Brushes}
-The first iteration of the editing algorithm stored all brushes for the entire world in one single array. This made it simple to add brushes, but meant that the entire array of brushes had to be iterated through for every chunk, which was prohibitively slow for a large number of brushes, even on chunks that had a small amount of brushes within them. Listing \ref{edit_storage_1} shows this iteration.
+The first iteration of the editing algorithm stored all brushes for the entire world in one single array, making it simple to add brushes, but meaning that the entire array of brushes had to be iterated through for every chunk, which was prohibitively slow for a large number of brushes, even when individual chunks had a small amount of brushes within them. 
 
-\begin{lstlisting}[language=C++,label={edit_storage_1},caption={Iteration over every brush, returning those that intersect the bounding box of the chunk.}]
-std::vector<BrushParams> Editing::getBrushesInBox(BrushBoundingBox box) {
-  std::vector<BrushParams> result;
-  for (Brush* b : Editing::allBrushes) {
-    if (b->getBoundingBox().intersects(box)) {
-      result.push_back(b->getBrushParams());
-    }
-  }
-  return result;
-}
-\end{lstlisting}
-
-Using the pre-existing octree to store lists of brushes for each chunk, as described in section \ref{section:modification_implementation}, removes the need to do this iteration, at the expense of having to iterate over the octree to add a brush.
+Using the pre-existing octree to store lists of brushes for each chunk, as described in section \ref{section:modification_implementation}, removed the need to do this iteration, at the expense of having to iterate over the octree to add a brush.
 
 \subsection{Bounding Boxes and Grid Cells}
-As described in section \ref{section:modification_implementation}, an SDF is only evaluated if the grid cell being worked on intersects its bounding box. A previous iteration only considered whether the sample point was within this bounding box. However, this resulted in incorrect interpolation of geometry vertices in grid cells partially inside the SDF bounding box, due to the discontinuity introduced by not evaluating the SDF at one of the points. 
+As described in section \ref{section:modification_implementation}, an SDF is only evaluated if the grid cell being worked on intersects its bounding box. A previous iteration only considered whether the sample point was within this bounding box. However, this resulted in incorrect interpolation of geometry vertices in grid cells partially inside the SDF bounding box. This was corrected by extending the bounding box check to include cases where the grid cell intersects the bounding box, even if the sample point does not.
 
-\begin{lstlisting}[language=C++,label={bb_gc},caption={The first iteration of the test of a grid cell point against an SDF bounding box defined by \texttt{bottom} and \texttt{top}, followed by the second iteration, which includes the value \texttt{chunkStride} to ensure that the SDF is considered if the sample point is within 1 grid cell of the bounding box.}]
-//Iteration 1
+\begin{lstlisting}[language=C++,label={bb_gc},caption={Different iterations of the SDF bounding box check.}]
+//Iteration 1 - not considering the entire grid cell
 bool inBox(vec4 bottom, vec4 top, vec3 inPos) {
   return all(lessThanEqual(bottom.xyz,inPos)) && all(lessThanEqual(inPos,top.xyz));
 }
-//Iteration 2
+//Iteration 2 - consider the size of the grid cell when checking
 bool inBox(vec4 bottom, vec4 top, vec3 inPos) {
   return all(lessThanEqual(bottom.xyz,inPos + chunkStride)) && all(lessThanEqual(inPos - chunkStride,top.xyz));
 }
 \end{lstlisting}
-
-Since this extended the area in which a brush may affect the geometry, the corresponding C++ code was also changed in the same way, so the brush was included when this expanded bounding box intersects a chunk.
   
 \section{Conclusion}
 \subsection{Reflection}

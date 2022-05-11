@@ -208,6 +208,8 @@ Regular cells have 8 cell vertices, each of which has a distinct SDF sample valu
   \label{fig:tv_labels}
 \end{SCfigure}
 
+\pagebreak
+
 \begin{lstlisting}[language=C++,label={tv_tables},caption={Calculation of \texttt{cellIndex}, and lookup tables, for regular cells. An example of their usage is given below.}]
 int cellIndex = 0;
 int cellMask = 1;
@@ -312,7 +314,7 @@ const unsigned int transitionTotalTable[56] = {
 };       
 \end{lstlisting}
 
-The tables perform the same roles as their regular cell counterparts, with \texttt{transitionCellClass} mapping \texttt{transitionCellIndex} to one of 56 classes. The eighth bit in \texttt{transitionCellClass} corresponds to a triangulation where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass} corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
+The tables perform the same roles as their regular cell counterparts, with \linebreak\texttt{transitionCellClass} mapping \texttt{transitionCellIndex} to one of 56 classes. The eighth bit in \texttt{transitionCellClass} corresponds to a triangulation where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass} corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
 For example, consider the transition cell where vertex 0 is inside the terrain. Then vertex 9 will also be considered as inside. This will generate geometry like figure \ref{fig:transition_cell_example_case}. \texttt{transitionCellIndex} will be calculated as $000000001$, and the tables will be used in the same way as their regular counterparts. 
 In this case, we find that there is a triangle using vertex indices 0, 1, and 3, and another using indices 1, 2, and 3. Vertex 0 is between cell vertices 0 and 1, vertex 1 is between cell vertices 0 and 3, and so on.
 
@@ -449,6 +451,8 @@ The variable \texttt{edgeIndex} is a 6-bit integer, with each bit storing whethe
   \includegraphics[width=0.5\textwidth]{octree_neighbors.png}
   \label{fig:octree_neighbors}
 \end{SCfigure}
+
+\pagebreak
 
 \begin{lstlisting}[language=C++,label={octree_neighbor},caption={Code for finding the neighbor of a node at the same level of detail in an octree. The children of a node are stored as a 3D array of pointers: \texttt{Octree* myChildren[2][2][2];}. \texttt{relativePosition} is a 3-component vector, where exactly one component is non-zero, corresponding to the direction in which to look for the neighbor. For example, a value of $\left(1,0,0\right)$ searches in the positive X direction.}]
 //return the neighbor at the same LOD if one exists, or NULL if none exists
@@ -982,17 +986,17 @@ std::string SphereAction::getDetails() {
 Previews for shapes defined using Bezier splines are shown by approximating the curve with a series of cylinders. Some examples of the user interface are shown in figures \ref{fig:sphere_preview}, \ref{fig:cylinder_preview} and \ref{fig:spline_preview}.
 
 \begin{figure}[H]
-  \includegraphics[width=\textwidth]{sphere_preview.png}
+  \includegraphics[width=0.9\textwidth]{sphere_preview.png}
   \caption{Preview of a sphere about to be placed, next to a sphere that has already been placed.}
   \label{fig:sphere_preview}
 \end{figure}
 \begin{figure}[H]
-  \includegraphics[width=\textwidth]{cylinder_preview.png}
+  \includegraphics[width=0.9\textwidth]{cylinder_preview.png}
   \caption{Preview of a cylinder about to be placed, next to some shapes which have already been placed.}
   \label{fig:cylinder_preview}
 \end{figure}
 \begin{figure}[H]
-  \includegraphics[width=\textwidth]{spline_preview.png}
+  \includegraphics[width=0.9\textwidth]{spline_preview.png}
   \caption{Preview of an interpolation spline with multiple control points. The use of semi-transparent shapes means that visual artifacts are present when the shapes are drawn in a specific order. This can be solved by drawing the shapes in a specific order. However, since the only purpose of rendering this is to display a preview, this is unneccesary.}
   \label{fig:spline_preview}
 \end{figure}
@@ -1017,7 +1021,7 @@ Creating a large collision mesh is computationally expensive, and so physics mes
 \end{figure}
 
 Making this restriction on the meshes generated means that there are significantly less physics meshes being generated with each octree update, and also that physics collisions always occur with the same geometry, rather than with geometry at varying levels of detail. If collision with low detail geometry were to occur, finer features in the geometry may be completely ignored. However, this means that collision can only occur where the highest level of detail is used. To solve this, we modify the \texttt{shouldSplit} and \texttt{shouldChop} functions described in section \ref{section:octree}, as shown in listing \ref{phy_lod}.
-
+\pagebreak
 \begin{lstlisting}[language=C++,label={phy_lod},caption={Snippet from \texttt{shouldSplit} responsible for increasing the level of detail near a set of test objects. All chunks with bounding boxes that intersect the bounding box of a physics shape will be split until the highest detail level is reached. The octree refinement process described in section \ref{section:octree_refinement} ensures that this does not create any places where different levels of detail are adjacent to each other.}]
 for (auto shape : TestShape::allShapes) {
   if (getBoundingBox().intersects(shape->getBoundingBox())) {
@@ -1094,7 +1098,7 @@ The situation is more complicated with approximate SDFs, since the value of the 
 Collision between an SDF and a different shape is more complicated, even if the SDF is exact. Since the distance between a surface and a shape is different depending on the orientation of the shape, and evaluation of an SDF gives no information about direction to the nearest point on the surface, such a system would be inaccurate. This method could be used with an approximate SDF which provides a lower bound of the distance to the surface, along with a spherical bounding volume for physics shapes, to perform culling on objects to determine when it is impossible for them to intersect. However, we will not explore this here, choosing instead to remain with the library implementation.  
 
 \section{Shading}
-A good way to improve the appearance of the generated terrain is to apply some shading. We make use of a modified version of Phong lighting, with 2 light sources. We use a far away light source to represent the sun, with both diffuse and specular reflection. We also use a light source which is positioned directly above the camera, that only contributes a diffuse component. This gives the appearance that nearby geometry is lighter than geometry that is further away, and excluding the specular component from the player light source prevents everything from appearing shiny.
+To improve the appearance of the generated terrain we will apply some shading. We make use of a modified version of Phong lighting, with 2 light sources. We use a far away light source to represent the sun, with both diffuse and specular reflection. We also use a light source which is positioned directly above the camera, that only contributes a diffuse component. This gives the appearance that nearby geometry is lighter than geometry that is further away, and excluding the specular component from the player light source prevents everything from appearing shiny.
 
 \begin{lstlisting}[language=C++,label={lighting},caption={Part of the fragment shader implementing this lighting model.}]
 //ambient

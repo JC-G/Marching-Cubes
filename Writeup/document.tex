@@ -1086,7 +1086,7 @@ Since all of the geometry is generated using SDFs, there is a possibility of usi
 The situation is more complicated with approximate SDFs, since the value of the SDF is no longer guaranteed to be the exact distance from the surface, and so there is no guarantee that moving even a small amount in some direction will not lead to a collision, making this approach ineffective. Figure \ref{fig:approx_collision} shows a 2D example of this.
 
 \begin{SCfigure}[][!h]
-  \caption{A circle with radius $0.5$ near an approximate SDF, where the distance is not exact. Here the dashed line is the contour line of the approximate SDF $f\left(x,y\right) = y - \left(1 - \frac{x^2}{3}\right)$ where the value is $0.5$. If this were an exact SDF, then the shapes would only just touch, however they are intersecting.}
+  \caption{A circle with radius $0.5$ near an approximate SDF, where the distance is not exact. Here the dashed line is the contour line of the approximate SDF $f\left(x,y\right)=y-\left(1-\frac{x^2}{3}\right)$ where the value is $0.5$. If this were an exact SDF, then the shapes would only just touch, however they are intersecting.}
   \includegraphics[width=0.5\textwidth]{approx_collision}
   \label{fig:approx_collision}
 \end{SCfigure}
@@ -1244,7 +1244,7 @@ At the start of this project, I had some experience working with C++ and the lib
 
 I particularly enjoyed creating SDFs to represent terrain, and it was satisfying to be able to define a shape using an equation and immediately see it rendered. 
 
-The final implementation contains XXXX lines of code.
+The final implementation contains 7540 lines of C++ and GLSL code.
 
 \subsection{Future Work}
 \label{section:future_work}

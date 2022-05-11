@@ -399,7 +399,7 @@ Since all of the geometry is generated using SDFs, there is a possibility of usi
 
 The situation is more complicated with approximate SDFs, since the value of the SDF is no longer guaranteed to be the exact distance from the surface, and so there is no guarantee that moving even a small amount in some direction will not lead to a collision, making this approach ineffective. Figure \ref{fig:approx_collision} shows a 2D example of this.
 
-A circle with radius $0.5$ near an approximate SDF, where the distance is not exact. Here the dashed line is the contour line of the approximate SDF $f\left(x,y\right) = y - \left(1 - \frac{x^2}{3}\right)$ where the value is $0.5$. If this were an exact SDF, then the shapes would only just touch, however they are intersecting.
+A circle with radius $0.5$ near an approximate SDF, where the distance is not exact. Here the dashed line is the contour line of the approximate SDF $f\left(x,y\right)=y-\left(1-\frac{x^2}{3}\right)$ where the value is $0.5$. If this were an exact SDF, then the shapes would only just touch, however they are intersecting.
 
 Collision between an SDF and a different shape is more complicated, even if the SDF is exact. Since the distance between a surface and a shape is different depending on the orientation of the shape, and evaluation of an SDF gives no information about direction to the nearest point on the surface, such a system would be inaccurate. This method could be used with an approximate SDF which provides a lower bound of the distance to the surface, along with a spherical bounding volume for physics shapes, to perform culling on objects to determine when it is impossible for them to intersect. However, we will not explore this here, choosing instead to remain with the library implementation. 
 
@@ -452,7 +452,7 @@ At the start of this project, I had some experience working with C++ and the lib
 
 I particularly enjoyed creating SDFs to represent terrain, and it was satisfying to be able to define a shape using an equation and immediately see it rendered. 
 
-The final implementation contains XXXX lines of code.
+The final implementation contains 7540 lines of C++ and GLSL code.
 
 \subsection{Future Work}
 \subsection{Octree Refinement Improvements}

@@ -95,11 +95,11 @@ This is done by splitting a cell at the lower resolution (a half-resolution cell
 
 Illustration of 2 possible configurations of transition cells on the boundary between levels of detail. The half-resolution regular cell has been resized, and transition cells fit in the space made in between the cells. Reproduced from figure 4.9 in the Transvoxel algorithm paper\cite{lengyel_2010}.
 
-Like Marching Cubes, the original Transvoxel implementation was written for a standard CPU. It works similarly to Marching Cubes, relying on large lookup tables, and can be implemented to work independently on grid cells, so it is possible to take advantage of the parallel processing power of the GPU. We will modify a set of lookup tables provided by the original author of the Transvoxel algorithm\cite{lengyel_2009}. A useful graphic showing all of the possible triangulations in the Transvoxel algorithm is available from the same source\cite{lengyel}.
+Like Marching Cubes, the original Transvoxel implementation was written for a standard CPU. It works similarly to Marching Cubes, relying on large lookup tables, and can be implemented to work independently on grid cells, so it is possible to take advantage of the parallel processing power of the GPU. We will modify a set of lookup tables provided by the original author of the Transvoxel algorithm\cite{lengyel_2009}. A graphic showing all of the possible triangulations in the Transvoxel algorithm is available from the same source\cite{lengyel}.
 
 \subsubsection{Lookup Tables}
 
-This section demonstrates the functions of the Transvoxel lookup tables. These tables have been flattened from multidimensional arrays, since they will be passed to shaders as buffers. Vertex indexing data that would allow for reuse of vertices has been removed, for the reason described in section \ref{section:downsides}.
+This section demonstrates the Transvoxel lookup tables. These tables have been flattened from multidimensional arrays, since they will be passed to shaders as buffers. Vertex indexing data that would allow for reuse of vertices has been removed, for the reason described in section \ref{section:downsides}.
 
 \paragraph{Regular cell lookup tables}
 Regular cells have 8 cell vertices, each of which has a distinct SDF sample value. Figure \ref{fig:tv_labels} shows the vertex naming conventions for regular cells.
@@ -110,7 +110,7 @@ Calculation of \texttt{cellIndex}, and lookup tables, for regular cells. An exam
 
 
 The array \texttt{gridCells} contains the SDF sample values, and \texttt{cellIndex} is an index into the subsequent tables, calculated based on these values. 
-\texttt{regularCellClass} maps the 256 possible values of \texttt{cellIndex} to one of 16 cell classes, which defines the triangulation used within the cell. There are actually 18 possible classes, however some of them use the same triangulation with different vertices, and this information is stored in \texttt{regularCellData}, so only 16 classes need to be considered. 
+\texttt{regularCellClass} maps the 256 possible values of \texttt{cellIndex} to one of 16\footnote{There are more classes of cell than there are values in \texttt{regularCellClass} and \texttt{transitionCellClass}, because the tables combine the classes that use the same triangulation with different vertices.} cell classes, which defines the triangulation used within the cell.
 \texttt{regularCellData} contains a row of 16 numbers for each of the 16 cell classes. Each row starts with a value that encodes the number of distinct vertices and triangles in the triangulation, which is unused in my implementation. The following 15 entries are indices into \texttt{regularVertexData}, storing the order in which the vertices in the cell triangulation will be used. 
 \texttt{regularVertexData} contains a row of 12 numbers for each \texttt{cellIndex}. Each number encodes an edge of the grid cell using 2 vertex indices, as in figure \ref{fig:tv_labels}. 
 Finally, \texttt{regularTotalTable} contains the number of vertices in the triangulation for each class, including duplicates. This acts as a replacement for the unused triangle count in \texttt{regularCellData}.
@@ -129,13 +129,11 @@ Hexadecimal contribution to \texttt{transitionCellIndex} by each cell vertex on 
 Calculation of \texttt{transitionCellIndex}, and lookup tables for transition cells. An example of their usage is given below.
 
 
-The tables perform the same roles as their regular cell counterparts. There are 73 classes of transition cell, although by considering classes using the same triangulation with different vertices, this can be reduced to 56 classes. The highest bit in the 8-bit \texttt{transitionCellClass} corresponds to a triangulation where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass} corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
+The tables perform the same roles as their regular cell counterparts, with \texttt{transitionCellClass} mapping \texttt{transitionCellIndex} to one of 56 classes. The eighth bit in \texttt{transitionCellClass} corresponds to a triangulation where the triangles face in the opposite direction, so a value of \texttt{0x87} in \texttt{transitionCellClass} corresponds to cell class \texttt{0x07}, with the triangles facing in the opposite direction. 
 
-For example, consider the transition cell where vertex 0 is inside the terrain. Then vertex 9 will also be considered as inside. This will generate geometry like figure \ref{fig:transition_cell_example_case}. \texttt{transitionCellIndex} will be calculated as $000000001$, corresponding to a cell class of \texttt{0x01} in \texttt{transitionCellClass}. 
+For example, consider the transition cell where vertex 0 is inside the terrain. Then vertex 9 will also be considered as inside. This will generate geometry like figure \ref{fig:transition_cell_example_case}. \texttt{transitionCellIndex} will be calculated as $000000001$, and the tables will be used in the same way as their regular counterparts. 
 
-The number of vertices to generate is found in \texttt{transitionTotalTable}; in this case, there are 6. The vertex indices to be used are found in \texttt{transitionCellData}: The first triangle uses vertex indices 0, 1, and 3, in that order, and the second uses vertices 1, 2, and 3.
-
-The locations of these vertices are found in the corresponding row in \texttt{transitionVertexData}, so vertex 0 is between cell vertices 0 and 1, vertex 1 is between cell vertices 0 and 3, and so on.
+In this case, we find that there is a triangle using vertex indices 0, 1, and 3, and another using indices 1, 2, and 3. Vertex 0 is between cell vertices 0 and 1, vertex 1 is between cell vertices 0 and 3, and so on.
 
 A transition cell of the same class as the example, reproduced from the diagram of all Transvoxel cell classes\cite{lengyel}.
 
@@ -145,7 +143,7 @@ We now describe a Transvoxel implementation on the GPU, making use of these modi
 
 The chunk faces where transition cells should be generated are encoded in the variable \texttt{edgeIndex}, which is discussed in section \ref{section:edgeIndex}.
 
-\underline{Distance function computation}: For each grid cell vertex, the SDF is sampled, and stored in a buffer. If this vertex lies on the face of the chunk, the SDF is sampled at additional points on the face, for use in transition cells. This shader is invoked once for each grid cell vertex, and the invocations corresponding to the vertices on the faces where transition cells are generated are responsible for calculating the additional sample points. This is done separately to the following stages to avoid unnecessary recomputation of the SDF, since one grid cell vertex may belong to up to 8 neighboring grid cells. Figure \ref{fig:tv_gen_grid} shows the points to be sampled on the face of a 2x2x2 chunk for various invocations.
+\underline{Distance function computation}: For each grid cell vertex, the SDF is sampled, and stored in a buffer. For vertices on the face of the chunk, the SDF is sampled at additional points on the face, for use in transition cells. This shader is invoked once for each grid cell vertex, and the invocations corresponding to the vertices on the faces where transition cells are generated are responsible for calculating the additional sample points. This is done separately to the following stages to avoid recomputation of the SDF, since one cell vertex may belong to up to 8 neighboring cells. Figure \ref{fig:tv_gen_grid} shows the points to be sampled on the face of a 2x2x2 chunk for various invocations.
 
 
 The 4 blue points in the bottom left are those that will be sampled by an invocation on the vertex at $\left(0,0\right)$, the 2 green points in the bottom right will be sampled by an invocation on the vertex at $\left(2,0\right)$, and the singular purple point will be sampled by an invocation on the vertex at $\left(2,2\right)$.
@@ -154,30 +152,23 @@ The 4 blue points in the bottom left are those that will be sampled by an invoca
 
 Code for counting the number of vertices and marchable grid cells in the chunk. \texttt{cellIndex} is calculated according to listing \ref{tv_transition_tables}, using the SDF values from the previous stage.
 
-When a transition cell needs to be generated, the following is done:
-  
-Determine the values of the SDF on the higher resolution face of the transition cell, using the buffer passed from the previous phase. Use this information to calculate the variable \texttt{transitionCellIndex}.
-
-Use the lookup tables to determine how much geometry exists within this transition cell, and increase the atomic counter accordingly, similarly to listing \ref{tv_count_regular}.
-  
-Append this transition cell to the buffer of cells to be polygonised in the subsequent phase. Also store that the cell is a transition cell, and its orientation.
+The same process is followed for transition cells, which are appended to the same buffer, separately from the regular cells they are adjacent to. The orientation of the transition cell is also stored in the buffer.
 
 
 
- \underline{Polygonisation phase}: For each cell passed by the previous phase through the buffer \texttt{marchableList}, the geometry is created, and the vertices of the geometry are linearly interpolated as described in section \ref{section:mc}. 
+\underline{Polygonisation phase}: For each cell passed by the previous phase through the buffer \texttt{marchableList}, the geometry is created, and the vertices of the geometry are linearly interpolated as described in section \ref{section:mc}. 
 
  Code for generating the geometry in a regular cell.
  
 When a regular cell has been made smaller to accommodate transition cells, the SDF has been sampled at the grid cell vertices, rather than the vertices of the regular cell. This introduces inaccuracies in the resulting geometry. The Transvoxel paper~\cite{lengyel_2010} describes a transformation that solves this issue by moving vertices on the lower resolution face of the transition cell, and the corresponding vertex on the neighboring regular cell, so they are on the edge that the regular cell would have generated. This was implemented in listing \ref{tv_poly_regular}.
 
-Transition cells are handled separately from regular cells, even if they share the same grid cell. There are multiple possible shapes a transition cell may need to take, some of which were shown in figure \ref{fig:transition_cells}. The cell vertex positions are calculated based on \texttt{edgeIndex}. Since the presence of a transition cell means that a regular cell has been resized, the above transformation is performed for all geometry generated on the lower resolution face of the transition cell. Otherwise, the actual code used to determine the geometry is similar, using the lookup tables from listing \ref{tv_transition_tables}.
+Transition cells are handled separately from regular cells, even if they share the same grid cell. There are multiple possible shapes a transition cell may need to take, some of which were shown in figure \ref{fig:transition_cells}, and this is calculated based on \texttt{edgeIndex}. Since the presence of a transition cell means that a regular cell has been resized, the above transformation is performed for all geometry generated on the lower resolution face of the transition cell. Otherwise, the actual code used to determine the geometry is similar, using the lookup tables from listing \ref{tv_transition_tables}.
 
 There is a case where multiple vertices of a transition cell may be moved to the same place, resulting in zero-width triangles being generated, which could interfere with other algorithms the generated geometry is used with. However, the number of zero-width triangles is small, and it turns out that in the applications considered in this report, zero-width triangles have not caused any issues.
 
 
 A plane generated with the Transvoxel algorithm. The circled transition cell has vertices placed on top of each other, leading to zero-width triangles.
 
-  
 \subsubsection{Calculation of edgeIndex}
 
 The variable \texttt{edgeIndex} is a 6-bit integer, with each bit storing whether a face of a chunk should have transition cells. For each octree leaf containing geometry, the octree is searched using a recursive algorithm, to find neighboring nodes in each direction at the same depth. If a neighbor is a leaf, then the neighboring geometry is at the same level of detail. If no neighbor exists at the same depth in some direction, then the neighboring geometry is at a lower level of detail. \texttt{edgeIndex} is not modified in this case, since it will be modified for the lower level of detail geometry. If the neighbor is not a leaf, then the neighboring geometry is at a higher level of detail, and \texttt{edgeIndex} is modified to record that transition cells should be generated in that direction. Figure \ref{fig:octree_neighbors} shows some example cases.
@@ -210,21 +201,21 @@ The Transvoxel algorithm is sufficient in most cases for eliminating cracks in t
 
 An illustration of where different levels of detail may occur next to each other. Areas where transition cells are generated are shaded in blue. The area where transition cells are generated, but different levels of detail will still be adjacent to each other, is shaded in red.
 
-To rectify this issue, a refinement strategy is used to ensure that cases like this do not occur within the octree. When the octree needs to be modified, the following 4 steps are performed in order:
+A refinement strategy is used to ensure that cases like this do not occur within the octree. When the octree needs to be modified, the following 4 steps are performed in order:
 
 Traverse the octree, visiting every node. If a non-leaf node satisfies \texttt{shouldChop}, then flag it, but do not delete its children yet. If a leaf node satisfies \texttt{shouldSplit}, then split it, creating 8 new leaf nodes. The newly created leaves will also be traversed in this step, allowing more than one layer of the octree to be generated at once.
-  
+
 The first stage in the octree refinement process.
 
 If the first step changed the structure of the octree, or flagged any nodes, check whether any nodes have neighbors which are more than one level of detail higher, using the \texttt{getNeighbor} function described in listing \ref{octree_neighbor}. If this occurs on a leaf node, then split the node into its 8 children, otherwise unflag it, if it was flagged. This flagging prevents octree nodes and the corresponding geometry from being deleted in the first step, then immediately recreated in the subsequent steps. Performing this step may create inconsistencies elsewhere, so it is performed repeatedly, until no more changes are made.
 
-The second stage in the octree refinement process, \texttt{refine}. The array \texttt{edgeNeighbors} corresponds to the relative positions of the 6 neighboring nodes at the same level, and the variable \texttt{childPosition} gives the position of the child to check in each neighbor. The flow of this code is designed such that exactly the 4 children of the neighboring node that touch the chunk in this node are checked.
+The second stage in the octree refinement process. \texttt{edgeNeighbors} gives the relative positions of the 6 neighboring nodes at the same level, and \texttt{childPosition} gives the position of the child to check in each neighbor. The flow of this code is designed such that exactly the 4 children of the neighboring node that touch the chunk in this node are checked.
 
 Once the previous step is complete, delete the children of any nodes which are still flagged.
 
 The third stage in the octree refinement process.
 
-Finally, generate geometry for all new leaves, and all leaves that needed regeneration, for example if the geometry inside them has changed. Also regenerate geometry for all leaves where \texttt{edgeIndex} has changed, so that cracks do not appear after changing the level of detail of a neighboring chunk.
+Generate geometry for all new leaves, and all leaves that needed regeneration, for example if the geometry inside them has changed. Also regenerate geometry for leaves where \texttt{edgeIndex} has changed, so that cracks do not appear after changing the level of detail of a neighboring chunk.
 
 The fourth stage in the octree refinement process.
 
@@ -233,13 +224,11 @@ The fourth stage in the octree refinement process.
 \subsection{Method of Terrain Modification}
 Since the parallel Transvoxel algorithm runs so efficiently, it is possible to regenerate significant portions of geometry in between frames, and so real-time terrain editing is achievable. 
 
-We will proceed by dynamically adding primitive shapes to the SDF itself, using the set-theoretical operations discussed in section \ref{section:sdf}. This means that the shape represented by the SDF changes, so the generated geometry also changes, regardless of the level of detail it is generated at. It also means that we do not have to perform any subsequent transformations to the geometry, after the Transvoxel algorithm has generated it.
+We will proceed by adding primitive shapes to the SDF itself, using the set operations discussed in section \ref{section:sdf}. This means that the shape represented by the SDF changes, so the generated geometry also changes, regardless of the level of detail it is generated at. It also means that no subsequent transformations have to be performed on the geometry, after the Transvoxel algorithm has generated it.
 
 \subsection{Adding Primitives to the SDF}
 
-To implement terrain modification, the \texttt{Brush} interface is used. Each \texttt{Brush} object contains information about a shape that has been added to the world, and has 2 methods which are overridden for each type of shape. The first method is \texttt{getBoundingBox()}, which returns an axis-aligned bounding box such that the shape lies entirely within the box. The second is \texttt{getBrushParams()}, which returns a \texttt{BrushParams} object containing all of the parameters required to add this shape to the SDF. 
-
-For example, it may contain the radius of a sphere, or the control points and thickness of a shape defined by a Bezier spline. It always contains the values \texttt{bottom} and \texttt{top}, which correspond to diagonally opposite corners of the bounding box, \texttt{type}, a constant denoting the type of shape, and \texttt{mode}, a constant describing whether the shape should be added or subtracted from the SDF.
+To implement terrain modification, the \texttt{Brush} interface is used. Each \texttt{Brush} object contains information about a shape that has been added to the world, and has 2 methods which are overridden for each type of shape. The first method is \texttt{getBoundingBox()}, which returns an axis-aligned bounding box such that the shape lies entirely within the box. The second is \texttt{getBrushParams()}, which returns a \texttt{BrushParams} object containing all of the parameters required to add this shape to the SDF. For example, it may contain the radius of a sphere, or the control points and thickness of a shape defined by a Bezier spline. It always contains the values \texttt{bottom} and \texttt{top}, which correspond to diagonally opposite corners of the bounding box, \texttt{type}, a constant denoting the type of shape, and \texttt{mode}, a constant describing whether the shape should be added or subtracted from the SDF.
 
 A new \texttt{Brush} object is created each time a shape is added to the world. Each \texttt{Octree} node stores a list of pointers to the \texttt{Brush} objects that are inside the region the node represents. 
 
@@ -251,45 +240,46 @@ When the octree is modified, it is necessary to update the lists of the newly cr
 
 Snippet from \texttt{split}, showing how brushes are added to child nodes, when they are created.
 
-Each brush type has an SDF and normal function implementation in GLSL. When geometry is generated for a chunk, the \texttt{BrushParams} objects corresponding to the brushes in the corresponding node are passed to the generation algorithm, and are used in the order they are passed, to modify the SDF via set union or subtraction. The normal function is computed by taking the shape which produces the smallest value of the SDF, and returning the normal function for that shape. Both the SDF and normal suffer from inaccuracies when a non-exact SDF is very far from the actual distance value, and in extreme cases, the resulting inaccurate interpolation can lead to cracks appearing in the geometry. Figure \ref{fig:inaccurate_sdf} shows an example of an SDF that exhibits this problem. However, with careful choices of SDF, in most cases it produces an acceptable result.
+Each brush type has an SDF and normal function implementation in GLSL. When geometry is generated, the \texttt{BrushParams} objects corresponding to the brushes in the chunk are passed to the generation algorithm, and they modify the SDF via set union or subtraction. The normal function is computed by taking the shape which produces the smallest value of the SDF, and returning the normal function for that shape. Both the SDF and normal suffer from inaccuracies when a non-exact SDF is very far from the actual distance value, and in extreme cases, the resulting inaccurate interpolation can lead to cracks appearing in the geometry. Figure \ref{fig:inaccurate_sdf} shows an example of an SDF that exhibits this problem. However, with careful choices of SDF, in most cases it produces an acceptable result.
 
 
 An example of an inaccurate sphere SDF on an accurate plane SDF. Here the value of the SDF has been scaled to be much smaller than it should be. The incorrect SDF has been chosen for interpolation, resulting in the blocky appearance of the sphere, and cracks on the further away sphere, where the level of detail changes. This also results in the incorrect normal being used, as shown by the dark patches underneath the spheres.
 
   
-For efficiency reasons, an SDF is only considered when the grid cell being worked on lies within its bounding box,
-preventing unneccesary evaluation of SDFs that will not affect the geometry within the cell. This introduces discontinuities in the overall SDF being computed, and for this reason, it is necessary to enforce that the bounding box always contains the grid cells containing geometry generated for the brush.
+For efficiency reasons, an SDF is only considered when the grid cell being worked on lies within its bounding box, preventing evaluation of SDFs that will not affect the geometry within the cell. This introduces discontinuities in the overall SDF, and for this reason, it is necessary to enforce that the bounding box always contains the grid cells containing geometry generated for the brush.
 
 \subsection{Interactive Terrain Modification}
 User interaction with the terrain modification system uses a set of pre-defined actions, defined through classes derived from a base \texttt{Action} class, shown in listing \ref{action_methods}.
 
 Methods of the \texttt{Action} class responsible for handling user interaction.
 
-These functions are designed to be overridden, to implement the corresponding functionality. The argument to the first 3 is the in-world position at which the mouse is pointing. The method \texttt{onCancel} is called when the action has been cancelled, to clean up any state that has been created, for example in a more complex action that may store intermediate control points. The methods \texttt{increaseSize} and \texttt{decreaseSize} provide a standard way of increasing and decreasing the size of a shape, for example changing the radius of a sphere, or thickness of a spline curve. The final method, \texttt{handleInput}, allows more general input for an action, which is useful for actions that require more input than the options given in the other functions. It has a default implementation, which calls the other functions, that can be overridden.
+These functions are designed to be overridden, to implement the corresponding functionality. The argument to the first 3 is the position at which the mouse is pointing. The method \texttt{onCancel} is called when the action has been cancelled, to clean up any state that has been created, for example in an action that stores intermediate control points. The methods \texttt{increaseSize} and \texttt{decreaseSize} provide a standard way of increasing and decreasing the size of a shape, for example changing the radius of a sphere, or thickness of a spline curve. The final method, \texttt{handleInput}, allows more general input for an action, which is useful for actions that require more input than the options given in the other functions. It has a default implementation, which calls the other functions.
 
 Default implementation of \texttt{handleInput}.
 
-The generic \texttt{Brush} and \texttt{Action} interfaces makes it quick to implement new shapes, since the interfaces just need to be filled out with the required brush parameters and controller code, respectively. The only complex addition is the definition of the SDF and normal function, which is different for every shape.
+The generic \texttt{Brush} and \texttt{Action} interfaces makes it quick to implement new shapes, since the interfaces need only be filled out. The complex addition is the definition of the SDF and normal function, which is different for every shape.
 
 \subsubsection{Raycasting}
 
-To determine where a brush should be placed, we perform a raycast from the camera in the look direction. We take advantage of the structure of the octree to do this efficiently, considering only leaf nodes where the ray passes through their bounding box. For each of these nodes, we perform ray-triangle intersection tests to determine the closest point of intersection to the camera, using a library function. Since the geometry data is generated on the GPU, it first needs to be copied to the CPU.
+To determine where a brush should be placed, we perform a raycast from the camera in the look direction. We take advantage of the octree to do this efficiently, considering only leaf nodes where the ray passes through their bounding box. For each of these nodes, we perform ray-triangle intersection tests to determine the closest point of intersection to the camera, using a library function. Since the geometry data is generated on the GPU, it first needs to be copied to the CPU.
 
 Snippet from the procedure \texttt{mapGeometry} to copy geometry data for a chunk from the GPU to the array \texttt{mappedTriangles}. \texttt{isMapped} is an atomic boolean storing whether \texttt{mapGeometry} has already been called for this chunk.
 
 
-It would be possible to perform ray-triangle intersection tests within an OpenGL compute shader, removing the need for the geometry data to be copied to the CPU. However, this copying will need to be done for physics simulation anyway, and is only done once per chunk of geometry, this method will be sufficient.
+It is possible to perform ray-triangle intersection tests within an OpenGL compute shader, removing the need for geometry data to be copied to the CPU. However, this copying will need to be done for physics simulation anyway, and is only done once per chunk of geometry, so this method is sufficient.
 
 \subsubsection{Example Brush Implementations}
-Any shape for which an SDF and normal function can be derived may be implemented as a brush, using the method described in section \ref{section:modification_implementation}. A good resource for SDF implementations is the article by Inigo Quilez referenced in section \ref{section:sdf}\cite{quilez:sdf}. It is also necessary to provide a normal function for each SDF. In some cases, the partial derivatives can be computed exactly, particularly when the SDF has a simple form. For example, the SDF of a sphere with radius 1, centered at the origin, is $f\left(x,y,z\right) = \sqrt{x^2+y^2+z^2}-1$. The gradient vector at point $\left(x,y,z\right)$ is $\nabla f = \left(\frac{x}{\sqrt{x^2+y^2+z^2}},\frac{y}{\sqrt{x^2+y^2+z^2}},\frac{z}{\sqrt{x^2+y^2+z^2}}\right)$. In this case, the gradient happens to already have length 1, but if it is not, it should be normalised with the GLSL \texttt{normalize} function. It is always possible to approximate the normal of an SDF numerically, however this can be computationally expensive, because it requires multiple evaluations of the SDF.
+Any shape for which an SDF and normal function can be derived may be implemented as a brush, using the method described in section \ref{section:modification_implementation}. In section \ref{section:sdf} we gave a useful resource for SDF implementations~\cite{quilez:sdf}.
+It is also necessary to provide a normal function for each SDF. In some cases, the partial derivatives can be computed exactly, particularly when the SDF has a simple form. For example, the SDF of a sphere with radius 1, centered at the origin, is $f\left(x,y,z\right) = \sqrt{x^2+y^2+z^2}-1$. The gradient vector at point $\left(x,y,z\right)$ is $\nabla f = \left(\frac{x}{\sqrt{x^2+y^2+z^2}},\frac{y}{\sqrt{x^2+y^2+z^2}},\frac{z}{\sqrt{x^2+y^2+z^2}}\right)$. In this case, the gradient happens to already have length 1, but if it is not, it should be normalised with the GLSL \texttt{normalize} function. 
+The normal can also be approximated, but this can be computationally expensive, because it requires multiple evaluations of the SDF.
 
-Approximation of the normal of an SDF.
+Approximation of the normal of an SDF, using the method of finite differences.
 
 
 \paragraph{Example Shape: Ellipsoid}
-Another article by Inigo Quilez\cite{quilez:ellipsoid} lists various approximate SDFs for ellipsoids. Listing \ref{ellipsoid_sdf} shows my transformation of the first SDF listed in this article into an SDF representing an ellipsoid at any given point in space, as well as a normal function, which has been derived by computing the gradient of this SDF.
+Another article by Inigo Quilez~\cite{quilez:ellipsoid} lists various approximate SDFs for ellipsoids. Listing \ref{ellipsoid_sdf} shows my transformation of the first SDF listed in this article into an SDF representing an ellipsoid centered at an arbitrary point, as well as a normal function, which has been derived by computing the gradient of this SDF.
 
-Approximate SDF and normal function for an ellipsoid.}]
+Approximate SDF and normal function for an ellipsoid.
 
 Figure \ref{fig:editing_ellipsoids} shows a number of ellipsoids of various sizes being placed.
     
@@ -305,7 +295,8 @@ Since it is impossible to solve a general degree 5 polynomial analytically, we i
 
   \caption{A number of Bezier interpolation splines, using the exact SDF.}
 
-There is no simple form for the gradient of this SDF, and so we use the numerical derivative as implemented in listing \ref{numerical_gradient}. Note however that this now requires solving 5 cubics for every SDF sample point.
+
+We use the numerical derivative as implemented in listing \ref{numerical_gradient}, although this requires solving 5 cubics for every SDF sample point.
 
 \subparagraph{Approximate Method}
 To avoid the complex computation that comes with finding the roots of a quintic, a Bezier spline can be approximated by a number of line segments. Each line segment can then be associated with an SDF that is simple to evaluate. For example, figure \ref{fig:spline_approximation} shows a comparison between an approximated spline, and a spline using the exact SDF.
@@ -317,12 +308,11 @@ Using approximations also allows for splines to be used to define more complex s
 Left: Illustration of the union of 2 shapes at an angle, so there is a jagged overlap between them. Right: The same 2 shapes, considering only the intersection between the shapes at the end, giving a smoother appearance.
 
 
-Figure \ref{fig:bezier_roads} shows a shape generated with this method, using an SDF where each line segment along the spline is represented by a capsule intersected with a half-plane, to form a shape that is flat on top.
+Figure \ref{fig:bezier_roads} shows a shape generated with this method, using an SDF where each line segment along the spline is represented by a capsule intersected with a half-plane. The SDF for this shape is in listing \ref{road_code}.
 
 
 Shape generated using splines having a more complex cross-section. Since each cubic curve in the interpolation spline is passed to the shader separately, the smoothing method was not used on the boundary between the curve segments, so some intersections between the shapes are still visible. Implementing this would require significant changes to the editing code, but would result in a smoother shape.
 
-Listing \ref{road_code} shows the GLSL code defining this SDF.
 
 \texttt{road\_distance} is the SDF for part of the shape defined by a single cubic Bezier curve. When an interpolation spline consisting of multiple curves is required, a \texttt{Brush} object is created for each.}]
 
@@ -447,10 +437,10 @@ The first iteration of the editing algorithm stored all brushes for the entire w
 Using the pre-existing octree to store lists of brushes for each chunk, as described in section \ref{section:modification_implementation}, removed the need to do this iteration, at the expense of having to iterate over the octree to add a brush.
 
 \subsection{Bounding Boxes and Grid Cells}
-As described in section \ref{section:modification_implementation}, an SDF is only evaluated if the grid cell being worked on intersects its bounding box. A previous iteration only considered whether the sample point was within this bounding box. However, this resulted in incorrect interpolation of geometry vertices in grid cells partially inside the SDF bounding box. This was corrected by extending the bounding box check to include cases where the grid cell intersects the bounding box, even if the sample point does not.
+As described in section \ref{section:modification_implementation}, an SDF is only evaluated if the grid cell being worked on intersects its bounding box. A previous iteration only considered whether the sample point was within this bounding box, which resulted in incorrect vertex interpolation in grid cells partially inside the SDF bounding box. This was corrected by extending the bounding box check to include cases where the grid cell intersects the bounding box, even if the sample point does not.
 
 Different iterations of the SDF bounding box check.
-  
+
 \section{Conclusion}
 \subsection{Reflection}
 In this project we have achieved the goal of generating a large area of procedural terrain that can be interacted with in real-time using the Transvoxel algorithm. We showed that parallelising the algorithm on the GPU gives a massive speedup compared to a CPU implementation.
@@ -468,10 +458,10 @@ The final implementation contains XXXX lines of code.
 \subsection{Octree Refinement Improvements}
 Currently, only octree leaves that contain physics objects are maintained by the \texttt{shouldChop} function, and all of the leaves that were created by the previous iteration of the refinement algorithm are flagged. Although the flagging means that geometry is not being regenerated every time, this still results in a large amount of unneccesary iteration over the octree as nodes are repeatedly flagged, and then unflagged again.
 \subsubsection{Bounding the main SDF}
-No equivalent to a bounding box has been implemented for the main SDF. For a simple SDF such as a plane, this would be trivial to implement, however for functions defined by noise, this becomes more difficult, since there could be large regions within the area affected by the SDF, which do not contain any of the surface. This would enable improvements similar to those described in \ref{section:modification_implementation}, preventing SDF computation at a point that is not near the surface. If every part of the SDF was bounded, it would be possible to completely eliminate computation of the SDF in chunks that were outside of these bounds. 
+No equivalent to a bounding box has been implemented for the main SDF. For functions defined by noise, this becomes challenging, since there could be large regions within the area affected by the SDF, which do not contain any of the surface. Implementing this would enable improvements similar to those in \ref{section:modification_implementation}, preventing SDF computation at a point that is not near the surface. If every part of the SDF was bounded, it would be possible to completely eliminate computation of the SDF in chunks that were outside of these bounds.
 \subsubsection{Additional Multithreading}
 Currently, any geometry generated as a result of an octree update is generated before the next frame is drawn, causing stuttering when a lot of editing is performed, as seen in section \ref{edit_limits}, or when the camera moves very fast. Performing geometry generation and rendering on separate threads would allow for techniques that prevent this slowdown, such as artificially limiting the rate at which new chunks are generated. This would reduce the speed at which the octree can be updated, but would improve the framerate.
 \subsubsection{Blends}
-Using a blend function rather than set union or subtraction to modify the geometry would reduce the number of places where sharp corners appear in the SDF. However, care would have to be taken that the blend function does not result in geometry being modified outside of the bounding box of the shape being added, or this would result in incorrect generation.
+Using a blend function in between SDFs would reduce the number of places where sharp corners appear in the SDF. Care would have to be taken that the blend function does not result in geometry being modified outside of the bounding box of the shape being added, or this would result in incorrect generation.
 \subsubsection{Terrain Materials}
 Alongside a distance and normal function, a material function could also be defined, describing the type of geometry at each point, for example distinguishing between grass and rock. Grid cells could then be shaded by sampling the material function at their vertices. Care would have to be taken when shading cells having different materials at each vertex.

@@ -5,7 +5,7 @@ This project explores a method for procedurally generating terrain by applying a
 
 Marching Cubes is an algorithm for polygonising a scalar field. Designed by William E. Lorensen and Harvey E. Cline in 1987\cite{10.1145/37402.37422}, the original application was in medical imaging, to create anatomical models using data from 3D scans such as CT scans. When it was written, the algorithm was comparatively expensive to execute, due to the limited hardware available. 
  
-Procedural terrain generation is a popular technique within the video game industry, allowing for large areas of geometry to be created, according to mathematical rules, rather than the traditional method of 3D modelling, which is time-consuming for the modeller, and takes up a large amount of storage space.
+Procedural terrain generation is a popular technique within the video game industry, allowing for large areas of geometry to be created according to mathematical rules, rather than the traditional method of 3D modelling, which is time-consuming for the modeller, and takes up a large amount of storage space.
 
 The increase in processing power available, as well as the parallel design of the GPU, means that it is achievable to use Marching Cubes to generate large amounts of geometry at an interactive framerate. When combined with a level-of-detail system, it is possible to render very large regions of terrain, that can be interacted with and modified in real time.
 
@@ -369,7 +369,7 @@ Chunks generated for a small, far away physics object. There is no place where a
 
 
 \subsection{Player Controller}
-To handle player collision, we will use a capsule shape oriented along the y axis. To move the shape, we apply a force in the direction we want to move. The direction of this force is determined by the directional keys being pressed. For example, if the forward key is being pressed, the force will be in the same direction as the x and z components of the look direction of the camera, and the collision shape is pushed in the direction the camera is looking. The other directional keys act similarly. To move upwards, a large upwards force is applied. 
+To handle player collision, we will use a capsule shape oriented along the y axis. To move the shape, we apply a force in the direction we want to move, determined by the directional keys being pressed. For example, if the forward key is being pressed, the force will be in the same direction as the x and z components of the look direction of the camera, and the collision shape is pushed in the direction the camera is looking. The other directional keys act similarly. To move upwards, a large upwards force is applied. 
 \subsubsection{Editing geometry near the player}
 If geometry is edited near the player, it is possible for the collision shape to become stuck in the collision meshes, or even pass through it entirely, resulting in incorrect collisions. To prevent this from happening, there is the option of a simple camera mode, with no collision detection, and terrain editing can be restricted to only this mode. In this case, the collision shape is moved to the new position of the camera when the mode is switched again.
 \subsection{Multithreading}

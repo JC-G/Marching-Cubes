@@ -67,7 +67,7 @@
   \vspace{48pt}
   \large
   Candidate Number: \textbf{1034207}\\
-  Word Count: \textbf{9993}
+  Word Count: \textbf{9987}
   \end{center}
 \end{titlepage}
 
@@ -84,7 +84,7 @@ This project explores a method for procedurally generating terrain by applying a
 
 Marching Cubes is an algorithm for polygonising a scalar field. Designed by William E. Lorensen and Harvey E. Cline in 1987~\cite{10.1145/37402.37422}, the original application was in medical imaging, to create anatomical models using data from 3D scans such as CT scans. When it was written, the algorithm was comparatively expensive to execute, due to the limited hardware available. 
 
-Procedural terrain generation is a popular technique within the video game industry, allowing for large areas of geometry to be created, according to mathematical rules, rather than the traditional method of 3D modelling, which is time-consuming for the modeller, and takes up a large amount of storage space.
+Procedural terrain generation is a popular technique within the video game industry, allowing for large areas of geometry to be created according to mathematical rules, rather than the traditional method of 3D modelling, which is time-consuming for the modeller, and takes up a large amount of storage space.
 
 The increase in processing power available, as well as the parallel design of the GPU, means that it is achievable to use Marching Cubes to procedurally generate large amounts of geometry at an interactive framerate. When combined with a level-of-detail system, it is possible to render very large regions of terrain, that can be interacted with and modified in real time.
 
@@ -204,9 +204,7 @@ Using Marching Cubes with multiple different grid cell sizes causes cracks on th
   \label{fig:cracks2}
 \end{figure}
 
-The Transvoxel algorithm~\cite{lengyel_2010} is an algorithm based on Marching Cubes that solves this problem by adding additional vertices along cell edges that are adjacent to higher resolution grid cells.
-
-This is done by splitting a cell at the lower resolution (a half-resolution cell) into a regular cell and some amount of transition cells, so that transition cells border the regular cells at the higher resolution (full-resolution cells). These transition cells serve as a method of stitching the gap in between half-resolution and full-resolution cells.
+The Transvoxel algorithm~\cite{lengyel_2010} is an algorithm based on Marching Cubes that solves this problem by adding additional vertices along cell edges that are adjacent to higher resolution grid cells. This is done by splitting a cell at the lower resolution (a half-resolution cell) into a regular cell and some amount of transition cells, so that transition cells border the regular cells at the higher resolution (full-resolution cells). These transition cells serve as a method of stitching the gap in between half-resolution and full-resolution cells.
 \begin{figure}[H]
   \includegraphics[width=\textwidth]{transition_cells}
   \caption{Illustration of 2 possible configurations of transition cells on the boundary between levels of detail. The half-resolution regular cell has been resized, and transition cells fit in the space made in between the cells. Reproduced from figure 4.9 in the Transvoxel algorithm paper~\cite{lengyel_2010}.}
@@ -275,7 +273,7 @@ As an example, consider the case where only vertex 0 is inside the terrain, givi
 
 \begin{SCfigure}[][!h]
   \caption{A regular cell of the same class as the example, reproduced from the diagram of all Transvoxel cell classes~\cite{lengyel}. Note however that this cell is not oriented the same as figure \ref{fig:tv_labels}.}
-  \includegraphics[width=0.5\textwidth]{regular_cell_example_case.PNG}
+  \includegraphics[width=0.3\textwidth]{regular_cell_example_case.PNG}
   \label{fig:regular_cell_example_case}
 \end{SCfigure}
 
@@ -298,8 +296,7 @@ A transition cell uses 9 distinct SDF sample values, at vertices 0 through 8 in 
 
 
 \begin{lstlisting}[language=C++, label={tv_transition_tables}, caption={Calculation of \texttt{transitionCellIndex}, and lookup tables for transition cells. An example of their usage is given below.}]
-//Note the obscure order of this - see Figure 4.17 in transvoxel paper
-//order is 0,1,2,5,8,7,6,3,4
+//order is 0,1,2,5,8,7,6,3,4 - see Figure 4.17 in transvoxel paper
 int transitionCellIndex = 0;
 int transitionFaceOrder[9] = int[](0,1,2,5,8,7,6,3,4);
 int transitionCellMask = 1;
@@ -341,7 +338,7 @@ In this case, we find that there is a triangle using vertex indices 0, 1, and 3,
 
 \begin{SCfigure}[][!h]
   \caption{A transition cell of the same class as the example, reproduced from the diagram of all Transvoxel cell classes~\cite{lengyel}.}
-  \includegraphics[width=0.5\textwidth]{transition_cell_example_case.PNG}
+  \includegraphics[width=0.3\textwidth]{transition_cell_example_case.PNG}
   \label{fig:transition_cell_example_case}
 \end{SCfigure}
 
@@ -386,7 +383,7 @@ void generateCell() {
   float gridCells[8];
   ivec3 gridPos[8];
 
-  //assigned as per Figure 3.7 in transvoxel paper - note this is DIFFERENT to the previous marching cubes algorithm
+  //assigned as per Figure 3.7 in transvoxel paper
   for (int i = 0; i < 8; i++) {
     gridPos[i] = ivec3(gid) + gridOffset[i];
   }
@@ -432,7 +429,7 @@ uint totalPoints = regularTotalTable[cellClass];
     if (hasShifted[v1Index] || hasShifted[v2Index]) { //if this vertex has moved
       //apply the transformation as in Figure 4.12 in the Transvoxel paper
       //where the vertex would have been
-      vec3 vp2 = VertexInterp(gridPos[v1Index],gridPos[v2Index],gridCells[v1Index], gridCells[v2Index]);
+      vec3 vp2 = VertexInterp(gridPos[v1Index],gridPos[v2Index],gridCells[v1Index],gridCells[v2Index]);
       //normal at this position - in world space
       vec3 n = modified_normal(vp2 * chunkStride + chunkPosition);
       vec3 dv = vertPos - vp2;
@@ -490,7 +487,7 @@ Octree* Octree::getNeighbor(glm::ivec3 relativePosition) {
     //return the child of the parent neighbor
     Octree* neighbor = myParent->getNeighbor(relativePosition);
     if (!neighbor || neighbor->isLeaf) return NULL;
-    //glm does not have integer mod, so we have to do this manually...
+    //glm does not have integer mod, do this manually
     glm::ivec3 childOppositePosition = glm::abs(glm::ivec3(childPosition.x % 2, childPosition.y % 2, childPosition.z % 2));
     return neighbor->childFromVec3(childOppositePosition);
   }
@@ -878,14 +875,18 @@ Using approximation also allows for splines to be used to define more complex sh
 
 \begin{figure}[H]
   \caption{Left: Illustration of the union of 2 shapes at an angle, so there is a jagged overlap between them. Right: The same 2 shapes, considering only the intersection between the shapes at the end, giving a smoother appearance.}
-  \includegraphics[width=\textwidth]{road_double.png}
+  \begin{center}
+  \includegraphics[width=0.7\textwidth]{road_double.png}
+  \end{center}
   \label{fig:road_double}
 \end{figure}
 
 Figure \ref{fig:bezier_roads} shows a shape generated with this method, using an SDF where each line segment along the spline is represented by a capsule intersected with a half-plane. The SDF for this shape is in listing \ref{road_code}.
 
 \begin{figure}[H]
-  \includegraphics[width=\textwidth]{bezier_roads.png}
+  \begin{center}
+  \includegraphics[width=0.9\textwidth]{bezier_roads.png}
+  \end{center}  
   \caption{Shape generated using splines having a more complex cross-section. Since each cubic curve in the interpolation spline is passed to the shader separately, the smoothing method was not used on the boundary between the curve segments, so some intersections between the shapes are still visible. Implementing this would require significant changes to the editing code, but would result in a smoother shape.}
   \label{fig:bezier_roads}
 \end{figure}
@@ -991,11 +992,9 @@ To make editing more intuitive, a basic graphical user interface has been implem
 void SphereAction::drawPreview() {
   Preview::drawPreviewSphere(glm::vec3(radius),Window::placePos);
 }
-
 std::string SphereAction::getDescription() {
   return "Sphere, Radius " + std::to_string(radius);
 }
-
 std::string SphereAction::getDetails() {
   return "Brush Controls:\n"
          "([) Decrease Size\n"
@@ -1065,7 +1064,7 @@ Figures \ref{fig:meshes2} and \ref{fig:meshes3} show this system in action.
   \label{fig:meshes3}
 \end{figure}
 
-To handle player collision, we will use a capsule shape oriented along the y axis. To move the shape, we apply a force in the direction we want to move. The direction of this force is determined by the directional keys being pressed. For example, if the forward key is being pressed, the force will be in the same direction as the x and z components of the look direction of the camera, and the collision shape is pushed in the direction the camera is looking. The other directional keys act similarly. To move upwards, a large upwards force is applied. 
+To handle player collision, we will use a capsule shape oriented along the y axis. To move the shape, we apply a force in the direction we want to move, determined by the directional keys being pressed. For example, if the forward key is being pressed, the force will be in the same direction as the x and z components of the look direction of the camera, and the collision shape is pushed in the direction the camera is looking. The other directional keys act similarly. To move upwards, a large upwards force is applied. 
 \subsubsection{Editing geometry near the player}
 If geometry is edited near the player, it is possible for the collision shape to become stuck in the collision meshes, or even pass through it entirely, resulting in incorrect collisions. To prevent this from happening, there is the option of a simple camera mode, with no collision detection, and terrain editing can be restricted to only this mode. In this case, the collision shape is moved to the new position of the camera when the mode is switched again.
 \subsection{Multithreading}

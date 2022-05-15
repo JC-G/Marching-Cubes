@@ -2,10 +2,10 @@
 
 @misc{bourke_1994, title={{Polygonising a Scalar Field}}, url={http://paulbourke.net/geometry/polygonise/}, journal={Polygonising a scalar field (Marching Cubes)}, author={Bourke, Paul}, year={1994}} 
 
-@misc{quilez:sdf, title={{Distance Functions}}, url={https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm}, author={Quilez, Inigo}} 
+@misc{quilez:sdf, title={{Distance Functions}}, url={https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm}, author={Quilez, Inigo}, year={no date}} 
 @misc{quilez:ellipsoid, title={{Ellipsoid SDF}}, url={https://iquilezles.org/www/articles/ellipsoids/ellipsoids.htm}, author={Quilez, Inigo}, year={2008}} 
 
-@phdthesis{lengyel_2010, title={Voxel-based terrain for real-time virtual simulations}, author={Lengyel, Eric Stephen}, year={2010}} 
+@phdthesis{lengyel_2010, title={Voxel-based terrain for real-time virtual simulations}, author={Lengyel, Eric Stephen}, year={2010}, school={University of California at Davis}} 
 @misc{kraus_2021, title={{Cubic Bezier Spline Distance}}, url={https://www.shadertoy.com/view/flsGzH}, journal={Shadertoy BETA}, author={Kraus, Alexander}, year={2021}} 
 
 @article{10.1145/37402.37422,
@@ -22,20 +22,23 @@ url = {https://doi.org/10.1145/37402.37422},
 doi = {10.1145/37402.37422},
 abstract = {We present a new algorithm, called marching cubes, that creates triangle models of constant density surfaces from 3D medical data. Using a divide-and-conquer approach to generate inter-slice connectivity, we create a case table that defines triangle topology. The algorithm processes the 3D medical data in scan-line order and calculates triangle vertices using linear interpolation. We find the gradient of the original data, normalize it, and use it as a basis for shading the models. The detail in images produced from the generated surface models is the result of maintaining the inter-slice connectivity, surface data, and gradient information present in the original 3D data. Results from computed tomography (CT), magnetic resonance (MR), and single-photon emission computed tomography (SPECT) illustrate the quality and functionality of marching cubes. We also discuss improvements that decrease processing time and add solid modeling capabilities.},
 journal = {SIGGRAPH Comput. Graph.},
-month = {aug},
+month = {Aug},
 pages = {163–169},
 numpages = {7}
 }
 
-@misc{g-truc_2005, title={{G-TRUC/GLM: OpenGL Mathematics (GLM)}}, url={https://github.com/g-truc/glm}, journal={GitHub}, author={G-Truc}, year={2005}} 
+@misc{g-truc_2005, title={{G-TRUC/GLM: OpenGL Mathematics (GLM)}}, url={https://github.com/g-truc/glm}, journal={GitHub}, author={G-Truc}, year={2005}, note={Compiled from source version 0.9.5.3-2659}} 
 
-@misc{lengyel, title={{The Transvoxel Algorithm}}, url={https://transvoxel.org/Transvoxel.pdf}, journal={transvoxel.org}, author={Lengyel, Eric}} 
+@misc{lengyel, title={{The Transvoxel Algorithm}}, url={https://transvoxel.org/Transvoxel.pdf}, journal={transvoxel.org}, author={Lengyel, Eric},year={2010}} 
 
-@misc{bullet-physics, title={{Bulletphysics/bullet3: Bullet physics SDK: Real-time collision detection and multi-physics simulation for VR, games, visual effects, robotics, machine learning etc..}}, url={https://github.com/bulletphysics/bullet3}, journal={GitHub}, author={Bullet Physics Development Team}} 
+@misc{
+  bullet-physics, title={{Bulletphysics/bullet3: Bullet physics SDK: Real-time collision detection and multi-physics simulation for VR, games, visual effects, robotics, machine learning etc.}}, url={https://github.com/bulletphysics/bullet3}, journal={GitHub}, author={Bullet Physics Development Team},
+  note={Compiled from source version 3.21-19}
+} 
 
 @misc{coumans_2015, title={{Bullet 2.83 Physics SDK Manual}}, url={https://github.com/bulletphysics/bullet3/blob/master/docs/Bullet_User_Manual.pdf}, journal={GitHub}, author={Coumans, Erwin}, year={2015}} 
-@misc{glfw, title={{An OpenGL Library}}, url={https://www.glfw.org/}, journal={GLFW}} 
-@misc{glew, title={{The OpenGL Extension Wrangler Library}}, url={http://glew.sourceforge.net/}, journal={GLEW}} 
+@misc{glfw, title={{An OpenGL Library | GLFW}}, url={https://www.glfw.org/}, journal={GLFW}, author={Marcus Geelnard and Camilla Löwy}, note={Compiled from source version 3.3-470}} 
+@misc{glew, title={{The OpenGL Extension Wrangler Library}}, url={http://glew.sourceforge.net/}, journal={GLEW}, author={Milan Ikits, Marcelo E. Magallon and Lev Povalahev}, note={Compiled from source version 0.9.5.3-2659}} 
 
 
 @article{10.1145/566654.566586,
@@ -52,17 +55,19 @@ url = {https://doi.org/10.1145/566654.566586},
 doi = {10.1145/566654.566586},
 abstract = {This paper describes a new method for contouring a signed grid whose edges are tagged by Hermite data (i.e; exact intersection points and normals). This method avoids the need to explicitly identify and process "features" as required in previous Hermite contouring methods. Using a new, numerically stable representation for quadratic error functions, we develop an octree-based method for simplifying contours produced by this method. We next extend our contouring method to these simpli£ed octrees. This new method imposes no constraints on the octree (such as being a restricted octree) and requires no "crack patching". We conclude with a simple test for preserving the topology of the contour during simplification.},
 journal = {ACM Trans. Graph.},
-month = {jul},
+month = {Jul},
 pages = {339–346},
 numpages = {8},
 keywords = {crack prevention, polyhedral simplification, quadratic error functions, contouring, implicit functions}
 }
 
-@misc{github_2014, title={{GLSL Noise Algorithms}}, url={https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83}, journal={GitHub}, year={2014}} 
-@inproceedings{PerlinChapter2N,
+@misc{github_2014, title={{GLSL Noise Algorithms}}, url={https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83}, journal={GitHub}, year={2014}, author={Patricio Gonzalez Vivo}} 
+@article{PerlinChapter2N,
   title={{Chapter 2 Noise Hardware}},
   author={Ken Perlin},
-  url={https://www.csee.umbc.edu/~olano/s2002c36/ch02.pdf}
+  url={https://www.csee.umbc.edu/~olano/s2002c36/ch02.pdf},
+  year={2001},
+  journal={Real-Time Shading SIGGRAPH Course Notes}
 }
 
- @misc{lengyel_2009, title={The Transvoxel Algorithm look-up tables}, url={https://transvoxel.org/Transvoxel.cpp}, journal={transvoxel.org}, author={Lengyel, Eric}, year={2009}} 
+ @misc{lengyel_2009, title={{The Transvoxel Algorithm look-up tables}}, url={https://transvoxel.org/Transvoxel.cpp}, journal={transvoxel.org}, author={Lengyel, Eric}, year={2009}} 

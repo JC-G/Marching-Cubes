@@ -33,7 +33,7 @@ Many shapes have an exact SDF that is complex to evaluate, so it is more efficie
 The set-theoretical operations of union, intersection, and difference have representations using the $\min$ and $\max$ functions. Where the function $\min\left(f,g\right)$ is not differentiable at the point where $f = g$, we choose the derivative of either $f$ or $g$. Using these functions, it is possible to combine SDFs of many shapes to produce a surface that is more complex.
 
 \subsection{Noise}
-Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output. This means that the function is smooth. One such function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. More advanced noise algorithms exist, such as Perlin or Simplex noise\cite{PerlinChapter2N}, that show fewer regularities. Figures \ref{fig:value_noise} and \ref{fig:better_noise} show some example noise functions.
+Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output, so the function is smooth. One such function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. More advanced noise algorithms exist, such as Perlin or Simplex noise~\cite{PerlinChapter2N}, that show fewer regularities. Figures \ref{fig:value_noise} and \ref{fig:better_noise} show some example noise functions.
 
 Left: A single layer of value noise. Right: 8 octaves of value noise.
 
@@ -41,7 +41,7 @@ Left: Perlin Noise. Images generated using functions \texttt{cnoise} and \texttt
 
 The output of a noise function can be scaled to define a convincing heightmap, typically giving a function $y = h\left(x,z\right)$ defining the height of the terrain at a given $\left(x,z\right)$ coordinate. We will extend this to an approximate SDF, using the formula $f\left(x,y,z\right) = y - h\left(x,z\right)$. In this case, the distance approximation worsens as the steepness of the slope of $h\left(x,z\right)$ increases.
 
-It is also possible to use a 3D noise function in an SDF, for example in generating features such as caves. By defining a value at which the surface will be, for example $0.5$, we can use the SDF $f\left(x,y,z\right) = \mathrm{noise}\left(x,y,z\right) - 0.5$ to represent a shape such that only points with noise values greater than 0.5 are outside of the shape. With careful choices of parameters, this creates empty pockets throughout the shape. We will use this type of SDF for benchmarking purposes, since it generates a relatively large amount of geometry, and represents a shape that cannot be created using a heightmap approach. 
+It is also possible to use a 3D noise function in an SDF, for example in generating features such as caves. By defining a value at which the surface will be, for example $0.5$, we can use the SDF $f\left(x,y,z\right) = \mathrm{noise}\left(x,y,z\right) - 0.5$ to represent a shape such that only points with noise values greater than 0.5 are outside of the shape. With careful choices of parameters, ensuring that the SDF value is close to the true distance, this creates empty pockets throughout the shape. We will use this type of SDF for benchmarking purposes, since it generates a relatively large amount of geometry, and represents a shape that cannot be created using a heightmap approach.
 
 \subsection{Marching Cubes Algorithm}
 
@@ -68,10 +68,9 @@ To display geometry, and to interact with OpenGL, we make use of some open sourc
 
 \section{Algorithm Design}
 
-\subsection{LOD System}
+\subsection{Octree LOD System}
 Even with an efficient GPU-based implementation, it becomes infeasible to generate and render a large uniform grid of Marching Cubes chunks. Generating large amounts of triangles far from the camera is unnecessary, since the detail will not be visible. For this reason, it is necessary to have a dynamic level of detail (LOD) system.
 
-\subsubsection{Octree}
 
 To implement a versatile LOD system, an octree data structure is used. Each octree node represents a cuboid of space, such that the root node of the octree represents the entire renderable world, and the 8 children of an octree node equally divide the space represented by the parent node into octants. 
 
@@ -428,7 +427,7 @@ The code has been iteratively improved over the course of the project. This sect
 
 Each SDF sample value calculated in the first shader stage is stored in a flat buffer, to be retrieved by the later stages. Values are indexed into this buffer with the function \texttt{getArrID} that takes the position of the sample relative to the chunk, and returns an index. When the sample points are arranged in a grid, this is relatively simple, however things become more complicated for the sample points in the Transvoxel algorithm, since there are sample points that are midway between the grid cell vertices when transition cells are generated. A simple solution was to double the size of the array in each dimension, so that sample points halfway between grid cells fit in as though the grid size was changed, however this leads to a very sparse buffer that is far larger than it needs to be. A more space-efficient solution stores the sample points not on the faces of the chunk as a cuboid. Then, each face of the chunk is stored at the end of the buffer, so that additional sample points on the face can fit. This results in much less wasted space.
 
-The more efficient \texttt{getArrID} function.
+The more space efficient \texttt{getArrID} function.
 
 \subsection{Storage of Editing Brushes}
 The first iteration of the editing algorithm stored all brushes for the entire world in one single array, making it simple to add brushes, but meaning that the entire array of brushes had to be iterated through for every chunk, which was prohibitively slow for a large number of brushes, even when individual chunks had a small amount of brushes within them. 

@@ -67,7 +67,7 @@
   \vspace{48pt}
   \large
   Candidate Number: \textbf{1034207}\\
-  Word Count: \textbf{9987}
+  Word Count: \textbf{9997}
   \end{center}
 \end{titlepage}
 
@@ -98,7 +98,9 @@ To pass a scalar field to the Marching Cubes algorithm, we will use a signed dis
 \item Near the surface, $f$ is continuous, and has all first partial derivatives. This is useful since the gradient of an SDF on the surface gives the normal vector to the surface at that point.
 \end{enumerate}
 
-An article by Inigo Quilez lists some useful SDFs~\cite{quilez:sdf}. Figures \ref{fig:Circle_SDF} and \ref{fig:Hill_SDF} show some examples.
+An article by Inigo Quilez lists some useful SDFs~\cite{quilez:sdf}. Figures \ref{fig:Circle_SDF} and \ref{fig:Hill_SDF} show some examples. Many shapes have an exact SDF that is complex to evaluate, so it is more efficient to use an approximate SDF instead. We will see an example of this in section \ref{example_brushes}.
+
+The set-theoretical operations of union, intersection, and difference have representations using the $\min$ and $\max$ functions. Where the function $\min\left(f,g\right)$ is not differentiable at the point where $f = g$, we choose the derivative of either $f$ or $g$. Using these functions, it is possible to combine SDFs of many shapes to produce a surface that is more complex.
 
 \begin{SCfigure}[][!h]
 \caption{2 dimensional exact SDF representing a circle. The SDF shown is $f\left(x,y\right)=\sqrt{x^2+y^2}-1$, with the area where $f\left(x,y\right)<0$ shaded. Also shown are the contours where $f\left(x,y\right)=0.1,0.2,...0.5$. At the center point $\left(0,0\right)$, the gradient is undefined. However, since this point is not close to the surface, $f$ can still be used as an SDF without issue.}
@@ -113,13 +115,10 @@ An article by Inigo Quilez lists some useful SDFs~\cite{quilez:sdf}. Figures \re
 \label{fig:Hill_SDF}
 \end{SCfigure}
 
-Many shapes have an exact SDF that is complex to evaluate, so it is more efficient to use an approximate SDF instead. We will see an example of this in section \ref{example_brushes}.
-
-The set-theoretical operations of union, intersection, and difference have representations using the $\min$ and $\max$ functions. Where the function $\min\left(f,g\right)$ is not differentiable at the point where $f = g$, we choose the derivative of either $f$ or $g$. Using these functions, it is possible to combine SDFs of many shapes to produce a surface that is more complex.
 
 \subsection{Noise}
 \label{section:noise}
-Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output. This means that the function is smooth. One such function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. More advanced noise algorithms exist, such as Perlin or Simplex noise~\cite{PerlinChapter2N}, that show fewer regularities. Figures \ref{fig:value_noise} and \ref{fig:better_noise} show some example noise functions.
+Use of noise to create natural-looking heightmaps is a commonly used technique. A noise function assigns a pseudorandom value in the range $\left[0,1\right]$ to each point in $\mathbb{R}^n$. We will consider coherent noise, which has the property that input values that are far apart will produce random-looking outputs, but input values that are close together will result in similar output, so the function is smooth. One such function is value noise, which assigns a pseudorandom value to each grid point, and then smoothly interpolates between these values to assign a value to every point. Multiple layers or \textit{octaves} of value noise at different scales can be added together to produce fractal noise. More advanced noise algorithms exist, such as Perlin or Simplex noise~\cite{PerlinChapter2N}, that show fewer regularities. Figures \ref{fig:value_noise} and \ref{fig:better_noise} show some example noise functions.
 
 \begin{SCfigure}[][!h]
   \caption{Left: A single layer of value noise. Right: 8 octaves of value noise.}
@@ -135,7 +134,7 @@ Use of noise to create natural-looking heightmaps is a commonly used technique. 
 
 The output of a noise function can be scaled to define a convincing heightmap, typically giving a function $y = h\left(x,z\right)$ defining the height of the terrain at a given $\left(x,z\right)$ coordinate. We will extend this to an approximate SDF, using the formula $f\left(x,y,z\right) = y - h\left(x,z\right)$. In this case, the distance approximation worsens as the steepness of the slope of $h\left(x,z\right)$ increases.
 \\
-It is also possible to use a 3D noise function in an SDF, for example in generating features such as caves. By defining a value at which the surface will be, for example $0.5$, we can use the SDF $f\left(x,y,z\right) = \mathrm{noise}\left(x,y,z\right) - 0.5$ to represent a shape such that only points with noise values greater than 0.5 are outside of the shape. With careful choices of parameters, this creates empty pockets throughout the shape. We will use this type of SDF for benchmarking purposes, since it generates a relatively large amount of geometry, and represents a shape that cannot be created using a heightmap approach. 
+It is also possible to use a 3D noise function in an SDF, for example in generating features such as caves. By defining a value at which the surface will be, for example $0.5$, we can use the SDF $f\left(x,y,z\right) = \mathrm{noise}\left(x,y,z\right) - 0.5$ to represent a shape such that only points with noise values greater than 0.5 are outside of the shape. With careful choices of parameters, ensuring that the SDF value is close to the true distance, this creates empty pockets throughout the shape. We will use this type of SDF for benchmarking purposes, since it generates a relatively large amount of geometry, and represents a shape that cannot be created using a heightmap approach. 
 
 \subsection{Marching Cubes Algorithm}
 \label{section:mc}
@@ -149,14 +148,19 @@ Marching Cubes is an algorithm for polygonising a 3 dimensional scalar field. It
 
 \begin{figure}[H]
   \caption{2D example of Marching Cubes approximating a circle.}
-  \includegraphics[width=0.7\textwidth]{ms_example.png}
+  \begin{center}
+    \includegraphics[width=0.7\textwidth]{ms_example.png}
+    
+  \end{center}
   \label{fig:ms_example}
 \end{figure}
 
 \subsubsection{Limitations of Marching Cubes}
 Marching Cubes was chosen for this project because the geometry for each grid cell can be generated independently from other cells. It produces a relatively accurate result for smooth shapes. However, it is not the best choice of algorithm for shapes with sharp corners, such as the shape in figure \ref{fig:sharp_corner}.
 \begin{figure}[H]
-  \includegraphics[width=\textwidth]{mc_cylinder.png}
+  \begin{center}
+  \includegraphics[width=0.9\textwidth]{mc_cylinder.png}
+  \end{center}
   \caption{Inaccuracies near the sharp edge of this cylinder are visible.}
   \label{fig:sharp_corner}
 \end{figure}
@@ -172,11 +176,10 @@ To display geometry, and to interact with OpenGL, we make use of some open sourc
 
 \section{Algorithm Design}
 
-\subsection{LOD System}
+\subsection{Octree LOD System}
+\label{section:octree}
 Even with an efficient GPU-based implementation, it becomes infeasible to generate and render a large uniform grid of Marching Cubes chunks. Generating large amounts of triangles far from the camera is unnecessary, since the detail will not be visible. For this reason, it is necessary to have a dynamic level of detail (LOD) system.
 
-\subsubsection{Octree}
-\label{section:octree}
 To implement a versatile LOD system, an octree data structure is used. Each octree node represents a cuboid of space, such that the root node of the octree represents the entire renderable world, and the 8 children of an octree node equally divide the space represented by the parent node into octants. 
 
 A \textit{chunk} refers to one of these regions of space, and consists of $n_x \cdot n_y \cdot n_z$ grid cells. The scale of these grid cells is determined by the depth of the octree node, with each level in the octree corresponding to a halving of the scale of a grid cell in each dimension. Geometry is generated at each leaf node, so the depth of the leaf node corresponds to the scale of the grid used within the generation algorithm, and hence the level of detail at which the geometry is generated. We will usually use chunks of size $32^3$, although other sizes are useful for demonstration purposes.
@@ -184,7 +187,9 @@ A \textit{chunk} refers to one of these regions of space, and consists of $n_x \
 Using an octree, any condition can be used to determine the level of detail at any given point. We will use this in section \ref{section:physics_meshes} to control the level of detail around physics objects, for consistent collision detection. The level of detail is controlled with the functions \texttt{shouldSplit}, which returns whether a leaf node should split into its 8 children, and \texttt{shouldChop}, which returns whether a non-leaf node should become a leaf. When the octree changes, geometry associated with octree leaves that became branches, or were removed from the octree, is deleted, and new geometry is generated at each new leaf.
 
 \begin{figure}[H]
+  \begin{center}
   \includegraphics[width=\textwidth]{octree_plane.png}
+  \end{center}
   \caption{A plane generated using Marching Cubes, within this octree LOD system. Here, the chunk size is $4^3$. The level of detail is configured to decrease as the distance from the camera increases.}
 \end{figure}
 
@@ -293,7 +298,7 @@ A transition cell uses 9 distinct SDF sample values, at vertices 0 through 8 in 
   \label{fig:tv_transition_cellIndex}
 \end{SCfigure}
 
-
+\pagebreak
 
 \begin{lstlisting}[language=C++, label={tv_transition_tables}, caption={Calculation of \texttt{transitionCellIndex}, and lookup tables for transition cells. An example of their usage is given below.}]
 //order is 0,1,2,5,8,7,6,3,4 - see Figure 4.17 in transvoxel paper
@@ -1045,6 +1050,7 @@ Making this restriction on the meshes generated means that there are significant
 \begin{lstlisting}[language=C++,label={phy_lod},caption={Snippet from \texttt{shouldSplit} responsible for increasing the level of detail near a set of test objects. All chunks with bounding boxes that intersect the bounding box of a physics shape will be split until the highest detail level is reached. The octree refinement process described in section \ref{section:octree_refinement} ensures that this does not create any places where different levels of detail are adjacent to each other.}]
 for (auto shape : TestShape::allShapes) {
   if (getBoundingBox().intersects(shape->getBoundingBox())) {
+    //always split if containing a shape
     return true;
   }
 }
@@ -1180,7 +1186,7 @@ The code has been iteratively improved over the course of the project. This sect
 
 Each SDF sample value calculated in the first shader stage is stored in a flat buffer, to be retrieved by the later stages. Values are indexed into this buffer with the function \texttt{getArrID} that takes the position of the sample relative to the chunk, and returns an index. When the sample points are arranged in a grid, this is relatively simple, however things become more complicated for the sample points in the Transvoxel algorithm, since there are sample points that are midway between the grid cell vertices when transition cells are generated. A simple solution was to double the size of the array in each dimension, so that sample points halfway between grid cells fit in as though the grid size was changed, however this leads to a very sparse buffer that is far larger than it needs to be. A more space-efficient solution stores the sample points not on the faces of the chunk as a cuboid. Then, each face of the chunk is stored at the end of the buffer, so that additional sample points on the face can fit. This results in much less wasted space.
 
-\begin{lstlisting}[language=C++,label={tv_arrID_2},caption={The more efficient \texttt{getArrID} function.}]
+\begin{lstlisting}[language=C++,label={tv_arrID_2},caption={The more space efficient \texttt{getArrID} function.}]
   uint getArrID(uvec3 gid, uvec3 halfXYZ) {
     //Store the main volume
     if (gid.x > 0 && gid.x < chunkSize.x &&
